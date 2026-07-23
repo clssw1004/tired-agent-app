@@ -69,8 +69,20 @@ class _PtySessionViewState extends State<PtySessionView> {
         agentId: widget.agentId,
         tail: 5000,
       );
+      bool isFirstChunk = true;
       for (final chunk in result.chunks) {
-        final text = utf8.decode(base64.decode(chunk.data), allowMalformed: true);
+        String text = utf8.decode(base64.decode(chunk.data), allowMalformed: true);
+        // Strip leading \n or \r\n from the first chunk to avoid an extra
+        // blank line at the top of the terminal. PTY output often starts
+        // with a newline from the shell's initial prompt emission.
+        if (isFirstChunk) {
+          isFirstChunk = false;
+          if (text.startsWith('\r\n')) {
+            text = text.substring(2);
+          } else if (text.startsWith('\n')) {
+            text = text.substring(1);
+          }
+        }
         _terminal.write(text);
       }
       if (result.chunks.isNotEmpty) {
@@ -120,6 +132,7 @@ class _PtySessionViewState extends State<PtySessionView> {
           _terminal,
           autofocus: true,
           backgroundOpacity: 1.0,
+          deleteDetection: true,
         ),
       ),
     );
