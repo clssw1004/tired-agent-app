@@ -36,13 +36,20 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Future<void> _load() async {
     try {
       final auth = context.read<AuthProvider>();
-      final ref = await auth.getServerRef(widget.serverId);
-      if (ref == null) {
+      await auth.authService.ensureFreshSession();
+      final agent = auth.agents.where((a) => a.id == widget.serverId).firstOrNull;
+      debugPrint('[SessionDetail] serverId=${widget.serverId} agent=${agent?.id} agents=${auth.agents.length} managerRef=${auth.managerRef != null}');
+      if (agent == null || auth.managerRef == null) {
         setState(() { _error = 'Server credentials missing'; _loading = false; });
         return;
       }
-      final session = await auth.authService.transport.getSession(ref, widget.sessionId, agentId: widget.serverId);
-      if (mounted) setState(() { _session = session; _ref = ref; _loading = false; });
+      _ref = auth.managerRef!;
+      final session = await auth.authService.transport.getSession(
+        auth.managerRef!,
+        widget.sessionId,
+        agentId: widget.serverId,
+      );
+      if (mounted) setState(() { _session = session; _ref = auth.managerRef!; _loading = false; });
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _loading = false; });
     }

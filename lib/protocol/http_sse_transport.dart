@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/types.dart';
@@ -22,26 +23,41 @@ class HttpSseTransport implements Transport {
 
   String _ensureBaseUrl(String url) => url.replaceAll(RegExp(r'/+$'), '');
 
-  String _sessionsUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/sessions';
+  String _sessionsUrl(String baseUrl, {String? agentId}) {
+    final base = _ensureBaseUrl(baseUrl);
+    if (agentId != null && agentId.isNotEmpty) {
+      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/sessions';
+    }
+    return '$base/api/v1/sessions';
+  }
 
-  String _sessionUrl(String baseUrl, String sessionId) =>
-      '${_sessionsUrl(baseUrl)}/$sessionId';
+  String _sessionUrl(String baseUrl, String sessionId, {String? agentId}) {
+    final base = _ensureBaseUrl(baseUrl);
+    if (agentId != null && agentId.isNotEmpty) {
+      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/sessions/${Uri.encodeComponent(sessionId)}';
+    }
+    return '$base/api/v1/sessions/${Uri.encodeComponent(sessionId)}';
+  }
+
+  String _directoriesUrl(String baseUrl, {String? agentId}) {
+    final base = _ensureBaseUrl(baseUrl);
+    if (agentId != null && agentId.isNotEmpty) {
+      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/directories';
+    }
+    return '$base/api/v1/directories';
+  }
 
   String _agentsUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/agents';
-
-  String _directoriesUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/directories';
+      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/agents';
 
   String _loginUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/auth/login';
+      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/auth/login';
 
   String _refreshUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/auth/refresh';
+      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/auth/refresh';
 
   String _checkSessionUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/auth/check';
+      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/auth/me';
 
   // ─── Low-level request helper ─────────────────────────────────────────
   //
@@ -76,16 +92,22 @@ class HttpSseTransport implements Transport {
       );
       return response.data;
     } on DioException catch (e) {
+      debugPrint('[HttpSseTransport] DioException: ${e.type} ${e.message} status=${e.response?.statusCode}');
       if (e.response?.data != null) {
         try {
+          Map<String, dynamic> errorJson;
           final raw = e.response!.data;
-          final Map<String, dynamic> errorJson;
           if (raw is String) {
             errorJson = json.decode(raw) as Map<String, dynamic>;
           } else {
             errorJson = raw as Map<String, dynamic>;
           }
+          // Server wraps errors in {"error": {"code": "...", "message": "..."}}
+          if (errorJson.containsKey('error') && errorJson['error'] is Map) {
+            errorJson = errorJson['error'] as Map<String, dynamic>;
+          }
           final error = ErrorResponse.fromJson(errorJson);
+          debugPrint('[HttpSseTransport] parsed error: ${error.code}: ${error.message}');
           throw TransportException('${error.code}: ${error.message}',
               statusCode: e.response?.statusCode);
         } catch (inner) {
@@ -104,7 +126,7 @@ class HttpSseTransport implements Transport {
   @override
   Future<List<Session>> listSessions(ServerRef ref,
       {String? agentId}) async {
-    final data = await _request('GET', _sessionsUrl(ref.baseUrl),
+    final data = await _request('GET', _sessionsUrl(ref.baseUrl, agentId: agentId),
         token: ref.token, agentId: agentId);
     if (data == null) return [];
     final list = data as List<dynamic>;
@@ -116,7 +138,7 @@ class HttpSseTransport implements Transport {
   @override
   Future<Session> createSession(ServerRef ref, SessionSpec spec,
       {String? agentId}) async {
-    final data = await _request('POST', _sessionsUrl(ref.baseUrl),
+    final data = await _request('POST', _sessionsUrl(ref.baseUrl, agentId: agentId),
         body: spec.toJson(), token: ref.token, agentId: agentId);
     return Session.fromJson(data as Map<String, dynamic>);
   }
@@ -124,7 +146,7 @@ class HttpSseTransport implements Transport {
   @override
   Future<Session> getSession(ServerRef ref, String id,
       {String? agentId}) async {
-    final data = await _request('GET', _sessionUrl(ref.baseUrl, id),
+    final data = await _request('GET', _sessionUrl(ref.baseUrl, id, agentId: agentId),
         token: ref.token, agentId: agentId);
     return Session.fromJson(data as Map<String, dynamic>);
   }
@@ -132,14 +154,14 @@ class HttpSseTransport implements Transport {
   @override
   Future<void> killSession(ServerRef ref, String id,
       {String? agentId}) async {
-    await _request('POST', '${_sessionUrl(ref.baseUrl, id)}/kill',
+    await _request('POST', '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/kill',
         token: ref.token, agentId: agentId);
   }
 
   @override
   Future<void> deleteSession(ServerRef ref, String id,
       {String? agentId}) async {
-    await _request('DELETE', _sessionUrl(ref.baseUrl, id),
+    await _request('DELETE', _sessionUrl(ref.baseUrl, id, agentId: agentId),
         token: ref.token, agentId: agentId);
   }
 
@@ -147,7 +169,7 @@ class HttpSseTransport implements Transport {
   Future<Map<String, dynamic>> pruneSessions(ServerRef ref,
       {int olderThanHours = 24, String? agentId}) async {
     final data = await _request(
-        'POST', '${_sessionsUrl(ref.baseUrl)}/prune',
+        'POST', '${_sessionsUrl(ref.baseUrl, agentId: agentId)}/prune',
         body: {'olderThanHours': olderThanHours},
         token: ref.token,
         agentId: agentId);
@@ -158,7 +180,7 @@ class HttpSseTransport implements Transport {
   @override
   Future<void> resizeSession(ServerRef ref, String id, int cols, int rows,
       {String? agentId}) async {
-    await _request('POST', '${_sessionUrl(ref.baseUrl, id)}/resize',
+    await _request('POST', '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/resize',
         body: ResizeRequest(cols: cols, rows: rows).toJson(),
         token: ref.token,
         agentId: agentId);
@@ -172,7 +194,7 @@ class HttpSseTransport implements Transport {
     if (tail != null) queryParams['tail'] = tail;
 
     final data = await _request(
-        'GET', '${_sessionUrl(ref.baseUrl, id)}/output',
+        'GET', '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/output',
         queryParameters: queryParams, token: ref.token, agentId: agentId);
     return FetchOutputResult.fromJson(data as Map<String, dynamic>);
   }
@@ -202,7 +224,7 @@ class HttpSseTransport implements Transport {
       if (currentFrom > 0) {
         queryParams['from'] = currentFrom.toString();
       }
-      final path = '${_sessionUrl(ref.baseUrl, id)}/stream';
+      final path = '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/stream';
       final uri = Uri.parse(path).replace(
           queryParameters:
               queryParams.isNotEmpty ? queryParams : null);
@@ -347,7 +369,7 @@ class HttpSseTransport implements Transport {
   Future<void> sendInput(ServerRef ref, String id, List<int> data,
       {String? agentId}) async {
     final encoded = base64.encode(data);
-    await _request('POST', '${_sessionUrl(ref.baseUrl, id)}/input',
+    await _request('POST', '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/input',
         body: InputRequest(data: encoded).toJson(),
         token: ref.token,
         agentId: agentId);
@@ -361,7 +383,7 @@ class HttpSseTransport implements Transport {
     final queryParams = <String, dynamic>{};
     if (path != null) queryParams['path'] = path;
 
-    final data = await _request('GET', _directoriesUrl(ref.baseUrl),
+    final data = await _request('GET', _directoriesUrl(ref.baseUrl, agentId: agentId),
         queryParameters:
             queryParams.isNotEmpty ? queryParams : null,
         token: ref.token,
@@ -373,7 +395,7 @@ class HttpSseTransport implements Transport {
   Future<DirectoryShortcuts> getDirectoryShortcuts(ServerRef ref,
       {String? agentId}) async {
     final data = await _request(
-        'GET', '${_directoriesUrl(ref.baseUrl)}/shortcuts',
+        'GET', '${_directoriesUrl(ref.baseUrl, agentId: agentId)}/shortcuts',
         token: ref.token, agentId: agentId);
     return DirectoryShortcuts.fromJson(data as Map<String, dynamic>);
   }
@@ -382,7 +404,7 @@ class HttpSseTransport implements Transport {
   Future<DirectoryFavorite> addDirectoryFavorite(ServerRef ref,
       {required String path, String? name, String? agentId}) async {
     final data = await _request(
-        'POST', '${_directoriesUrl(ref.baseUrl)}/favorites',
+        'POST', '${_directoriesUrl(ref.baseUrl, agentId: agentId)}/favorites',
         body: {'path': path, if (name != null) 'name': name},
         token: ref.token,
         agentId: agentId);
@@ -392,7 +414,7 @@ class HttpSseTransport implements Transport {
   @override
   Future<void> removeDirectoryFavorite(ServerRef ref, String id,
       {String? agentId}) async {
-    await _request('DELETE', '${_directoriesUrl(ref.baseUrl)}/favorites/$id',
+    await _request('DELETE', '${_directoriesUrl(ref.baseUrl, agentId: agentId)}/favorites/$id',
         token: ref.token, agentId: agentId);
   }
 
@@ -432,7 +454,7 @@ class HttpSseTransport implements Transport {
   @override
   Future<LoginResponse> login(ServerRef ref, String token) async {
     final data = await _request('POST', _loginUrl(ref.baseUrl),
-        body: {'token': token}, token: token);
+        body: {'token': token});
     return LoginResponse.fromJson(data as Map<String, dynamic>);
   }
 

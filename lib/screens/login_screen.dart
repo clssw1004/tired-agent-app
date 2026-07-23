@@ -12,8 +12,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _urlController = TextEditingController();
-  final _tokenController = TextEditingController();
+  final _urlController = TextEditingController(
+    text: "http://192.168.2.147:8443",
+  );
+  final _tokenController = TextEditingController(
+    text: "8c2a4a73ce9ac8b57ee448c2d623cf00",
+  );
   bool _busy = false;
 
   Future<void> _login() async {
@@ -26,7 +30,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.danger,
+          ),
         );
       }
     } finally {
@@ -59,7 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: AppSpacing.six),
               TextField(
                 controller: _urlController,
-                decoration: const InputDecoration(labelText: 'Manager URL', hintText: 'http://192.168.1.10:3099'),
+                decoration: const InputDecoration(
+                  labelText: 'Manager URL',
+                  hintText: 'http://192.168.1.10:3099',
+                ),
                 keyboardType: TextInputType.url,
                 autocorrect: false,
                 enabled: !_busy,
@@ -74,11 +84,21 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: AppSpacing.six),
               ElevatedButton(
-                onPressed: (_busy || _urlController.text.trim().isEmpty || _tokenController.text.trim().isEmpty)
+                onPressed:
+                    (_busy ||
+                        _urlController.text.trim().isEmpty ||
+                        _tokenController.text.trim().isEmpty)
                     ? null
                     : _login,
                 child: _busy
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.text))
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.text,
+                        ),
+                      )
                     : ThemedText.body('Connect'),
               ),
               if (auth.error != null) ...[

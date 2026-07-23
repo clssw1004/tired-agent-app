@@ -23,6 +23,18 @@ class AuthProvider extends ChangeNotifier {
   List<AgentInfo> get agents => _agents;
   AuthService get authService => _authService;
 
+  /// Manager-level [ServerRef] for proxied API calls.
+  /// Returns `null` when not authenticated.
+  ServerRef? get managerRef {
+    if (_baseUrl == null || _sessionToken == null) return null;
+    return ServerRef(
+      id: '__manager__',
+      name: 'manager',
+      baseUrl: _baseUrl!,
+      token: _sessionToken!,
+    );
+  }
+
   Future<void> boot() async {
     _status = AuthStatus.loading;
     notifyListeners();
@@ -47,13 +59,16 @@ class AuthProvider extends ChangeNotifier {
     _status = AuthStatus.loading;
     _error = null;
     notifyListeners();
+    debugPrint('[AuthProvider] login: $url');
     try {
       final result = await _authService.login(url, token);
       _baseUrl = result.baseUrl;
       _sessionToken = result.sessionToken;
       _agents = _authService.agents;
       _status = AuthStatus.authenticated;
+      debugPrint('[AuthProvider] login OK, agents: ${_agents.length}');
     } catch (e) {
+      debugPrint('[AuthProvider] login FAILED: $e');
       _error = e.toString();
       _status = AuthStatus.error;
     }
@@ -83,4 +98,6 @@ class AuthProvider extends ChangeNotifier {
       _authService.setServerToken(agentId, token);
   Future<void> forgetServer(String agentId) =>
       _authService.forgetServer(agentId);
+  Future<void> ensureFreshSession() =>
+      _authService.ensureFreshSession();
 }

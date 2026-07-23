@@ -32,13 +32,21 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     setState(() => _loading = true);
     try {
       final auth = context.read<AuthProvider>();
-      final ref = await auth.getServerRef(widget.serverId);
-      if (ref == null) {
-        setState(() => _error = 'Server credentials missing');
+      await auth.authService.ensureFreshSession();
+      final agent = auth.agents.where((a) => a.id == widget.serverId).firstOrNull;
+      if (agent == null) {
+        setState(() => _error = 'Agent not found');
         return;
       }
-      _ref = ref;
-      final sessions = await auth.authService.transport.listSessions(ref, agentId: widget.serverId);
+      _ref = auth.managerRef;
+      if (_ref == null) {
+        if (mounted) setState(() => _error = 'Not authenticated');
+        return;
+      }
+      final sessions = await auth.authService.transport.listSessions(
+        _ref!,
+        agentId: widget.serverId,
+      );
       if (mounted) setState(() { _sessions = sessions; _loading = false; });
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _loading = false; });
@@ -54,9 +62,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: AppColors.accent),
-            onPressed: () {
-              // Session creation will be implemented later
-            },
+            onPressed: () => context.push('/server/${widget.serverId}/create-session'),
             tooltip: 'New Session',
           ),
         ],
@@ -80,7 +86,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                             final session = _sessions[index];
                             return SessionCard(
                               session: session,
-                              onTap: () => context.push('/session/${widget.serverId}-${session.id}'),
+                              onTap: () => context.push('/session/${widget.serverId}/${session.id}'),
                             );
                           },
                         ),

@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
@@ -32,10 +34,40 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
   List<StructuredContent> _contents = [];
   bool _sending = false;
   Subscription? _subscription;
+  int _currentOffset = 0;
 
   @override
   void initState() {
     super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _currentOffset = widget.session.byteOffset;
+    // Fetch existing output first so the user sees what's already been printed
+    try {
+      final result = await _transport.fetchOutput(
+        widget.serverRef, widget.session.id,
+        agentId: widget.agentId,
+        tail: 5000,
+      );
+      if (result.chunks.isNotEmpty && mounted) {
+        String pending = '';
+        for (final chunk in result.chunks) {
+          pending += utf8.decode(base64.decode(chunk.data), allowMalformed: true);
+        }
+        final renderResult = _renderer.processChunk(pending, session: (
+          cmd: widget.session.cmd,
+          args: widget.session.args,
+          label: widget.session.label,
+        ));
+        _currentOffset = result.upTo;
+        setState(() => _contents = renderResult.contents);
+      }
+    } catch (_) {
+      // fetchOutput may fail (no output yet, session starting, etc.)
+    }
+    // Now subscribe to live updates from the current offset
     _subscribe();
   }
 
@@ -56,9 +88,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
           final nl = pending.lastIndexOf('\n');
           if (nl >= 0) pending = pending.substring(nl + 1);
           if (mounted) {
-            setState(() {
-              _contents = result.contents;
-            });
+            setState(() => _contents = result.contents);
           }
         },
         onState: (session) {
@@ -72,11 +102,11 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
           }
         },
         onError: (error) {
-          // Transport handles reconnect internally; surface via state if needed
+          debugPrint('[ClaudeChatView] SSE error: $error');
         },
       ),
       agentId: widget.agentId,
-      fromOffset: widget.session.byteOffset,
+      fromOffset: _currentOffset,
     );
   }
 
@@ -92,8 +122,8 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
       setState(() {
         _contents = [..._contents, ContentUserMessage(text: text)];
       });
-    } catch (_) {
-      // silent
+    } catch (e) {
+      debugPrint('[ClaudeChatView] sendInput error: $e');
     } finally {
       if (mounted) setState(() => _sending = false);
     }

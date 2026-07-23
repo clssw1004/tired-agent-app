@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
-import 'package:tired_agent_app/router.dart';
+import 'package:tired_agent_app/screens/create_session_screen.dart';
+import 'package:tired_agent_app/screens/login_screen.dart';
+import 'package:tired_agent_app/screens/server_list_screen.dart';
+import 'package:tired_agent_app/screens/server_add_screen.dart';
+import 'package:tired_agent_app/screens/server_sessions_screen.dart';
+import 'package:tired_agent_app/screens/session_detail_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -25,6 +32,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
   late final AuthProvider _authProvider;
   late final ServerProvider _serverProvider;
   late final ToastProvider _toastProvider;
+  late final GoRouter _router;
 
   @override
   void initState() {
@@ -34,6 +42,45 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     _authProvider = AuthProvider(authService: _authService);
     _serverProvider = ServerProvider(_authService);
     _toastProvider = ToastProvider();
+
+    _router = GoRouter(
+      // Re-evaluate redirects when auth state changes
+      refreshListenable: _authProvider,
+      initialLocation: '/login',
+      redirect: (context, state) {
+        final isLoggedIn = _authProvider.status == AuthStatus.authenticated;
+        final isLoginRoute = state.matchedLocation == '/login';
+
+        if (!isLoggedIn && !isLoginRoute) return '/login';
+        if (isLoggedIn && isLoginRoute) return '/';
+        return null;
+      },
+      routes: [
+        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+        GoRoute(path: '/', builder: (_, __) => const ServerListScreen()),
+        GoRoute(path: '/server/new', builder: (_, __) => const ServerAddScreen()),
+        GoRoute(
+          path: '/server/:id',
+          builder: (_, state) => ServerSessionsScreen(
+            serverId: state.pathParameters['id'] ?? '',
+          ),
+        ),
+        GoRoute(
+          path: '/server/:id/create-session',
+          builder: (_, state) => CreateSessionScreen(
+            serverId: state.pathParameters['id'] ?? '',
+          ),
+        ),
+        GoRoute(
+          path: '/session/:serverId/:sessionId',
+          builder: (_, state) => SessionDetailScreen(
+            serverId: state.pathParameters['serverId'] ?? '',
+            sessionId: state.pathParameters['sessionId'] ?? '',
+          ),
+        ),
+      ],
+    );
+
     _authProvider.boot();
   }
 
@@ -48,7 +95,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
       child: MaterialApp.router(
         title: 'tiredAgentMobile',
         theme: buildDarkTheme(),
-        routerConfig: createRouter(context),
+        routerConfig: _router,
         debugShowCheckedModeBanner: false,
       ),
     );
