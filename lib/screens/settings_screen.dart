@@ -206,8 +206,8 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundElement,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        constraints: const BoxConstraints(maxWidth: 480),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 40),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         title: Row(
           children: [
             const ThemedText('➕', fontSize: 20),
@@ -224,7 +224,7 @@ class SettingsScreen extends StatelessWidget {
                 decoration: const InputDecoration(
                   labelText: 'Label',
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.four,
+                    horizontal: AppSpacing.three,
                     vertical: AppSpacing.three,
                   ),
                 ),
@@ -237,7 +237,7 @@ class SettingsScreen extends StatelessWidget {
                   labelText: 'Manager URL',
                   hintText: 'http://192.168.1.10:3099',
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.four,
+                    horizontal: AppSpacing.three,
                     vertical: AppSpacing.three,
                   ),
                 ),
@@ -250,7 +250,7 @@ class SettingsScreen extends StatelessWidget {
                 decoration: const InputDecoration(
                   labelText: 'Access Token',
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.four,
+                    horizontal: AppSpacing.three,
                     vertical: AppSpacing.three,
                   ),
                 ),
