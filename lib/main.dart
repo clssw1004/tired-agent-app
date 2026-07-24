@@ -53,10 +53,11 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
       initialLocation: '/login',
       redirect: (context, state) {
         final isLoggedIn = _authProvider.status == AuthStatus.authenticated;
-        final isLoginRoute = state.matchedLocation == '/login';
+        final path = state.matchedLocation;
+        final allowedWithoutLogin = ['/login', '/settings'];
 
-        if (!isLoggedIn && !isLoginRoute) return '/login';
-        if (isLoggedIn && isLoginRoute) return '/';
+        if (!isLoggedIn && !allowedWithoutLogin.contains(path)) return '/login';
+        if (isLoggedIn && path == '/login') return '/';
         return null;
       },
       routes: [

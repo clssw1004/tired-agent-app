@@ -26,15 +26,40 @@ class ServerListScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          if (auth.baseUrl != null)
+          // ── Active manager indicator ──────────────────────────────
+          if (auth.profiles.isNotEmpty)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
-              child: ThemedText.small(auth.baseUrl!, color: AppColors.textSecondary),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.four,
+                vertical: AppSpacing.two,
+              ),
+              child: _ManagerSwitcher(auth: auth),
             ),
+
           Expanded(
             child: auth.agents.isEmpty
-                ? Center(child: ThemedText.small('No agents connected'))
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ThemedText.small(
+                          auth.sessionToken != null
+                              ? 'No agents connected'
+                              : 'Not connected',
+                          color: AppColors.textSecondary,
+                        ),
+                        if (auth.sessionToken == null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: AppSpacing.two),
+                            child: ThemedText.small(
+                              'Go to Settings to add or switch a manager',
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  )
                 : ListView.builder(
                     itemCount: auth.agents.length,
                     itemBuilder: (context, index) {
@@ -46,21 +71,125 @@ class ServerListScreen extends StatelessWidget {
                     },
                   ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.four),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => context.push('/server/new'),
-                  icon: const Icon(Icons.add, size: 20),
-                  label: ThemedText.body('Add Server'),
+          if (auth.sessionToken != null)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.four),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => context.push('/server/new'),
+                    icon: const Icon(Icons.add, size: 20),
+                    label: ThemedText.body('Add Server'),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
+  }
+}
+
+/// Compact manager switcher pill shown at the top of the server list.
+class _ManagerSwitcher extends StatelessWidget {
+  final AuthProvider auth;
+
+  const _ManagerSwitcher({required this.auth});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = auth.profiles.where((p) => p.id == auth.activeProfileId).firstOrNull;
+    return Material(
+      color: AppColors.backgroundElement,
+      borderRadius: BorderRadius.circular(AppSpacing.three),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.three),
+        onTap: () => _showPicker(context),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.three,
+            vertical: AppSpacing.two,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: auth.status == AuthStatus.authenticated
+                      ? AppColors.success
+                      : AppColors.textSecondary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.two),
+              Expanded(
+                child: ThemedText.small(
+                  active?.name ?? 'Select manager',
+                  color: AppColors.text,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.one),
+              const Icon(Icons.unfold_more, size: 16, color: AppColors.textSecondary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.backgroundElement,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.four),
+              child: ThemedText.title('Switch Manager'),
+            ),
+            ...auth.profiles.map((p) => ListTile(
+                  leading: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: p.id == auth.activeProfileId
+                          ? AppColors.accent
+                          : AppColors.textSecondary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  title: ThemedText.body(p.name),
+                  subtitle: ThemedText.small(p.baseUrl, color: AppColors.textSecondary),
+                  trailing: p.id == auth.activeProfileId
+                      ? const Icon(Icons.check, color: AppColors.accent)
+                      : null,
+                  onTap: () => Navigator.of(ctx).pop(p.id),
+                )),
+            const SizedBox(height: AppSpacing.two),
+          ],
+        ),
+      ),
+    );
+
+    if (result != null && result != auth.activeProfileId && context.mounted) {
+      try {
+        await auth.switchTo(result);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+        }
+      }
+    }
   }
 }
