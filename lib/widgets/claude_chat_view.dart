@@ -50,7 +50,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
         widget.serverRef,
         widget.session.id,
         agentId: widget.agentId,
-        tail: 5000,
+        tail: 1048576,
       );
       if (result.chunks.isNotEmpty && mounted) {
         String pending = '';
