@@ -1,5 +1,3 @@
-import 'dart:math' show pi, sin;
-
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -52,17 +50,13 @@ class _NeonLoadingState extends State<NeonLoading>
   }
 
   Widget _buildSpinner() {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (_, child) =>
-          Transform.rotate(angle: _controller.value * 2 * pi, child: child),
-      child: SizedBox(
-        width: widget.size,
-        height: widget.size,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation(widget.color),
-        ),
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: CircularProgressIndicator(
+        strokeWidth: 2.5,
+        valueColor: AlwaysStoppedAnimation(widget.color),
+        backgroundColor: widget.color.withAlpha(20),
       ),
     );
   }
@@ -73,8 +67,8 @@ class _NeonLoadingState extends State<NeonLoading>
       builder: (_, _) => Row(
         mainAxisSize: MainAxisSize.min,
         children: List.generate(3, (i) {
-          final phase = (_controller.value * 3 + i) % 3;
-          final opacity = sin(phase * pi).clamp(0.3, 1.0);
+          final phase = (_controller.value * 2 * 3.14159 + i * 2 * 3.14159 / 3) % (2 * 3.14159);
+          final opacity = (phase < 3.14159 ? (phase / 3.14159) : 0).clamp(0.3, 1.0);
           return Padding(
             padding: EdgeInsets.only(right: i < 2 ? 4 : 0),
             child: Container(
@@ -84,11 +78,7 @@ class _NeonLoadingState extends State<NeonLoading>
                 color: widget.color.withAlpha((opacity * 255).toInt()),
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(
-                    color: widget.color.withAlpha(60),
-                    blurRadius: 4,
-                    spreadRadius: 0,
-                  ),
+                  BoxShadow(color: widget.color.withAlpha(60), blurRadius: 4, spreadRadius: 0),
                 ],
               ),
             ),

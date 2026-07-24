@@ -63,7 +63,7 @@ ThemeData buildDarkTheme() {
     colorScheme: ColorScheme.dark(
       primary: AppColors.primary,
       secondary: AppColors.secondary,
-      surface: AppColors.background,
+      surface: AppColors.surface,
       error: AppColors.danger,
       onPrimary: AppColors.text,
       onSecondary: AppColors.text,

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_card.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -429,26 +430,32 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     return ListView.builder(
       padding: const EdgeInsets.only(top: AppSpacing.two),
       itemCount: 5,
-      itemBuilder: (_, __) => Card(
-        color: AppColors.backgroundElement,
+      itemBuilder: (_, __) => NeonCard(
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.four,
           vertical: AppSpacing.one,
         ),
-        child: Container(
+        child: SizedBox(
           height: 72,
-          padding: const EdgeInsets.all(AppSpacing.three),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ColoredBox(
-                color: AppColors.surfaceAlt,
-                child: SizedBox(width: 120, height: 14),
+              Container(
+                width: 120,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppSpacing.one),
+                ),
               ),
-              SizedBox(height: AppSpacing.two),
-              ColoredBox(
-                color: AppColors.surfaceAlt,
-                child: SizedBox(width: 200, height: 10),
+              const SizedBox(height: AppSpacing.two),
+              Container(
+                width: 200,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppSpacing.one),
+                ),
               ),
             ],
           ),
