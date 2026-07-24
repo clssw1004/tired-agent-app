@@ -146,7 +146,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
         Container(
           decoration: const BoxDecoration(
             color: AppColors.background,
-            border: Border(top: BorderSide(color: AppColors.backgroundElement)),
+            border: Border(top: BorderSide(color: AppColors.border)),
           ),
           padding: const EdgeInsets.fromLTRB(AppSpacing.three, AppSpacing.two, AppSpacing.three, AppSpacing.two),
           child: SafeArea(
@@ -178,7 +178,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
                       vertical: AppSpacing.two,
                     ),
                   ),
-                  child: ThemedText.body('Send'),
+                  child: ThemedText.mono('Send'),
                 ),
               ],
             ),

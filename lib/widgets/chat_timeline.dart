@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_divider.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class ChatTimeline extends StatefulWidget {
@@ -67,7 +68,7 @@ class _MessageBubble extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.three),
           decoration: BoxDecoration(
-            color: AppColors.accent,
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(AppSpacing.three),
           ),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
@@ -79,8 +80,9 @@ class _MessageBubble extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.three),
           decoration: BoxDecoration(
-            color: AppColors.backgroundElement,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppSpacing.three),
+            border: Border.all(color: AppColors.border.withAlpha(60), width: 0.5),
           ),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
           child: ThemedText.body(text),
@@ -90,12 +92,13 @@ class _MessageBubble extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.three),
         decoration: BoxDecoration(
-          color: AppColors.codeBackground,
+          color: AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(color: AppColors.primary.withAlpha(25)),
         ),
         child: SelectableText(
           code,
-          style: const TextStyle(color: AppColors.text, fontSize: 12, fontFamily: 'monospace'),
+          style: const TextStyle(color: AppColors.textCode, fontSize: 12, fontFamily: 'monospace'),
         ),
       ),
       ContentStatus(:final kind, :final text) => Padding(
@@ -116,7 +119,7 @@ class _MessageBubble extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.three),
         decoration: BoxDecoration(
-          color: AppColors.toolBackground,
+          color: AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(AppSpacing.two),
         ),
         child: Column(
@@ -126,17 +129,7 @@ class _MessageBubble extends StatelessWidget {
           ],
         ),
       ),
-      ContentDivider(:final label) => Row(
-        children: [
-          const Expanded(child: Divider(color: AppColors.backgroundElement)),
-          if (label != null) ...[
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.small(label),
-            const SizedBox(width: AppSpacing.two),
-          ],
-          const Expanded(child: Divider(color: AppColors.backgroundElement)),
-        ],
-      ),
+      ContentDivider(:final label) => NeonDivider(label: label),
       ContentUsage(:final inputTokens, :final outputTokens) => Align(
         alignment: Alignment.centerRight,
         child: ThemedText.small('tokens in: $inputTokens · out: $outputTokens',
