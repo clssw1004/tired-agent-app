@@ -31,9 +31,14 @@ class RendererRegistry {
 
 RendererRegistry defaultRegistry() {
   final reg = RendererRegistry();
-  reg.register(RendererRegistration(
-    detector: (cmd, args) => cmd == 'claude' || args.contains('claude') || args.contains('--persistent'),
-    factory: () => ClaudeRenderer(),
-  ));
+  reg.register(
+    RendererRegistration(
+      detector: (cmd, args) =>
+          cmd == 'claude' ||
+          args.contains('claude') ||
+          args.contains('--persistent'),
+      factory: () => ClaudeRenderer(),
+    ),
+  );
   return reg;
 }

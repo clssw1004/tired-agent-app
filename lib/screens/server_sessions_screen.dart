@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_card.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -37,8 +38,14 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   void initState() {
     super.initState();
     _load();
-    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) => _loadSilent());
-    _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+    _autoRefreshTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _loadSilent(),
+    );
+    _tickTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => setState(() {}),
+    );
   }
 
   @override
@@ -69,13 +76,15 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         return;
       }
       final sessions = await auth.authService.transport.listSessions(
-        _ref!, agentId: widget.serverId,
+        _ref!,
+        agentId: widget.serverId,
       );
-      if (mounted) setState(() {
-        _sessions = sessions;
-        _error = null;
-        _lastLoaded = DateTime.now().millisecondsSinceEpoch;
-      });
+      if (mounted)
+        setState(() {
+          _sessions = sessions;
+          _error = null;
+          _lastLoaded = DateTime.now().millisecondsSinceEpoch;
+        });
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     }
@@ -91,7 +100,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       onConfirm: () async {
         if (_ref == null) return;
         await context.read<AuthProvider>().authService.transport.killSession(
-          _ref!, sessionId, agentId: widget.serverId,
+          _ref!,
+          sessionId,
+          agentId: widget.serverId,
         );
         await _load();
       },
@@ -102,11 +113,14 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     _showConfirm(
       icon: '🗑️',
       title: 'Delete session log?',
-      desc: 'Removes the database row and the on-disk output log. Cannot be undone.',
+      desc:
+          'Removes the database row and the on-disk output log. Cannot be undone.',
       onConfirm: () async {
         if (_ref == null) return;
         await context.read<AuthProvider>().authService.transport.deleteSession(
-          _ref!, sessionId, agentId: widget.serverId,
+          _ref!,
+          sessionId,
+          agentId: widget.serverId,
         );
         await _load();
       },
@@ -117,12 +131,15 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     _showConfirm(
       icon: '🧹',
       title: 'Clean stale sessions?',
-      desc: 'Drops all sessions that have been inactive for more than 24 hours.',
+      desc:
+          'Drops all sessions that have been inactive for more than 24 hours.',
       onConfirm: () async {
         if (_ref == null) return;
-        final result = await context.read<AuthProvider>().authService.transport.pruneSessions(
-          _ref!, agentId: widget.serverId,
-        );
+        final result = await context
+            .read<AuthProvider>()
+            .authService
+            .transport
+            .pruneSessions(_ref!, agentId: widget.serverId);
         setState(() => _pruneInfo = result['removed'] as int?);
         await _load();
       },
@@ -139,7 +156,13 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundElement,
-        title: Row(children: [ThemedText(icon, fontSize: 20), const SizedBox(width: AppSpacing.two), ThemedText.title(title)]),
+        title: Row(
+          children: [
+            ThemedText(icon, fontSize: 20),
+            const SizedBox(width: AppSpacing.two),
+            ThemedText.title(title),
+          ],
+        ),
         content: ThemedText.small(desc),
         actions: [
           TextButton(
@@ -160,7 +183,10 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.danger,
+            ),
           );
         }
       }
@@ -187,7 +213,12 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     return _sessions.where((s) => s.status == _statusFilter).toList();
   }
 
-  static const _filters = <_StatusFilter>[null, SessionStatus.starting, SessionStatus.running, SessionStatus.exited];
+  static const _filters = <_StatusFilter>[
+    null,
+    SessionStatus.starting,
+    SessionStatus.running,
+    SessionStatus.exited,
+  ];
   static const _filterLabels = ['all', 'starting', 'running', 'exited'];
 
   @override
@@ -201,16 +232,24 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: AppColors.accent),
-            onPressed: () => context.push('/server/${widget.serverId}/create-session'),
+            onPressed: () =>
+                context.push('/server/${widget.serverId}/create-session'),
             tooltip: 'New Session',
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
       ),
       body: Column(
         children: [
           // ── Toolbar: filters + refresh + prune ────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.four,
+              vertical: AppSpacing.two,
+            ),
             child: Row(
               children: [
                 ...List.generate(_filters.length, (i) {
@@ -222,18 +261,33 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                     child: GestureDetector(
                       onTap: () => setState(() => _statusFilter = f),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: AppSpacing.one),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.two,
+                          vertical: AppSpacing.one,
+                        ),
                         decoration: BoxDecoration(
-                          color: active ? AppColors.accent : AppColors.backgroundElement,
+                          color: active
+                              ? AppColors.primary
+                              : AppColors.backgroundElement,
                           borderRadius: BorderRadius.circular(AppSpacing.three),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            ThemedText.small(_filterLabels[i], color: active ? AppColors.text : AppColors.textSecondary),
+                            ThemedText.small(
+                              _filterLabels[i],
+                              color: active
+                                  ? AppColors.text
+                                  : AppColors.textSecondary,
+                            ),
                             if (cnt > 0) ...[
                               const SizedBox(width: 4),
-                              ThemedText.small('$cnt', color: active ? AppColors.text : AppColors.textSecondary),
+                              ThemedText.small(
+                                '$cnt',
+                                color: active
+                                    ? AppColors.text
+                                    : AppColors.textSecondary,
+                              ),
                             ],
                           ],
                         ),
@@ -254,7 +308,10 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
           // ── Error / Prune info ─────────────────────────────────────
           if (_error != null)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.one),
+              margin: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.four,
+                vertical: AppSpacing.one,
+              ),
               padding: const EdgeInsets.all(AppSpacing.three),
               decoration: BoxDecoration(
                 color: AppColors.danger.withAlpha(20),
@@ -262,15 +319,27 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
               ),
               child: Row(
                 children: [
-                  Expanded(child: ThemedText.small(_error!, color: AppColors.danger)),
-                  GestureDetector(onTap: () => setState(() => _error = null), child: const Icon(Icons.close, color: AppColors.danger, size: 18)),
+                  Expanded(
+                    child: ThemedText.small(_error!, color: AppColors.danger),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _error = null),
+                    child: const Icon(
+                      Icons.close,
+                      color: AppColors.danger,
+                      size: 18,
+                    ),
+                  ),
                 ],
               ),
             ),
 
           if (_pruneInfo != null)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.one),
+              margin: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.four,
+                vertical: AppSpacing.one,
+              ),
               padding: const EdgeInsets.all(AppSpacing.three),
               decoration: BoxDecoration(
                 color: AppColors.success.withAlpha(20),
@@ -278,8 +347,20 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
               ),
               child: Row(
                 children: [
-                  Expanded(child: ThemedText.small('Cleaned up $_pruneInfo stale sessions.', color: AppColors.success)),
-                  GestureDetector(onTap: () => setState(() => _pruneInfo = null), child: const Icon(Icons.close, color: AppColors.success, size: 18)),
+                  Expanded(
+                    child: ThemedText.small(
+                      'Cleaned up $_pruneInfo stale sessions.',
+                      color: AppColors.success,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _pruneInfo = null),
+                    child: const Icon(
+                      Icons.close,
+                      color: AppColors.success,
+                      size: 18,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -295,9 +376,13 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
                     side: const BorderSide(color: AppColors.backgroundElement),
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.one),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.one,
+                    ),
                   ),
-                  child: ThemedText.small('Clean zombies ($exitedCount) — removes sessions >24h old'),
+                  child: ThemedText.small(
+                    'Clean zombies ($exitedCount) — removes sessions >24h old',
+                  ),
                 ),
               ),
             ),
@@ -307,27 +392,32 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             child: _loading && _sessions.isEmpty
                 ? _buildSkeleton()
                 : _visible.isEmpty
-                    ? _buildEmpty()
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(top: AppSpacing.two, bottom: AppSpacing.six),
-                          itemCount: _visible.length,
-                          itemBuilder: (context, index) {
-                            final session = _visible[index];
-                            return SessionCard(
-                              session: session,
-                              onTap: () => context.push('/session/${widget.serverId}/${session.id}'),
-                              onKill: session.status != SessionStatus.exited
-                                  ? () => _requestKill(session.id)
-                                  : null,
-                              onDelete: session.status == SessionStatus.exited
-                                  ? () => _requestDelete(session.id)
-                                  : null,
-                            );
-                          },
-                        ),
+                ? _buildEmpty()
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.two,
+                        bottom: AppSpacing.six,
                       ),
+                      itemCount: _visible.length,
+                      itemBuilder: (context, index) {
+                        final session = _visible[index];
+                        return SessionCard(
+                          session: session,
+                          onTap: () => context.push(
+                            '/session/${widget.serverId}/${session.id}',
+                          ),
+                          onKill: session.status != SessionStatus.exited
+                              ? () => _requestKill(session.id)
+                              : null,
+                          onDelete: session.status == SessionStatus.exited
+                              ? () => _requestDelete(session.id)
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -340,18 +430,33 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     return ListView.builder(
       padding: const EdgeInsets.only(top: AppSpacing.two),
       itemCount: 5,
-      itemBuilder: (_, __) => Card(
-        color: AppColors.backgroundElement,
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.one),
-        child: Container(
+      itemBuilder: (_, __) => NeonCard(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.four,
+          vertical: AppSpacing.one,
+        ),
+        child: SizedBox(
           height: 72,
-          padding: const EdgeInsets.all(AppSpacing.three),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ColoredBox(color: Color(0xFF3A3A3C), child: SizedBox(width: 120, height: 14)),
-              SizedBox(height: AppSpacing.two),
-              ColoredBox(color: Color(0xFF3A3A3C), child: SizedBox(width: 200, height: 10)),
+              Container(
+                width: 120,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppSpacing.one),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.two),
+              Container(
+                width: 200,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppSpacing.one),
+                ),
+              ),
             ],
           ),
         ),

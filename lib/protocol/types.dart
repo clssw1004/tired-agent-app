@@ -104,7 +104,9 @@ class Session {
       cols: (json['cols'] as num?)?.toInt() ?? 80,
       rows: (json['rows'] as num?)?.toInt() ?? 24,
       label: json['label'] as String?,
-      mode: json['mode'] != null ? SessionMode.values.byName(json['mode'] as String) : null,
+      mode: json['mode'] != null
+          ? SessionMode.values.byName(json['mode'] as String)
+          : null,
     );
   }
 
@@ -190,28 +192,38 @@ class DirectoryListing {
   final String path;
   final String? parent;
   final List<DirectoryEntry> entries;
-  const DirectoryListing({required this.path, this.parent, required this.entries});
+  const DirectoryListing({
+    required this.path,
+    this.parent,
+    required this.entries,
+  });
 
-  factory DirectoryListing.fromJson(Map<String, dynamic> json) => DirectoryListing(
-    path: json['path'] as String,
-    parent: json['parent'] as String?,
-    entries: (json['entries'] as List<dynamic>)
-        .map((e) => DirectoryEntry.fromJson(e as Map<String, dynamic>))
-        .toList(),
-  );
+  factory DirectoryListing.fromJson(Map<String, dynamic> json) =>
+      DirectoryListing(
+        path: json['path'] as String,
+        parent: json['parent'] as String?,
+        entries: (json['entries'] as List<dynamic>)
+            .map((e) => DirectoryEntry.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
 }
 
 class DirectoryFavorite {
   final String id;
   final String name;
   final String path;
-  const DirectoryFavorite({required this.id, required this.name, required this.path});
+  const DirectoryFavorite({
+    required this.id,
+    required this.name,
+    required this.path,
+  });
 
-  factory DirectoryFavorite.fromJson(Map<String, dynamic> json) => DirectoryFavorite(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    path: json['path'] as String,
-  );
+  factory DirectoryFavorite.fromJson(Map<String, dynamic> json) =>
+      DirectoryFavorite(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        path: json['path'] as String,
+      );
 }
 
 class RecentDirectory {
@@ -219,10 +231,11 @@ class RecentDirectory {
   final int lastUsedAt;
   const RecentDirectory({required this.path, required this.lastUsedAt});
 
-  factory RecentDirectory.fromJson(Map<String, dynamic> json) => RecentDirectory(
-    path: json['path'] as String,
-    lastUsedAt: (json['lastUsedAt'] as num).toInt(),
-  );
+  factory RecentDirectory.fromJson(Map<String, dynamic> json) =>
+      RecentDirectory(
+        path: json['path'] as String,
+        lastUsedAt: (json['lastUsedAt'] as num).toInt(),
+      );
 }
 
 class DirectoryShortcuts {
@@ -230,14 +243,15 @@ class DirectoryShortcuts {
   final List<RecentDirectory> recent;
   const DirectoryShortcuts({required this.favorites, required this.recent});
 
-  factory DirectoryShortcuts.fromJson(Map<String, dynamic> json) => DirectoryShortcuts(
-    favorites: (json['favorites'] as List<dynamic>)
-        .map((e) => DirectoryFavorite.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    recent: (json['recent'] as List<dynamic>)
-        .map((e) => RecentDirectory.fromJson(e as Map<String, dynamic>))
-        .toList(),
-  );
+  factory DirectoryShortcuts.fromJson(Map<String, dynamic> json) =>
+      DirectoryShortcuts(
+        favorites: (json['favorites'] as List<dynamic>)
+            .map((e) => DirectoryFavorite.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        recent: (json['recent'] as List<dynamic>)
+            .map((e) => RecentDirectory.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
 }
 
 // ─── I/O types ────────────────────────────────────────────────────────
@@ -255,14 +269,15 @@ class FetchOutputResult {
     this.totalBytes,
   });
 
-  factory FetchOutputResult.fromJson(Map<String, dynamic> json) => FetchOutputResult(
-    chunks: (json['chunks'] as List<dynamic>)
-        .map((e) => OutputChunkJson.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    upTo: (json['upTo'] as num).toInt(),
-    truncated: json['truncated'] as bool?,
-    totalBytes: json['totalBytes'] as int?,
-  );
+  factory FetchOutputResult.fromJson(Map<String, dynamic> json) =>
+      FetchOutputResult(
+        chunks: (json['chunks'] as List<dynamic>)
+            .map((e) => OutputChunkJson.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        upTo: (json['upTo'] as num).toInt(),
+        truncated: json['truncated'] as bool?,
+        totalBytes: json['totalBytes'] as int?,
+      );
 }
 
 class OutputChunkJson {
@@ -271,10 +286,11 @@ class OutputChunkJson {
 
   const OutputChunkJson({required this.offset, required this.data});
 
-  factory OutputChunkJson.fromJson(Map<String, dynamic> json) => OutputChunkJson(
-    offset: (json['offset'] as num).toInt(),
-    data: json['data'] as String,
-  );
+  factory OutputChunkJson.fromJson(Map<String, dynamic> json) =>
+      OutputChunkJson(
+        offset: (json['offset'] as num).toInt(),
+        data: json['data'] as String,
+      );
 }
 
 class InputRequest {
@@ -316,7 +332,10 @@ StreamEvent parseStreamEvent(String eventType, Map<String, dynamic> data) {
   return switch (eventType) {
     'state' => StateEvent(session: Session.fromJson(data)),
     'heartbeat' => HeartbeatEvent(ts: (data['ts'] as num?)?.toInt() ?? 0),
-    _ => OutputEvent(offset: (data['offset'] as num?)?.toInt() ?? 0, data: (data['data'] as String?) ?? ''),
+    _ => OutputEvent(
+      offset: (data['offset'] as num?)?.toInt() ?? 0,
+      data: (data['data'] as String?) ?? '',
+    ),
   };
 }
 
@@ -348,7 +367,11 @@ class AgentInfo {
   final String name;
   final String baseUrl;
 
-  const AgentInfo({required this.id, required this.name, required this.baseUrl});
+  const AgentInfo({
+    required this.id,
+    required this.name,
+    required this.baseUrl,
+  });
 
   factory AgentInfo.fromJson(Map<String, dynamic> json) => AgentInfo(
     id: json['id'] as String,
@@ -373,7 +396,11 @@ class ContentCode extends StructuredContent {
   final String code;
   final String? language;
   final bool displayBlock;
-  const ContentCode({required this.code, this.language, this.displayBlock = true});
+  const ContentCode({
+    required this.code,
+    this.language,
+    this.displayBlock = true,
+  });
 }
 
 class ContentDivider extends StructuredContent {
@@ -385,7 +412,11 @@ class ContentStatus extends StructuredContent {
   final StatusKind kind;
   final String text;
   final bool ephemeral;
-  const ContentStatus({required this.kind, required this.text, this.ephemeral = false});
+  const ContentStatus({
+    required this.kind,
+    required this.text,
+    this.ephemeral = false,
+  });
 }
 
 class ContentTable extends StructuredContent {
@@ -422,7 +453,12 @@ class ContentToolUse extends StructuredContent {
   final String input; // JSON-stringified
   final String toolUseId;
   final bool completed;
-  const ContentToolUse({required this.name, required this.input, required this.toolUseId, this.completed = false});
+  const ContentToolUse({
+    required this.name,
+    required this.input,
+    required this.toolUseId,
+    this.completed = false,
+  });
 }
 
 class ContentToolResult extends StructuredContent {
@@ -430,7 +466,12 @@ class ContentToolResult extends StructuredContent {
   final String content;
   final String? mimeType;
   final bool isError;
-  const ContentToolResult({required this.toolUseId, required this.content, this.mimeType, this.isError = false});
+  const ContentToolResult({
+    required this.toolUseId,
+    required this.content,
+    this.mimeType,
+    this.isError = false,
+  });
 }
 
 class ContentStreamEvent extends StructuredContent {

@@ -47,8 +47,13 @@ class ToastOverlay extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => context.read<ToastProvider>().dismiss(toast.id),
-                      child: const Icon(Icons.close, color: AppColors.text, size: 18),
+                      onTap: () =>
+                          context.read<ToastProvider>().dismiss(toast.id),
+                      child: const Icon(
+                        Icons.close,
+                        color: AppColors.text,
+                        size: 18,
+                      ),
                     ),
                   ],
                 ),

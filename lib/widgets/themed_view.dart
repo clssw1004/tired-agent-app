@@ -24,7 +24,9 @@ class ThemedView extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         color: backgroundColor ?? AppColors.background,
-        borderRadius: borderRadius != null ? BorderRadius.circular(borderRadius!) : null,
+        borderRadius: borderRadius != null
+            ? BorderRadius.circular(borderRadius!)
+            : null,
       ),
       child: child,
     );

@@ -15,13 +15,11 @@ class MainShell extends StatelessWidget {
       body: navigationShell,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.backgroundElement, width: 0.5),
-          ),
+          border: Border(top: BorderSide(color: AppColors.primary, width: 0.5)),
         ),
         child: BottomNavigationBar(
           backgroundColor: AppColors.background,
-          selectedItemColor: AppColors.accent,
+          selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textSecondary,
           type: BottomNavigationBarType.fixed,
           currentIndex: navigationShell.currentIndex,

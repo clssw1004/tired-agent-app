@@ -40,7 +40,9 @@ class DirectoryPickerModal extends StatefulWidget {
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.three)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.three),
+        ),
       ),
       builder: (_) => DirectoryPickerModal(
         serverRef: serverRef,
@@ -88,14 +90,25 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   }
 
   bool get _isFavorited => _favorites.any((f) => f.path == _currentPath);
-  DirectoryFavorite? get _currentFavorite => _favorites.where((f) => f.path == _currentPath).firstOrNull;
+  DirectoryFavorite? get _currentFavorite =>
+      _favorites.where((f) => f.path == _currentPath).firstOrNull;
 
   Future<void> _loadAll() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final results = await Future.wait([
-        _transport.listDirectories(widget.serverRef, path: _currentPath.isNotEmpty ? _currentPath : null, agentId: widget.agentId),
-        _transport.getDirectoryShortcuts(widget.serverRef, agentId: widget.agentId),
+        _transport.listDirectories(
+          widget.serverRef,
+          path: _currentPath.isNotEmpty ? _currentPath : null,
+          agentId: widget.agentId,
+        ),
+        _transport.getDirectoryShortcuts(
+          widget.serverRef,
+          agentId: widget.agentId,
+        ),
       ]);
       final listing = results[0] as DirectoryListing;
       final shortcuts = results[1] as DirectoryShortcuts;
@@ -108,15 +121,23 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
         _loading = false;
       });
     } catch (e) {
-      setState(() { _error = e.toString(); _loading = false; });
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
     }
   }
 
   Future<void> _navigateTo(String path) async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final listing = await _transport.listDirectories(
-        widget.serverRef, path: path, agentId: widget.agentId,
+        widget.serverRef,
+        path: path,
+        agentId: widget.agentId,
       );
       setState(() {
         _currentPath = listing.path;
@@ -125,7 +146,10 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
         _loading = false;
       });
     } catch (e) {
-      setState(() { _error = e.toString(); _loading = false; });
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
     }
   }
 
@@ -133,7 +157,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     // Verify the path exists before selecting
     try {
       await _transport.listDirectories(
-        widget.serverRef, path: path, agentId: widget.agentId,
+        widget.serverRef,
+        path: path,
+        agentId: widget.agentId,
       );
       widget.onSelect(path);
     } catch (e) {
@@ -147,12 +173,18 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     try {
       if (_currentFavorite != null) {
         await _transport.removeDirectoryFavorite(
-          widget.serverRef, _currentFavorite!.id, agentId: widget.agentId,
+          widget.serverRef,
+          _currentFavorite!.id,
+          agentId: widget.agentId,
         );
-        setState(() => _favorites.removeWhere((f) => f.id == _currentFavorite!.id));
+        setState(
+          () => _favorites.removeWhere((f) => f.id == _currentFavorite!.id),
+        );
       } else {
         final created = await _transport.addDirectoryFavorite(
-          widget.serverRef, path: _currentPath, agentId: widget.agentId,
+          widget.serverRef,
+          path: _currentPath,
+          agentId: widget.agentId,
         );
         setState(() => _favorites.add(created));
       }
@@ -174,7 +206,8 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.two),
             child: Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
                 color: AppColors.textSecondary.withAlpha(80),
                 borderRadius: BorderRadius.circular(2),
@@ -184,14 +217,19 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
           // Title
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.four, vertical: AppSpacing.three,
+              horizontal: AppSpacing.four,
+              vertical: AppSpacing.three,
             ),
             child: Row(
               children: [
                 ThemedText.title('Select working directory'),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+                  icon: const Icon(
+                    Icons.close,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
                   onPressed: widget.onClose,
                 ),
               ],
@@ -204,7 +242,11 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
               children: [
                 if (_parent != null)
                   IconButton(
-                    icon: const Icon(Icons.arrow_upward, color: AppColors.accent, size: 20),
+                    icon: const Icon(
+                      Icons.arrow_upward,
+                      color: AppColors.accent,
+                      size: 20,
+                    ),
                     onPressed: _loading ? null : () => _navigateTo(_parent!),
                     tooltip: 'Up one level',
                   ),
@@ -223,18 +265,30 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
           // Error banner
           if (_error != null)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.one),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.three, vertical: AppSpacing.two),
+              margin: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.four,
+                vertical: AppSpacing.one,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.three,
+                vertical: AppSpacing.two,
+              ),
               decoration: BoxDecoration(
                 color: AppColors.danger.withAlpha(30),
                 borderRadius: BorderRadius.circular(AppSpacing.two),
               ),
               child: Row(
                 children: [
-                  Expanded(child: ThemedText.small(_error!, color: AppColors.danger)),
+                  Expanded(
+                    child: ThemedText.small(_error!, color: AppColors.danger),
+                  ),
                   GestureDetector(
                     onTap: () => setState(() => _error = null),
-                    child: const Icon(Icons.close, color: AppColors.danger, size: 16),
+                    child: const Icon(
+                      Icons.close,
+                      color: AppColors.danger,
+                      size: 16,
+                    ),
                   ),
                 ],
               ),
@@ -264,19 +318,30 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
           ),
           // Bottom action bar
           Container(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.four, AppSpacing.two, AppSpacing.four, AppSpacing.three),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.four,
+              AppSpacing.two,
+              AppSpacing.four,
+              AppSpacing.three,
+            ),
             decoration: BoxDecoration(
               color: AppColors.background,
-              border: Border(top: BorderSide(color: AppColors.backgroundElement)),
+              border: Border(
+                top: BorderSide(color: AppColors.backgroundElement),
+              ),
             ),
             child: SafeArea(
               top: false,
               child: Row(
                 children: [
                   TextButton(
-                    onPressed: _currentPath.isEmpty || _savingFavorite ? null : _toggleFavorite,
+                    onPressed: _currentPath.isEmpty || _savingFavorite
+                        ? null
+                        : _toggleFavorite,
                     child: ThemedText.small(
-                      _savingFavorite ? '…' : (_isFavorited ? 'Unfavorite' : 'Favorite'),
+                      _savingFavorite
+                          ? '…'
+                          : (_isFavorited ? 'Unfavorite' : 'Favorite'),
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -287,7 +352,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                   ),
                   const SizedBox(width: AppSpacing.two),
                   ElevatedButton(
-                    onPressed: _currentPath.isEmpty || _loading ? null : () => widget.onSelect(_currentPath),
+                    onPressed: _currentPath.isEmpty || _loading
+                        ? null
+                        : () => widget.onSelect(_currentPath),
                     child: ThemedText.body('Select'),
                   ),
                 ],
@@ -306,13 +373,18 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _favorites.length,
-      separatorBuilder: (_, __) => const Divider(color: AppColors.backgroundElement, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: AppColors.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final fav = _favorites[index];
         return ListTile(
           leading: const Icon(Icons.star, color: AppColors.warning, size: 20),
           title: ThemedText.body(fav.name),
-          subtitle: ThemedText.small(fav.path, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: ThemedText.small(
+            fav.path,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           onTap: () => _pickShortcut(fav.path),
         );
       },
@@ -326,12 +398,21 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _recent.length,
-      separatorBuilder: (_, __) => const Divider(color: AppColors.backgroundElement, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: AppColors.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final recent = _recent[index];
         return ListTile(
-          leading: const Icon(Icons.history, color: AppColors.textSecondary, size: 20),
-          title: ThemedText.small(recent.path, maxLines: 1, overflow: TextOverflow.ellipsis),
+          leading: const Icon(
+            Icons.history,
+            color: AppColors.textSecondary,
+            size: 20,
+          ),
+          title: ThemedText.small(
+            recent.path,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           subtitle: ThemedText.small(_relativeTime(recent.lastUsedAt)),
           onTap: () => _pickShortcut(recent.path),
         );
@@ -349,11 +430,16 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _entries.length,
-      separatorBuilder: (_, __) => const Divider(color: AppColors.backgroundElement, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: AppColors.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final entry = _entries[index];
         return ListTile(
-          leading: const Icon(Icons.folder_outlined, color: AppColors.accent, size: 20),
+          leading: const Icon(
+            Icons.folder_outlined,
+            color: AppColors.accent,
+            size: 20,
+          ),
           title: ThemedText.body(entry.name),
           onTap: () => _navigateTo(entry.path),
         );

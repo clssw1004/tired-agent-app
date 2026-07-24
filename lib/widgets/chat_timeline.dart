@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_divider.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class ChatTimeline extends StatefulWidget {
@@ -67,10 +68,12 @@ class _MessageBubble extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.three),
           decoration: BoxDecoration(
-            color: AppColors.accent,
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(AppSpacing.three),
           ),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
+          ),
           child: ThemedText.body(text),
         ),
       ),
@@ -79,10 +82,16 @@ class _MessageBubble extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.three),
           decoration: BoxDecoration(
-            color: AppColors.backgroundElement,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(AppSpacing.three),
+            border: Border.all(
+              color: AppColors.border.withAlpha(60),
+              width: 0.5,
+            ),
           ),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
+          ),
           child: ThemedText.body(text),
         ),
       ),
@@ -90,12 +99,17 @@ class _MessageBubble extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.three),
         decoration: BoxDecoration(
-          color: AppColors.codeBackground,
+          color: AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(color: AppColors.primary.withAlpha(25)),
         ),
         child: SelectableText(
           code,
-          style: const TextStyle(color: AppColors.text, fontSize: 12, fontFamily: 'monospace'),
+          style: const TextStyle(
+            color: AppColors.textCode,
+            fontSize: 12,
+            fontFamily: 'monospace',
+          ),
         ),
       ),
       ContentStatus(:final kind, :final text) => Padding(
@@ -116,31 +130,26 @@ class _MessageBubble extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.three),
         decoration: BoxDecoration(
-          color: AppColors.toolBackground,
+          color: AppColors.surfaceAlt,
           borderRadius: BorderRadius.circular(AppSpacing.two),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ThemedText.small('${completed ? "✓" : "⏳"} $name', color: AppColors.textSecondary),
+            ThemedText.small(
+              '${completed ? "✓" : "⏳"} $name',
+              color: AppColors.textSecondary,
+            ),
           ],
         ),
       ),
-      ContentDivider(:final label) => Row(
-        children: [
-          const Expanded(child: Divider(color: AppColors.backgroundElement)),
-          if (label != null) ...[
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.small(label),
-            const SizedBox(width: AppSpacing.two),
-          ],
-          const Expanded(child: Divider(color: AppColors.backgroundElement)),
-        ],
-      ),
+      ContentDivider(:final label) => NeonDivider(label: label),
       ContentUsage(:final inputTokens, :final outputTokens) => Align(
         alignment: Alignment.centerRight,
-        child: ThemedText.small('tokens in: $inputTokens · out: $outputTokens',
-            color: AppColors.textSecondary),
+        child: ThemedText.small(
+          'tokens in: $inputTokens · out: $outputTokens',
+          color: AppColors.textSecondary,
+        ),
       ),
       _ => const SizedBox.shrink(),
     };
@@ -159,10 +168,21 @@ class _MessageBubble extends StatelessWidget {
     StatusKind.thinking => SizedBox(
       width: 12,
       height: 12,
-      child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.textSecondary),
+      child: const CircularProgressIndicator(
+        strokeWidth: 2,
+        color: AppColors.textSecondary,
+      ),
     ),
-    StatusKind.done => const Icon(Icons.check_circle, size: 14, color: AppColors.success),
-    StatusKind.error => const Icon(Icons.error, size: 14, color: AppColors.danger),
+    StatusKind.done => const Icon(
+      Icons.check_circle,
+      size: 14,
+      color: AppColors.success,
+    ),
+    StatusKind.error => const Icon(
+      Icons.error,
+      size: 14,
+      color: AppColors.danger,
+    ),
     _ => const SizedBox(width: 12),
   };
 }

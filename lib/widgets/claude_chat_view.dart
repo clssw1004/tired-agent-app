@@ -47,20 +47,27 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
     // Fetch existing output first so the user sees what's already been printed
     try {
       final result = await _transport.fetchOutput(
-        widget.serverRef, widget.session.id,
+        widget.serverRef,
+        widget.session.id,
         agentId: widget.agentId,
         tail: 5000,
       );
       if (result.chunks.isNotEmpty && mounted) {
         String pending = '';
         for (final chunk in result.chunks) {
-          pending += utf8.decode(base64.decode(chunk.data), allowMalformed: true);
+          pending += utf8.decode(
+            base64.decode(chunk.data),
+            allowMalformed: true,
+          );
         }
-        final renderResult = _renderer.processChunk(pending, session: (
-          cmd: widget.session.cmd,
-          args: widget.session.args,
-          label: widget.session.label,
-        ));
+        final renderResult = _renderer.processChunk(
+          pending,
+          session: (
+            cmd: widget.session.cmd,
+            args: widget.session.args,
+            label: widget.session.label,
+          ),
+        );
         _currentOffset = result.upTo;
         setState(() => _contents = renderResult.contents);
       }
@@ -80,11 +87,16 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
         onChunk: (chunk) {
           final text = utf8.decode(chunk.data, allowMalformed: true);
           pending += text;
-          final result = _renderer.processChunk(pending, session: (
-            cmd: widget.session.cmd,
-            args: widget.session.args,
-            label: widget.session.label,
-          ), streaming: true, existing: _contents);
+          final result = _renderer.processChunk(
+            pending,
+            session: (
+              cmd: widget.session.cmd,
+              args: widget.session.args,
+              label: widget.session.label,
+            ),
+            streaming: true,
+            existing: _contents,
+          );
           final nl = pending.lastIndexOf('\n');
           if (nl >= 0) pending = pending.substring(nl + 1);
           if (mounted) {
@@ -96,7 +108,10 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
             setState(() {
               _contents = [
                 ..._contents,
-                const ContentStatus(kind: StatusKind.idle, text: 'Session ended'),
+                const ContentStatus(
+                  kind: StatusKind.idle,
+                  text: 'Session ended',
+                ),
               ];
             });
           }
@@ -115,9 +130,17 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
     if (text.isEmpty) return;
     setState(() => _sending = true);
     try {
-      final payload = StructuredUserMessage(content: text, executionMode: ExecutionMode.auto);
+      final payload = StructuredUserMessage(
+        content: text,
+        executionMode: ExecutionMode.auto,
+      );
       final bytes = utf8.encode(json.encode(payload.toJson()));
-      await _transport.sendInput(widget.serverRef, widget.session.id, bytes, agentId: widget.agentId);
+      await _transport.sendInput(
+        widget.serverRef,
+        widget.session.id,
+        bytes,
+        agentId: widget.agentId,
+      );
       _inputController.clear();
       setState(() {
         _contents = [..._contents, ContentUserMessage(text: text)];
@@ -140,15 +163,18 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
-          child: ChatTimeline(contents: _contents),
-        ),
+        Expanded(child: ChatTimeline(contents: _contents)),
         Container(
           decoration: const BoxDecoration(
             color: AppColors.background,
-            border: Border(top: BorderSide(color: AppColors.backgroundElement)),
+            border: Border(top: BorderSide(color: AppColors.border)),
           ),
-          padding: const EdgeInsets.fromLTRB(AppSpacing.three, AppSpacing.two, AppSpacing.three, AppSpacing.two),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.three,
+            AppSpacing.two,
+            AppSpacing.three,
+            AppSpacing.two,
+          ),
           child: SafeArea(
             top: false,
             child: Row(
@@ -171,14 +197,16 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
                 ),
                 const SizedBox(width: AppSpacing.two),
                 ElevatedButton(
-                  onPressed: (_inputController.text.trim().isEmpty || _sending) ? null : _send,
+                  onPressed: (_inputController.text.trim().isEmpty || _sending)
+                      ? null
+                      : _send,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.three,
                       vertical: AppSpacing.two,
                     ),
                   ),
-                  child: ThemedText.body('Send'),
+                  child: ThemedText.mono('Send'),
                 ),
               ],
             ),

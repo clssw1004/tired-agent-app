@@ -34,18 +34,18 @@ class ManagerProfile {
 
   /// Portion persisted to SharedPreferences.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'baseUrl': baseUrl,
-        'lastUsedMs': lastUsedMs,
-      };
+    'id': id,
+    'name': name,
+    'baseUrl': baseUrl,
+    'lastUsedMs': lastUsedMs,
+  };
 
   factory ManagerProfile.fromJson(Map<String, dynamic> json) => ManagerProfile(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        baseUrl: json['baseUrl'] as String,
-        lastUsedMs: json['lastUsedMs'] as int?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    baseUrl: json['baseUrl'] as String,
+    lastUsedMs: json['lastUsedMs'] as int?,
+  );
 
   ManagerProfile copyWith({
     String? id,
@@ -56,15 +56,14 @@ class ManagerProfile {
     String? sessionToken,
     int? sessionExpiresAtMs,
     List<AgentInfo>? agents,
-  }) =>
-      ManagerProfile(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        baseUrl: baseUrl ?? this.baseUrl,
-        lastUsedMs: lastUsedMs ?? this.lastUsedMs,
-        refreshToken: refreshToken ?? this.refreshToken,
-        sessionToken: sessionToken ?? this.sessionToken,
-        sessionExpiresAtMs: sessionExpiresAtMs ?? this.sessionExpiresAtMs,
-        agents: agents ?? this.agents,
-      );
+  }) => ManagerProfile(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    baseUrl: baseUrl ?? this.baseUrl,
+    lastUsedMs: lastUsedMs ?? this.lastUsedMs,
+    refreshToken: refreshToken ?? this.refreshToken,
+    sessionToken: sessionToken ?? this.sessionToken,
+    sessionExpiresAtMs: sessionExpiresAtMs ?? this.sessionExpiresAtMs,
+    agents: agents ?? this.agents,
+  );
 }

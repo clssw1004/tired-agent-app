@@ -92,12 +92,16 @@ class _PtySessionViewState extends State<PtySessionView> {
     // Fetch existing output first
     try {
       final result = await _transport.fetchOutput(
-        widget.serverRef, widget.session.id,
+        widget.serverRef,
+        widget.session.id,
         agentId: widget.agentId,
         tail: 5000,
       );
       for (final chunk in result.chunks) {
-        final text = utf8.decode(base64.decode(chunk.data), allowMalformed: true);
+        final text = utf8.decode(
+          base64.decode(chunk.data),
+          allowMalformed: true,
+        );
         _terminal.write(text);
       }
       if (result.chunks.isNotEmpty) {
