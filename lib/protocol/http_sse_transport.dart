@@ -11,13 +11,38 @@ import 'package:tired_agent_app/protocol/types.dart';
 /// a tired-agent manager or agent daemon, backed by [Dio].
 class HttpSseTransport implements Transport {
   final Dio _dio;
+  final Future<String?> Function()? _tokenProvider;
 
-  HttpSseTransport({Dio? dio})
+  HttpSseTransport({Dio? dio, Future<String?> Function()? tokenProvider})
       : _dio = dio ??
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 10),
               receiveTimeout: const Duration(seconds: 30),
-            ));
+            )),
+        _tokenProvider = tokenProvider {
+    // Dio interceptor: on 401, refresh token and retry once.
+    _dio.interceptors.add(InterceptorsWrapper(
+      onError: (error, handler) async {
+        if (error.response?.statusCode == 401 && _tokenProvider != null) {
+          try {
+            final freshToken = await _tokenProvider();
+            if (freshToken != null && freshToken.isNotEmpty) {
+              error.requestOptions.headers['Authorization'] =
+                  'Bearer $freshToken';
+              final response = await _dio.fetch<dynamic>(error.requestOptions);
+              handler.resolve(response);
+              return;
+            }
+          } catch (_) {
+            // Refresh failed — fall through to original error.
+          }
+        }
+        handler.next(error);
+      },
+    ));
+  }
+
+  bool closed = false;
 
   // ─── URL helpers ──────────────────────────────────────────────────────
 
@@ -220,132 +245,146 @@ class HttpSseTransport implements Transport {
       cancelToken?.cancel();
       cancelToken = CancelToken();
 
-      final queryParams = <String, String>{};
-      if (currentFrom > 0) {
-        queryParams['from'] = currentFrom.toString();
+      // Resolve a fresh token before each connection attempt.
+      Future<String> resolveToken() async {
+        if (_tokenProvider == null) return ref.token;
+        try {
+          final fresh = await _tokenProvider();
+          if (fresh != null && fresh.isNotEmpty) return fresh;
+        } catch (_) {}
+        return ref.token;
       }
-      final path = '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/stream';
-      final uri = Uri.parse(path).replace(
-          queryParameters:
-              queryParams.isNotEmpty ? queryParams : null);
 
-      final options = Options(
-        responseType: ResponseType.stream,
-        headers: {
-          'Authorization': 'Bearer ${ref.token}',
-          'Accept': 'text/event-stream',
-          if (agentId != null) 'X-Agent-Id': agentId,
-        },
-        // Don't throw on non-2xx so we can read the error body.
-        validateStatus: (_) => true,
-      );
-
-      _dio
-          .get(
-        uri.toString(),
-        options: options,
-        cancelToken: cancelToken,
-      )
-          .then((Response<dynamic> response) {
+      resolveToken().then((String token) {
         if (closed) return;
 
-        final responseBody = response.data as ResponseBody;
-
-        if (response.statusCode != 200) {
-          // Read error body from the streamed response.
-          utf8.decodeStream(responseBody.stream).then((body) {
-            if (closed) return;
-            try {
-              final error = ErrorResponse.fromJson(
-                  json.decode(body) as Map<String, dynamic>);
-              handlers.onError(TransportException(
-                  '${error.code}: ${error.message}',
-                  statusCode: response.statusCode));
-            } catch (inner) {
-              if (inner is TransportException) {
-                handlers.onError(inner);
-              } else {
-                handlers.onError(TransportException(
-                    'HTTP ${response.statusCode}',
-                    statusCode: response.statusCode));
-              }
-            }
-            scheduleReconnect();
-          });
-          return;
+        final queryParams = <String, String>{};
+        if (currentFrom > 0) {
+          queryParams['from'] = currentFrom.toString();
         }
+        final path = '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/stream';
+        final uri = Uri.parse(path).replace(
+            queryParameters:
+                queryParams.isNotEmpty ? queryParams : null);
 
-        // Successful connection -- reset back-off counter.
-        reconnectAttempt = 0;
-
-        final stream = responseBody.stream
-            .cast<List<int>>()
-            .transform(utf8.decoder)
-            .transform(const LineSplitter());
-
-        String currentEvent = '';
-        final StringBuffer dataBuffer = StringBuffer();
-
-        lineSub = stream.listen(
-          (String line) {
-            if (line.startsWith('event: ')) {
-              currentEvent = line.substring(7).trim();
-            } else if (line.startsWith('data: ')) {
-              if (dataBuffer.isNotEmpty) {
-                dataBuffer.write('\n');
-              }
-              dataBuffer.write(line.substring(6));
-            } else if (line.isEmpty && dataBuffer.isNotEmpty) {
-              // Blank line -> dispatch the accumulated event.
-              final rawData = dataBuffer.toString();
-              dataBuffer.clear();
-              final eventType = currentEvent;
-              currentEvent = '';
-
-              try {
-                final jsonData =
-                    json.decode(rawData) as Map<String, dynamic>;
-                final event = parseStreamEvent(eventType, jsonData);
-
-                switch (event) {
-                  case OutputEvent():
-                    final decoded = base64.decode(event.data);
-                    currentFrom = event.offset + decoded.length;
-                    handlers.onChunk(OutputChunk(
-                        offset: event.offset, data: decoded));
-                  case StateEvent():
-                    handlers.onState(event.session);
-                  case HeartbeatEvent():
-                    // Heartbeats keep the connection alive;
-                    // nothing to dispatch to handlers.
-                    break;
-                }
-              } catch (e) {
-                handlers.onError(e);
-              }
-            }
+        final options = Options(
+          responseType: ResponseType.stream,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'text/event-stream',
+            if (agentId != null) 'X-Agent-Id': agentId,
           },
-          onError: (Object error) {
-            if (!closed) {
-              handlers.onError(error);
-              scheduleReconnect();
-            }
-          },
-          onDone: () {
-            if (!closed) {
-              scheduleReconnect();
-            }
-          },
+          // Don't throw on non-2xx so we can read the error body.
+          validateStatus: (_) => true,
         );
-      }).catchError((Object error) {
-        if (closed) return;
-        // Ignore cancellation errors since we trigger them deliberately.
-        if (error is DioException &&
-            error.type == DioExceptionType.cancel) {
-          return;
-        }
-        handlers.onError(error);
-        scheduleReconnect();
+
+        _dio
+            .get(
+          uri.toString(),
+          options: options,
+          cancelToken: cancelToken,
+        )
+            .then((Response<dynamic> response) {
+          if (closed) return;
+
+          final responseBody = response.data as ResponseBody;
+
+          if (response.statusCode != 200) {
+            // Read error body from the streamed response.
+            utf8.decodeStream(responseBody.stream).then((body) {
+              if (closed) return;
+              try {
+                final error = ErrorResponse.fromJson(
+                    json.decode(body) as Map<String, dynamic>);
+                handlers.onError(TransportException(
+                    '${error.code}: ${error.message}',
+                    statusCode: response.statusCode));
+              } catch (inner) {
+                if (inner is TransportException) {
+                  handlers.onError(inner);
+                } else {
+                  handlers.onError(TransportException(
+                      'HTTP ${response.statusCode}',
+                      statusCode: response.statusCode));
+                }
+              }
+              scheduleReconnect();
+            });
+            return;
+          }
+
+          // Successful connection -- reset back-off counter.
+          reconnectAttempt = 0;
+
+          final stream = responseBody.stream
+              .cast<List<int>>()
+              .transform(utf8.decoder)
+              .transform(const LineSplitter());
+
+          String currentEvent = '';
+          final StringBuffer dataBuffer = StringBuffer();
+
+          lineSub = stream.listen(
+            (String line) {
+              if (line.startsWith('event: ')) {
+                currentEvent = line.substring(7).trim();
+              } else if (line.startsWith('data: ')) {
+                if (dataBuffer.isNotEmpty) {
+                  dataBuffer.write('\n');
+                }
+                dataBuffer.write(line.substring(6));
+              } else if (line.isEmpty && dataBuffer.isNotEmpty) {
+                // Blank line -> dispatch the accumulated event.
+                final rawData = dataBuffer.toString();
+                dataBuffer.clear();
+                final eventType = currentEvent;
+                currentEvent = '';
+
+                try {
+                  final jsonData =
+                      json.decode(rawData) as Map<String, dynamic>;
+                  final event = parseStreamEvent(eventType, jsonData);
+
+                  switch (event) {
+                    case OutputEvent():
+                      final decoded = base64.decode(event.data);
+                      currentFrom = event.offset + decoded.length;
+                      handlers.onChunk(OutputChunk(
+                          offset: event.offset, data: decoded));
+                    case StateEvent():
+                      handlers.onState(event.session);
+                    case HeartbeatEvent():
+                      // Heartbeats keep the connection alive;
+                      // nothing to dispatch to handlers.
+                      break;
+                  }
+                } catch (e) {
+                  handlers.onError(e);
+                }
+              }
+            },
+            onError: (Object error) {
+              if (!closed) {
+                handlers.onError(error);
+                scheduleReconnect();
+              }
+            },
+            onDone: () {
+              if (!closed) {
+                scheduleReconnect();
+              }
+            },
+          );
+        }).catchError((Object error) {
+          if (closed) return;
+          // Ignore cancellation errors since we trigger them deliberately.
+          if (error is DioException &&
+              error.type == DioExceptionType.cancel) {
+            return;
+          }
+          handlers.onError(error);
+          scheduleReconnect();
+        });
       });
     }
 
