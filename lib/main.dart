@@ -11,9 +11,11 @@ import 'package:tired_agent_app/screens/server_list_screen.dart';
 import 'package:tired_agent_app/screens/server_add_screen.dart';
 import 'package:tired_agent_app/screens/server_sessions_screen.dart';
 import 'package:tired_agent_app/screens/session_detail_screen.dart';
+import 'package:tired_agent_app/screens/settings_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/main_shell.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
   late final ServerProvider _serverProvider;
   late final ToastProvider _toastProvider;
   late final GoRouter _router;
+  final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -44,6 +47,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     _toastProvider = ToastProvider();
 
     _router = GoRouter(
+      navigatorKey: _rootNavigatorKey,
       // Re-evaluate redirects when auth state changes
       refreshListenable: _authProvider,
       initialLocation: '/login',
@@ -56,27 +60,55 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
         return null;
       },
       routes: [
-        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-        GoRoute(path: '/', builder: (_, __) => const ServerListScreen()),
-        GoRoute(path: '/server/new', builder: (_, __) => const ServerAddScreen()),
+        // ── Login (full-screen, no tabs) ──────────────────────────
         GoRoute(
-          path: '/server/:id',
-          builder: (_, state) => ServerSessionsScreen(
-            serverId: state.pathParameters['id'] ?? '',
-          ),
+          path: '/login',
+          builder: (_, __) => const LoginScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
         ),
-        GoRoute(
-          path: '/server/:id/create-session',
-          builder: (_, state) => CreateSessionScreen(
-            serverId: state.pathParameters['id'] ?? '',
-          ),
+
+        // ── Main shell with bottom tabs ───────────────────────────
+        StatefulShellRoute.indexedStack(
+          builder: (_, __, navigationShell) =>
+              MainShell(navigationShell: navigationShell),
+          branches: [
+            // Tab 0: Servers
+            StatefulShellBranch(
+              routes: [
+                GoRoute(path: '/', builder: (_, __) => const ServerListScreen()),
+                GoRoute(path: '/server/new', builder: (_, __) => const ServerAddScreen()),
+                GoRoute(
+                  path: '/server/:id',
+                  builder: (_, state) => ServerSessionsScreen(
+                    serverId: state.pathParameters['id'] ?? '',
+                  ),
+                ),
+              ],
+            ),
+            // Tab 1: Settings
+            StatefulShellBranch(
+              routes: [
+                GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+              ],
+            ),
+          ],
         ),
+
+        // ── Full-screen routes (no tabs) ──────────────────────────
         GoRoute(
           path: '/session/:serverId/:sessionId',
           builder: (_, state) => SessionDetailScreen(
             serverId: state.pathParameters['serverId'] ?? '',
             sessionId: state.pathParameters['sessionId'] ?? '',
           ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+        GoRoute(
+          path: '/server/:id/create-session',
+          builder: (_, state) => CreateSessionScreen(
+            serverId: state.pathParameters['id'] ?? '',
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
         ),
       ],
     );
