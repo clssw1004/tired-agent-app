@@ -95,7 +95,7 @@ class _PtySessionViewState extends State<PtySessionView> {
         widget.serverRef,
         widget.session.id,
         agentId: widget.agentId,
-        tail: 5000,
+        tail: 1048576,
       );
       for (final chunk in result.chunks) {
         final text = utf8.decode(
