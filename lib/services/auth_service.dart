@@ -6,7 +6,7 @@ import 'package:tired_agent_app/services/storage_service.dart';
 /// Manages the authentication lifecycle: login, session refresh, logout,
 /// and agent list caching.
 class AuthService {
-  final Transport transport;
+  late final Transport transport;
   final StorageService storage;
   String? _sessionToken;
   String? _baseUrl;
@@ -16,8 +16,15 @@ class AuthService {
   Future<void>? _inflightRefresh;
 
   AuthService({Transport? transport, StorageService? storage})
-      : transport = transport ?? HttpSseTransport(),
-        storage = storage ?? StorageService();
+      : storage = storage ?? StorageService() {
+    this.transport = transport ??
+        HttpSseTransport(
+          tokenProvider: () async {
+            await ensureFreshSession();
+            return _sessionToken;
+          },
+        );
+  }
 
   // ─── Getters ──────────────────────────────────────────────────────────
 
