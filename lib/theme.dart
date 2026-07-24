@@ -122,8 +122,8 @@ ThemeData buildDarkTheme() {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.text,
+        backgroundColor: AppColors.surfaceAlt,
+        foregroundColor: AppColors.primary,
         disabledBackgroundColor: AppColors.border,
         disabledForegroundColor: AppColors.textSecondary,
         padding: const EdgeInsets.symmetric(
@@ -132,9 +132,13 @@ ThemeData buildDarkTheme() {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.two),
+          side: BorderSide(
+            color: AppColors.primary.withAlpha(80),
+            width: 0.5,
+          ),
         ),
-        shadowColor: AppColors.primary.withAlpha(60),
-        elevation: 2,
+        shadowColor: AppColors.primary.withAlpha(25),
+        elevation: 1,
       ),
     ),
   );

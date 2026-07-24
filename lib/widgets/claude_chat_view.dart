@@ -206,7 +206,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
                       vertical: AppSpacing.two,
                     ),
                   ),
-                  child: ThemedText.mono('Send'),
+                  child: ThemedText.mono('Send', color: AppColors.primary),
                 ),
               ],
             ),

@@ -343,9 +343,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: active
-                            ? AppColors.accent
+                            ? AppColors.surfaceAlt
                             : AppColors.backgroundElement,
                         borderRadius: BorderRadius.circular(AppSpacing.two),
+                        border: Border.all(
+                          color: active
+                              ? AppColors.primary.withAlpha(80)
+                              : Colors.transparent,
+                          width: 0.5,
+                        ),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -354,7 +360,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                           ThemedText.small(
                             p.label,
                             color: active
-                                ? AppColors.text
+                                ? AppColors.primary
                                 : AppColors.textSecondary,
                           ),
                         ],
@@ -469,14 +475,20 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: active
-                            ? AppColors.accent
+                            ? AppColors.surfaceAlt
                             : AppColors.backgroundElement,
                         borderRadius: BorderRadius.circular(AppSpacing.three),
+                        border: Border.all(
+                          color: active
+                              ? AppColors.primary.withAlpha(80)
+                              : Colors.transparent,
+                          width: 0.5,
+                        ),
                       ),
                       child: ThemedText.small(
                         opt.label,
                         color: active
-                            ? AppColors.text
+                            ? AppColors.primary
                             : AppColors.textSecondary,
                       ),
                     ),
@@ -615,7 +627,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                     onPressed: _busy || _cmd.trim().isEmpty ? null : _submit,
                     child: _busy
                         ? const NeonLoading(size: 20)
-                        : ThemedText.body('Create session'),
+                        : Text('Create session'),
                   ),
                 ),
               ],
