@@ -206,6 +206,8 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundElement,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        constraints: const BoxConstraints(maxWidth: 480),
         title: Row(
           children: [
             const ThemedText('➕', fontSize: 20),
@@ -219,23 +221,39 @@ class SettingsScreen extends StatelessWidget {
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Label'),
+                decoration: const InputDecoration(
+                  labelText: 'Label',
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.four,
+                    vertical: AppSpacing.three,
+                  ),
+                ),
                 autocorrect: false,
               ),
-              const SizedBox(height: AppSpacing.two),
+              const SizedBox(height: AppSpacing.three),
               TextField(
                 controller: urlController,
                 decoration: const InputDecoration(
                   labelText: 'Manager URL',
                   hintText: 'http://192.168.1.10:3099',
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.four,
+                    vertical: AppSpacing.three,
+                  ),
                 ),
                 keyboardType: TextInputType.url,
                 autocorrect: false,
               ),
-              const SizedBox(height: AppSpacing.two),
+              const SizedBox(height: AppSpacing.three),
               TextField(
                 controller: tokenController,
-                decoration: const InputDecoration(labelText: 'Access Token'),
+                decoration: const InputDecoration(
+                  labelText: 'Access Token',
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.four,
+                    vertical: AppSpacing.three,
+                  ),
+                ),
                 obscureText: true,
                 autocorrect: false,
               ),
