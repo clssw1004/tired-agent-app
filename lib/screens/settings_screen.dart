@@ -174,8 +174,18 @@ class SettingsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            child: ThemedText.body('Remove'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.surfaceAlt,
+              foregroundColor: AppColors.danger,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.two),
+                side: BorderSide(
+                  color: AppColors.danger.withAlpha(80),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: ThemedText.body('Remove', color: AppColors.danger),
           ),
         ],
       ),
@@ -239,7 +249,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: ThemedText.body('Connect'),
+            child: Text('Connect'),
           ),
         ],
       ),
@@ -301,8 +311,18 @@ class SettingsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            child: ThemedText.body('Logout'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.surfaceAlt,
+              foregroundColor: AppColors.danger,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.two),
+                side: BorderSide(
+                  color: AppColors.danger.withAlpha(80),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: ThemedText.body('Logout', color: AppColors.danger),
           ),
         ],
       ),

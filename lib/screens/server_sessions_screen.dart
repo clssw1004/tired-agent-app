@@ -171,8 +171,18 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            child: ThemedText.body('Confirm'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.surfaceAlt,
+              foregroundColor: AppColors.danger,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.two),
+                side: BorderSide(
+                  color: AppColors.danger.withAlpha(80),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: ThemedText.body('Confirm', color: AppColors.danger),
           ),
         ],
       ),
@@ -267,9 +277,15 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: active
-                              ? AppColors.primary
+                              ? AppColors.surfaceAlt
                               : AppColors.backgroundElement,
                           borderRadius: BorderRadius.circular(AppSpacing.three),
+                          border: Border.all(
+                            color: active
+                                ? AppColors.primary.withAlpha(80)
+                                : Colors.transparent,
+                            width: 0.5,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -277,7 +293,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                             ThemedText.small(
                               _filterLabels[i],
                               color: active
-                                  ? AppColors.text
+                                  ? AppColors.primary
                                   : AppColors.textSecondary,
                             ),
                             if (cnt > 0) ...[
@@ -285,7 +301,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                               ThemedText.small(
                                 '$cnt',
                                 color: active
-                                    ? AppColors.text
+                                    ? AppColors.primary
                                     : AppColors.textSecondary,
                               ),
                             ],

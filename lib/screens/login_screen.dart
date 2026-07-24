@@ -93,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     : _login,
                 child: _busy
                     ? const NeonLoading(size: 20)
-                    : ThemedText.body('Connect'),
+                    : Text('Connect'),
               ),
               if (auth.error != null) ...[
                 const SizedBox(height: AppSpacing.three),

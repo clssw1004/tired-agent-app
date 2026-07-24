@@ -84,7 +84,7 @@ class ServerListScreen extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => context.push('/server/new'),
                     icon: const Icon(Icons.add, size: 20),
-                    label: ThemedText.body('Add Server'),
+                    label: const Text('Add Server'),
                   ),
                 ),
               ),

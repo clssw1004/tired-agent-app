@@ -106,7 +106,7 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
                 onPressed: _busy ? null : _submit,
                 child: _busy
                     ? const NeonLoading(size: 20)
-                    : ThemedText.body('Add'),
+                    : const Text('Add'),
               ),
             ),
           ],
