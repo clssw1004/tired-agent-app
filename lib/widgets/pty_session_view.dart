@@ -38,15 +38,42 @@ class _PtySessionViewState extends State<PtySessionView> {
     _initialize();
   }
 
+  /// Buffer for deduplicating Enter sequences from mobile IME.
+  /// On mobile, pressing Enter fires both textInput("\n") and
+  /// keyInput(Enter → "\r") separately, resulting in duplicate Enter
+  /// signals to the PTY. This buffer coalesces them within one
+  /// microtask and normalizes "\n\r" → "\r".
+  String _pendingOutput = '';
+  bool _outputScheduled = false;
+
+  void _flushOutput() {
+    _outputScheduled = false;
+    if (_pendingOutput.isEmpty) return;
+    // Normalize: mobile IME may send "\n" (textInput) + "\r" (keyInput)
+    // for a single Enter press. Keep only the "\r" which is the standard
+    // terminal enter sequence.
+    final normalized = _pendingOutput.replaceAll('\n\r', '\r');
+    _pendingOutput = '';
+    if (normalized.isEmpty) return;
+    final bytes = utf8.encode(normalized);
+    _transport.sendInput(
+      widget.serverRef,
+      widget.session.id,
+      bytes,
+      agentId: widget.agentId,
+    );
+  }
+
+  void _scheduleFlush() {
+    if (_outputScheduled) return;
+    _outputScheduled = true;
+    Future.microtask(_flushOutput);
+  }
+
   void _setupTerminal() {
     _terminal.onOutput = (String data) {
-      final bytes = utf8.encode(data);
-      _transport.sendInput(
-        widget.serverRef,
-        widget.session.id,
-        bytes,
-        agentId: widget.agentId,
-      );
+      _pendingOutput += data;
+      _scheduleFlush();
     };
 
     _terminal.onResize = (int cols, int rows, int px, int py) {
@@ -120,6 +147,7 @@ class _PtySessionViewState extends State<PtySessionView> {
           _terminal,
           autofocus: true,
           backgroundOpacity: 1.0,
+          deleteDetection: true,
         ),
       ),
     );
