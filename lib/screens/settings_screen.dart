@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -14,27 +15,31 @@ class SettingsScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: ThemedText.title('Settings'),
-      ),
+      appBar: AppBar(title: ThemedText.title('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── Managers ────────────────────────────────────────────────
-          _SectionHeader(label: 'Managers (${auth.profiles.length})'),
+          SectionHeader(label: 'Managers (${auth.profiles.length})'),
           const SizedBox(height: AppSpacing.two),
 
           if (auth.profiles.isEmpty)
-            ThemedText.small('No managers saved', color: AppColors.textSecondary)
+            ThemedText.small(
+              'No managers saved',
+              color: AppColors.textSecondary,
+            )
           else
-            ...auth.profiles.map((profile) => _ManagerCard(
-                  profile: profile,
-                  isActive: profile.id == auth.activeProfileId,
-                  isConnected: profile.id == auth.activeProfileId &&
-                      auth.status == AuthStatus.authenticated,
-                  onSwitch: () => _switchTo(context, auth, profile.id),
-                  onDelete: () => _deleteManager(context, auth, profile),
-                )),
+            ...auth.profiles.map(
+              (profile) => _ManagerCard(
+                profile: profile,
+                isActive: profile.id == auth.activeProfileId,
+                isConnected:
+                    profile.id == auth.activeProfileId &&
+                    auth.status == AuthStatus.authenticated,
+                onSwitch: () => _switchTo(context, auth, profile.id),
+                onDelete: () => _deleteManager(context, auth, profile),
+              ),
+            ),
 
           const SizedBox(height: AppSpacing.one),
           SizedBox(
@@ -53,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── Active connection ──────────────────────────────────────
-          _SectionHeader(label: 'Active Connection'),
+          SectionHeader(label: 'Active Connection'),
           const SizedBox(height: AppSpacing.two),
           _InfoTile(label: 'Manager', value: _activeName(auth)),
           const SizedBox(height: AppSpacing.one),
@@ -61,7 +66,9 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.one),
           _InfoTile(
             label: 'Status',
-            value: auth.status == AuthStatus.authenticated ? 'Connected' : 'Disconnected',
+            value: auth.status == AuthStatus.authenticated
+                ? 'Connected'
+                : 'Disconnected',
             valueColor: auth.status == AuthStatus.authenticated
                 ? AppColors.success
                 : AppColors.danger,
@@ -71,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── About ──────────────────────────────────────────────────
-          _SectionHeader(label: 'About'),
+          SectionHeader(label: 'About'),
           const SizedBox(height: AppSpacing.two),
           _InfoTile(label: 'App', value: 'tiredAgentMobile'),
           const SizedBox(height: AppSpacing.one),
@@ -98,13 +105,19 @@ class SettingsScreen extends StatelessWidget {
 
   String _activeName(AuthProvider auth) {
     if (auth.activeProfileId == null) return '—';
-    final active = auth.profiles.where((p) => p.id == auth.activeProfileId).firstOrNull;
+    final active = auth.profiles
+        .where((p) => p.id == auth.activeProfileId)
+        .firstOrNull;
     return active?.name ?? '—';
   }
 
   // ── Actions ──────────────────────────────────────────────────────────
 
-  Future<void> _switchTo(BuildContext context, AuthProvider auth, String id) async {
+  Future<void> _switchTo(
+    BuildContext context,
+    AuthProvider auth,
+    String id,
+  ) async {
     if (id == auth.activeProfileId) return;
     try {
       await auth.switchTo(id);
@@ -129,16 +142,21 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _deleteManager(
-      BuildContext context, AuthProvider auth, ManagerProfile profile) async {
+    BuildContext context,
+    AuthProvider auth,
+    ManagerProfile profile,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundElement,
-        title: Row(children: [
-          const ThemedText('🗑️', fontSize: 20),
-          const SizedBox(width: AppSpacing.two),
-          ThemedText.title('Remove "${profile.name}"?'),
-        ]),
+        title: Row(
+          children: [
+            const ThemedText('🗑️', fontSize: 20),
+            const SizedBox(width: AppSpacing.two),
+            ThemedText.title('Remove "${profile.name}"?'),
+          ],
+        ),
         content: ThemedText.small(
           'This will delete the manager profile and its saved token. '
           'You can re-add it later.',
@@ -164,18 +182,21 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _addManager(BuildContext context, AuthProvider auth) async {
     final urlController = TextEditingController();
     final tokenController = TextEditingController();
-    final nameController =
-        TextEditingController(text: 'Manager ${auth.profiles.length + 1}');
+    final nameController = TextEditingController(
+      text: 'Manager ${auth.profiles.length + 1}',
+    );
 
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundElement,
-        title: Row(children: [
-          const ThemedText('➕', fontSize: 20),
-          const SizedBox(width: AppSpacing.two),
-          ThemedText.title('Add Manager'),
-        ]),
+        title: Row(
+          children: [
+            const ThemedText('➕', fontSize: 20),
+            const SizedBox(width: AppSpacing.two),
+            ThemedText.title('Add Manager'),
+          ],
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -256,11 +277,13 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundElement,
-        title: Row(children: [
-          const ThemedText('🚪', fontSize: 20),
-          const SizedBox(width: AppSpacing.two),
-          ThemedText.title('Logout?'),
-        ]),
+        title: Row(
+          children: [
+            const ThemedText('🚪', fontSize: 20),
+            const SizedBox(width: AppSpacing.two),
+            ThemedText.title('Logout?'),
+          ],
+        ),
         content: ThemedText.small(
           'Disconnect from "${_activeName(auth)}". '
           'The profile will be kept for later use.',
@@ -344,8 +367,11 @@ class _ManagerCard extends StatelessWidget {
                 const ThemedText('⚠️', fontSize: 14),
               if (!isActive)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      size: 20, color: AppColors.textSecondary),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
                   onPressed: onDelete,
                   tooltip: 'Remove',
                 ),
@@ -360,34 +386,12 @@ class _ManagerCard extends StatelessWidget {
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-class _SectionHeader extends StatelessWidget {
-  final String label;
-  const _SectionHeader({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label.toUpperCase(),
-      style: TextStyle(
-        color: AppColors.accent,
-        fontSize: 12,
-        letterSpacing: 1.2,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-}
-
 class _InfoTile extends StatelessWidget {
   final String label;
   final String value;
   final Color? valueColor;
 
-  const _InfoTile({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _InfoTile({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {

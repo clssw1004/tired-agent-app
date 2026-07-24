@@ -14,9 +14,7 @@ class ScanLines extends StatelessWidget {
     if (!enabled) return const SizedBox.shrink();
     return IgnorePointer(
       child: Positioned.fill(
-        child: CustomPaint(
-          painter: _ScanLinePainter(opacity: opacity),
-        ),
+        child: CustomPaint(painter: _ScanLinePainter(opacity: opacity)),
       ),
     );
   }

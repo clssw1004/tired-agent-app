@@ -99,7 +99,9 @@ class _ManagerSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final active = auth.profiles.where((p) => p.id == auth.activeProfileId).firstOrNull;
+    final active = auth.profiles
+        .where((p) => p.id == auth.activeProfileId)
+        .firstOrNull;
     return Material(
       color: AppColors.backgroundElement,
       borderRadius: BorderRadius.circular(AppSpacing.three),
@@ -133,7 +135,11 @@ class _ManagerSwitcher extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.one),
-              const Icon(Icons.unfold_more, size: 16, color: AppColors.textSecondary),
+              const Icon(
+                Icons.unfold_more,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
             ],
           ),
         ),
@@ -153,24 +159,29 @@ class _ManagerSwitcher extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.four),
               child: ThemedText.title('Switch Manager'),
             ),
-            ...auth.profiles.map((p) => ListTile(
-                  leading: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: p.id == auth.activeProfileId
-                          ? AppColors.accent
-                          : AppColors.textSecondary,
-                      shape: BoxShape.circle,
-                    ),
+            ...auth.profiles.map(
+              (p) => ListTile(
+                leading: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: p.id == auth.activeProfileId
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                    shape: BoxShape.circle,
                   ),
-                  title: ThemedText.body(p.name),
-                  subtitle: ThemedText.small(p.baseUrl, color: AppColors.textSecondary),
-                  trailing: p.id == auth.activeProfileId
-                      ? const Icon(Icons.check, color: AppColors.accent)
-                      : null,
-                  onTap: () => Navigator.of(ctx).pop(p.id),
-                )),
+                ),
+                title: ThemedText.body(p.name),
+                subtitle: ThemedText.small(
+                  p.baseUrl,
+                  color: AppColors.textSecondary,
+                ),
+                trailing: p.id == auth.activeProfileId
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () => Navigator.of(ctx).pop(p.id),
+              ),
+            ),
             const SizedBox(height: AppSpacing.two),
           ],
         ),

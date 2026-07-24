@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_loading.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -91,14 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ? null
                     : _login,
                 child: _busy
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.text,
-                        ),
-                      )
+                    ? const NeonLoading(size: 20)
                     : ThemedText.body('Connect'),
               ),
               if (auth.error != null) ...[

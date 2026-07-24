@@ -36,7 +36,9 @@ class StorageService {
           .toList();
       // Hydrate refresh tokens from secure storage.
       for (final p in profiles) {
-        p.refreshToken = await _secure.read(key: 'manager:${p.id}:refresh_token');
+        p.refreshToken = await _secure.read(
+          key: 'manager:${p.id}:refresh_token',
+        );
       }
       return profiles;
     }
@@ -63,8 +65,8 @@ class StorageService {
     if (oldConfig == null) return null;
 
     try {
-      final config =
-          (json.decode(oldConfig) as Map<String, dynamic>).cast<String, String>();
+      final config = (json.decode(oldConfig) as Map<String, dynamic>)
+          .cast<String, String>();
       final baseUrl = config['baseUrl'];
       if (baseUrl == null || baseUrl.isEmpty) return null;
 
@@ -122,20 +124,16 @@ class StorageService {
   Future<void> saveRefreshToken(String token) =>
       _secure.write(key: 'refresh_token', value: token);
 
-  Future<String?> loadRefreshToken() =>
-      _secure.read(key: 'refresh_token');
+  Future<String?> loadRefreshToken() => _secure.read(key: 'refresh_token');
 
-  Future<void> clearRefreshToken() =>
-      _secure.delete(key: 'refresh_token');
+  Future<void> clearRefreshToken() => _secure.delete(key: 'refresh_token');
 
   Future<void> saveCredential(String key, String value) =>
       _secure.write(key: key, value: value);
 
-  Future<String?> getCredential(String key) =>
-      _secure.read(key: key);
+  Future<String?> getCredential(String key) => _secure.read(key: key);
 
-  Future<void> deleteCredential(String key) =>
-      _secure.delete(key: key);
+  Future<void> deleteCredential(String key) => _secure.delete(key: key);
 
   Future<void> saveManagerConfig(Map<String, String> config) async {
     final prefs = await SharedPreferences.getInstance();

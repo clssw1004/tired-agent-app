@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_loading.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class ServerAddScreen extends StatefulWidget {
@@ -24,7 +25,10 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
     final token = _tokenController.text.trim();
     if (name.isEmpty || url.isEmpty || token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All fields required'), backgroundColor: AppColors.danger),
+        const SnackBar(
+          content: Text('All fields required'),
+          backgroundColor: AppColors.danger,
+        ),
       );
       return;
     }
@@ -35,7 +39,10 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.danger,
+          ),
         );
       }
     } finally {
@@ -62,13 +69,19 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Name', hintText: 'my-agent'),
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                hintText: 'my-agent',
+              ),
               enabled: !_busy,
             ),
             const SizedBox(height: AppSpacing.three),
             TextField(
               controller: _urlController,
-              decoration: const InputDecoration(labelText: 'Base URL', hintText: 'http://agent.local:8444'),
+              decoration: const InputDecoration(
+                labelText: 'Base URL',
+                hintText: 'http://agent.local:8444',
+              ),
               keyboardType: TextInputType.url,
               autocorrect: false,
               enabled: !_busy,
@@ -86,7 +99,7 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
               child: ElevatedButton(
                 onPressed: _busy ? null : _submit,
                 child: _busy
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const NeonLoading(size: 20)
                     : ThemedText.body('Add'),
               ),
             ),

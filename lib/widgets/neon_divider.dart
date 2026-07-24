@@ -17,7 +17,11 @@ class NeonDivider extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: AppSpacing.two),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color.withAlpha(0), color.withAlpha(80), color.withAlpha(0)],
+            colors: [
+              color.withAlpha(0),
+              color.withAlpha(80),
+              color.withAlpha(0),
+            ],
             stops: const [0.0, 0.5, 1.0],
           ),
         ),

@@ -10,6 +10,7 @@ class ExecutionModes {
   static String description(ExecutionMode mode) => switch (mode) {
     ExecutionMode.auto => 'Claude executes tools automatically',
     ExecutionMode.manual => 'Claude asks before every tool invocation',
-    ExecutionMode.plan => 'Claude produces a plan first, then executes on approval',
+    ExecutionMode.plan =>
+      'Claude produces a plan first, then executes on approval',
   };
 }

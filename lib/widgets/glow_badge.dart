@@ -39,13 +39,22 @@ class GlowBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.two,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: _color.withAlpha(18),
         borderRadius: BorderRadius.circular(AppSpacing.one),
         border: Border.all(color: _color.withAlpha(60), width: 0.5),
         boxShadow: glow
-            ? [BoxShadow(color: _color.withAlpha(30), blurRadius: 6, spreadRadius: 0)]
+            ? [
+                BoxShadow(
+                  color: _color.withAlpha(30),
+                  blurRadius: 6,
+                  spreadRadius: 0,
+                ),
+              ]
             : null,
       ),
       child: Row(
@@ -58,7 +67,13 @@ class GlowBadge extends StatelessWidget {
               color: _color,
               shape: BoxShape.circle,
               boxShadow: glow
-                  ? [BoxShadow(color: _color.withAlpha(80), blurRadius: 4, spreadRadius: 1)]
+                  ? [
+                      BoxShadow(
+                        color: _color.withAlpha(80),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ]
                   : null,
             ),
           ),

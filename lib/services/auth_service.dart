@@ -16,8 +16,9 @@ class AuthService {
   Future<void>? _inflightRefresh;
 
   AuthService({Transport? transport, StorageService? storage})
-      : storage = storage ?? StorageService() {
-    this.transport = transport ??
+    : storage = storage ?? StorageService() {
+    this.transport =
+        transport ??
         HttpSseTransport(
           tokenProvider: () async {
             await ensureFreshSession();
@@ -80,7 +81,9 @@ class AuthService {
     final normalized = url.trim().replaceAll(RegExp(r'/+$'), '');
 
     // Check for existing profile with the same URL.
-    final existing = _profiles.where((p) => p.baseUrl == normalized).firstOrNull;
+    final existing = _profiles
+        .where((p) => p.baseUrl == normalized)
+        .firstOrNull;
     if (existing != null) {
       _activeProfile = existing;
       return _doLogin(existing, apiToken);
@@ -98,12 +101,16 @@ class AuthService {
   }
 
   /// Authenticate [profile] and populate session fields.
-  Future<ManagerProfile> _doLogin(ManagerProfile profile, String apiToken) async {
+  Future<ManagerProfile> _doLogin(
+    ManagerProfile profile,
+    String apiToken,
+  ) async {
     final ref = ServerRef(
-        id: '__manager__',
-        name: 'manager',
-        baseUrl: profile.baseUrl,
-        token: apiToken);
+      id: '__manager__',
+      name: 'manager',
+      baseUrl: profile.baseUrl,
+      token: apiToken,
+    );
     final result = await transport.login(ref, apiToken);
 
     profile.refreshToken = result.refreshToken;
@@ -116,10 +123,11 @@ class AuthService {
 
     // Fetch agents.
     final mgrRef = ServerRef(
-        id: '__manager__',
-        name: 'manager',
-        baseUrl: profile.baseUrl,
-        token: result.sessionToken);
+      id: '__manager__',
+      name: 'manager',
+      baseUrl: profile.baseUrl,
+      token: result.sessionToken,
+    );
     profile.agents = await transport.listAgents(mgrRef);
 
     await _persistProfiles();
@@ -173,7 +181,8 @@ class AuthService {
 
     const refreshWindowMs = 5 * 60 * 1000;
     final remaining =
-        _activeProfile!.sessionExpiresAtMs - DateTime.now().millisecondsSinceEpoch;
+        _activeProfile!.sessionExpiresAtMs -
+        DateTime.now().millisecondsSinceEpoch;
     if (_activeProfile!.sessionToken != null && remaining > refreshWindowMs) {
       return;
     }
@@ -182,7 +191,8 @@ class AuthService {
     }
 
     _inflightRefresh ??= _doRefresh().whenComplete(
-        () => _inflightRefresh = null);
+      () => _inflightRefresh = null,
+    );
     await _inflightRefresh;
   }
 
@@ -191,10 +201,11 @@ class AuthService {
     if (p == null || p.refreshToken == null) return;
 
     final ref = ServerRef(
-        id: '__manager__',
-        name: p.name,
-        baseUrl: p.baseUrl,
-        token: p.refreshToken!);
+      id: '__manager__',
+      name: p.name,
+      baseUrl: p.baseUrl,
+      token: p.refreshToken!,
+    );
     final result = await transport.refreshSession(ref, p.refreshToken!);
 
     p.sessionToken = result.sessionToken;
@@ -209,10 +220,11 @@ class AuthService {
     if (profile.refreshToken == null) return;
 
     final ref = ServerRef(
-        id: '__manager__',
-        name: profile.name,
-        baseUrl: profile.baseUrl,
-        token: profile.refreshToken!);
+      id: '__manager__',
+      name: profile.name,
+      baseUrl: profile.baseUrl,
+      token: profile.refreshToken!,
+    );
     final result = await transport.refreshSession(ref, profile.refreshToken!);
 
     profile.sessionToken = result.sessionToken;
@@ -224,10 +236,11 @@ class AuthService {
 
     // Fetch agents.
     final mgrRef = ServerRef(
-        id: '__manager__',
-        name: profile.name,
-        baseUrl: profile.baseUrl,
-        token: result.sessionToken);
+      id: '__manager__',
+      name: profile.name,
+      baseUrl: profile.baseUrl,
+      token: result.sessionToken,
+    );
     profile.agents = await transport.listAgents(mgrRef);
   }
 
@@ -254,10 +267,11 @@ class AuthService {
     await ensureFreshSession();
 
     final mgrRef = ServerRef(
-        id: '__manager__',
-        name: p.name,
-        baseUrl: p.baseUrl,
-        token: p.sessionToken!);
+      id: '__manager__',
+      name: p.name,
+      baseUrl: p.baseUrl,
+      token: p.sessionToken!,
+    );
     p.agents = await transport.listAgents(mgrRef);
     return List.from(p.agents);
   }
@@ -275,7 +289,11 @@ class AuthService {
     final token = await storage.getCredential('server:${p.id}:$agentId:token');
     if (token == null) return null;
     return ServerRef(
-        id: agentId, name: agent.name, baseUrl: agent.baseUrl, token: token);
+      id: agentId,
+      name: agent.name,
+      baseUrl: agent.baseUrl,
+      token: token,
+    );
   }
 
   Future<void> setServerToken(String agentId, String token) async {

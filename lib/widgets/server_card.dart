@@ -19,7 +19,10 @@ class ServerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeonCard(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.one),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.four,
+        vertical: AppSpacing.one,
+      ),
       onTap: onTap,
       child: Row(
         children: [
@@ -35,7 +38,11 @@ class ServerCard extends StatelessWidget {
           ),
           if (onDelete != null)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: AppColors.danger, size: 20),
+              icon: const Icon(
+                Icons.delete_outline,
+                color: AppColors.danger,
+                size: 20,
+              ),
               onPressed: onDelete,
             ),
         ],

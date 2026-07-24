@@ -10,6 +10,7 @@ class PromptUtil {
     final last = lines.last;
     return _shellPrompt.hasMatch(last) || _bashContinuation.hasMatch(last);
   }
+
   static String? extractPrompt(String output) {
     final stripped = AnsiUtil.stripAnsi(output);
     final lines = stripped.split('\n');

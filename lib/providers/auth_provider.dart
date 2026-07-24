@@ -13,7 +13,7 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
 
   AuthProvider({AuthService? authService})
-      : _authService = authService ?? AuthService();
+    : _authService = authService ?? AuthService();
 
   // ─── Core getters (delegate to AuthService's active profile) ────────
 
@@ -80,7 +80,9 @@ class AuthProvider extends ChangeNotifier {
       _status = _authService.sessionToken != null
           ? AuthStatus.authenticated
           : AuthStatus.error;
-      debugPrint('[AuthProvider] login OK, agents: ${_authService.agents.length}');
+      debugPrint(
+        '[AuthProvider] login OK, agents: ${_authService.agents.length}',
+      );
     } catch (e) {
       debugPrint('[AuthProvider] login FAILED: $e');
       _error = e.toString();
@@ -146,6 +148,5 @@ class AuthProvider extends ChangeNotifier {
       _authService.setServerToken(agentId, token);
   Future<void> forgetServer(String agentId) =>
       _authService.forgetServer(agentId);
-  Future<void> ensureFreshSession() =>
-      _authService.ensureFreshSession();
+  Future<void> ensureFreshSession() => _authService.ensureFreshSession();
 }

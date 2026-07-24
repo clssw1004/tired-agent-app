@@ -76,8 +76,14 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
             // Tab 0: Servers
             StatefulShellBranch(
               routes: [
-                GoRoute(path: '/', builder: (_, __) => const ServerListScreen()),
-                GoRoute(path: '/server/new', builder: (_, __) => const ServerAddScreen()),
+                GoRoute(
+                  path: '/',
+                  builder: (_, __) => const ServerListScreen(),
+                ),
+                GoRoute(
+                  path: '/server/new',
+                  builder: (_, __) => const ServerAddScreen(),
+                ),
                 GoRoute(
                   path: '/server/:id',
                   builder: (_, state) => ServerSessionsScreen(
@@ -89,7 +95,10 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
             // Tab 1: Settings
             StatefulShellBranch(
               routes: [
-                GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen()),
+                GoRoute(
+                  path: '/settings',
+                  builder: (_, __) => const SettingsScreen(),
+                ),
               ],
             ),
           ],
@@ -106,9 +115,8 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
         ),
         GoRoute(
           path: '/server/:id/create-session',
-          builder: (_, state) => CreateSessionScreen(
-            serverId: state.pathParameters['id'] ?? '',
-          ),
+          builder: (_, state) =>
+              CreateSessionScreen(serverId: state.pathParameters['id'] ?? ''),
           parentNavigatorKey: _rootNavigatorKey,
         ),
       ],

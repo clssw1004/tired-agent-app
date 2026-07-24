@@ -23,7 +23,8 @@ class NeonLoading extends StatefulWidget {
   State<NeonLoading> createState() => _NeonLoadingState();
 }
 
-class _NeonLoadingState extends State<NeonLoading> with SingleTickerProviderStateMixin {
+class _NeonLoadingState extends State<NeonLoading>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -53,10 +54,8 @@ class _NeonLoadingState extends State<NeonLoading> with SingleTickerProviderStat
   Widget _buildSpinner() {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (_, child) => Transform.rotate(
-        angle: _controller.value * 2 * pi,
-        child: child,
-      ),
+      builder: (_, child) =>
+          Transform.rotate(angle: _controller.value * 2 * pi, child: child),
       child: SizedBox(
         width: widget.size,
         height: widget.size,
@@ -85,7 +84,11 @@ class _NeonLoadingState extends State<NeonLoading> with SingleTickerProviderStat
                 color: widget.color.withAlpha((opacity * 255).toInt()),
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: widget.color.withAlpha(60), blurRadius: 4, spreadRadius: 0),
+                  BoxShadow(
+                    color: widget.color.withAlpha(60),
+                    blurRadius: 4,
+                    spreadRadius: 0,
+                  ),
                 ],
               ),
             ),

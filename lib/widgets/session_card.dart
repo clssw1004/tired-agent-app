@@ -30,7 +30,10 @@ class SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeonCard(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.one),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.four,
+        vertical: AppSpacing.one,
+      ),
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,9 +41,7 @@ class SessionCard extends StatelessWidget {
           // Top row: label + status badge
           Row(
             children: [
-              Expanded(
-                child: ThemedText.mono(session.label ?? session.cmd),
-              ),
+              Expanded(child: ThemedText.mono(session.label ?? session.cmd)),
               GlowBadge(
                 status: switch (session.status) {
                   SessionStatus.running => BadgeStatus.running,
@@ -57,7 +58,9 @@ class SessionCard extends StatelessWidget {
               final cmd = [session.cmd, ...session.args].join(' ');
               if (session.status == SessionStatus.exited) {
                 final exitInfo = 'exit ${session.exitCode ?? '?'}';
-                final ago = session.exitedAt != null ? ' · ${_timeSince(session.exitedAt!)}' : '';
+                final ago = session.exitedAt != null
+                    ? ' · ${_timeSince(session.exitedAt!)}'
+                    : '';
                 return '$cmd · $exitInfo$ago';
               }
               return '$cmd · pid ${session.pid ?? '?'}';
@@ -74,9 +77,19 @@ class SessionCard extends StatelessWidget {
                 _ModeBadge(mode: session.mode!),
                 const Spacer(),
                 if (session.mode == SessionMode.persistent && onKill != null)
-                  _ActionButton(icon: '⏹', label: 'Kill', color: AppColors.danger, onTap: onKill!),
+                  _ActionButton(
+                    icon: '⏹',
+                    label: 'Kill',
+                    color: AppColors.danger,
+                    onTap: onKill!,
+                  ),
                 if (session.status == SessionStatus.exited && onDelete != null)
-                  _ActionButton(icon: '🗑', label: 'Delete', color: AppColors.textSecondary, onTap: onDelete!),
+                  _ActionButton(
+                    icon: '🗑',
+                    label: 'Delete',
+                    color: AppColors.textSecondary,
+                    onTap: onDelete!,
+                  ),
               ],
             ),
           ],
@@ -87,9 +100,20 @@ class SessionCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   if (session.status != SessionStatus.exited && onKill != null)
-                    _ActionButton(icon: '⏹', label: 'Kill', color: AppColors.danger, onTap: onKill!),
-                  if (session.status == SessionStatus.exited && onDelete != null)
-                    _ActionButton(icon: '🗑', label: 'Delete', color: AppColors.textSecondary, onTap: onDelete!),
+                    _ActionButton(
+                      icon: '⏹',
+                      label: 'Kill',
+                      color: AppColors.danger,
+                      onTap: onKill!,
+                    ),
+                  if (session.status == SessionStatus.exited &&
+                      onDelete != null)
+                    _ActionButton(
+                      icon: '🗑',
+                      label: 'Delete',
+                      color: AppColors.textSecondary,
+                      onTap: onDelete!,
+                    ),
                 ],
               ),
             ),
@@ -106,7 +130,10 @@ class _ModeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: 1),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.two,
+        vertical: 1,
+      ),
       decoration: BoxDecoration(
         color: AppColors.primary.withAlpha(15),
         borderRadius: BorderRadius.circular(AppSpacing.one),
@@ -123,14 +150,22 @@ class _ActionButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _ActionButton({required this.icon, required this.label, required this.color, required this.onTap});
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: AppSpacing.one),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.two,
+          vertical: AppSpacing.one,
+        ),
         decoration: BoxDecoration(
           border: Border.all(color: color.withAlpha(70)),
           borderRadius: BorderRadius.circular(AppSpacing.one),

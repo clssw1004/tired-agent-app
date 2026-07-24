@@ -5,19 +5,19 @@ class AppColors {
   AppColors._();
 
   // ── 基础色板 ──────────────────────────────────────────────────
-  static const Color background = Color(0xFF0A0A0F);     // 极黑底
-  static const Color surface = Color(0xFF12121A);         // 卡片/列表项
-  static const Color surfaceAlt = Color(0xFF1A1A2E);      // 选中态/高亮
-  static const Color border = Color(0xFF2A2A4A);          // 默认边框
-  static const Color borderGlow = Color(0xFF3A3A6A);      // 边框发光
+  static const Color background = Color(0xFF0A0A0F); // 极黑底
+  static const Color surface = Color(0xFF12121A); // 卡片/列表项
+  static const Color surfaceAlt = Color(0xFF1A1A2E); // 选中态/高亮
+  static const Color border = Color(0xFF2A2A4A); // 默认边框
+  static const Color borderGlow = Color(0xFF3A3A6A); // 边框发光
 
   // ── 语义色板 ──────────────────────────────────────────────────
-  static const Color primary = Color(0xFF00F0FF);          // 霓虹青
-  static const Color secondary = Color(0xFFFF00FF);        // 霓虹品红
-  static const Color purple = Color(0xFF7B61FF);           // 电紫
-  static const Color success = Color(0xFF00FF41);          // Matrix 绿
-  static const Color warning = Color(0xFFFF6600);          // 霓虹橙
-  static const Color danger = Color(0xFFFF003C);           // 霓虹红
+  static const Color primary = Color(0xFF00F0FF); // 霓虹青
+  static const Color secondary = Color(0xFFFF00FF); // 霓虹品红
+  static const Color purple = Color(0xFF7B61FF); // 电紫
+  static const Color success = Color(0xFF00FF41); // Matrix 绿
+  static const Color warning = Color(0xFFFF6600); // 霓虹橙
+  static const Color danger = Color(0xFFFF003C); // 霓虹红
 
   // ── 文字色板 ──────────────────────────────────────────────────
   static const Color text = Color(0xFFE8E8F0);
@@ -27,14 +27,19 @@ class AppColors {
   // ── 语义别名（向后兼容旧代码引用） ─────────────────────────────
   /// 旧 AppColors.accent → 新 AppColors.primary
   static const Color accent = primary;
+
   /// 旧 AppColors.accentLight → 新 AppColors.primary（无 light 变体）
   static const Color accentLight = primary;
+
   /// 旧 AppColors.backgroundElement → 新 AppColors.surface
   static const Color backgroundElement = surface;
+
   /// 旧 AppColors.codeBackground → 新 AppColors.surfaceAlt
   static const Color codeBackground = surfaceAlt;
+
   /// 旧 AppColors.toolBackground → 新 AppColors.surfaceAlt
   static const Color toolBackground = surfaceAlt;
+
   /// 旧 AppColors.lightBackground / lightText / lightBackgroundSelected — 移除（不用亮色模式）
 }
 
@@ -78,9 +83,21 @@ ThemeData buildDarkTheme() {
       bodyLarge: TextStyle(color: AppColors.text, fontSize: 16),
       bodyMedium: TextStyle(color: AppColors.text, fontSize: 14),
       bodySmall: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-      labelLarge: TextStyle(color: AppColors.text, fontSize: 14, fontWeight: FontWeight.w600),
-      labelSmall: TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600),
-      titleMedium: TextStyle(color: AppColors.text, fontSize: 16, fontWeight: FontWeight.w600),
+      labelLarge: TextStyle(
+        color: AppColors.text,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+      labelSmall: TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+      ),
+      titleMedium: TextStyle(
+        color: AppColors.text,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

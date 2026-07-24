@@ -7,7 +7,11 @@ class SectionHeader extends StatelessWidget {
   final String label;
   final Color color;
 
-  const SectionHeader({super.key, required this.label, this.color = AppColors.primary});
+  const SectionHeader({
+    super.key,
+    required this.label,
+    this.color = AppColors.primary,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,13 @@ class SectionHeader extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(1.5),
-            boxShadow: [BoxShadow(color: color.withAlpha(60), blurRadius: 4, spreadRadius: 0)],
+            boxShadow: [
+              BoxShadow(
+                color: color.withAlpha(60),
+                blurRadius: 4,
+                spreadRadius: 0,
+              ),
+            ],
           ),
         ),
         const SizedBox(width: AppSpacing.two),
