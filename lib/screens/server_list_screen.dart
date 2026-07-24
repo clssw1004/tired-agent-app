@@ -23,6 +23,10 @@ class ServerListScreen extends StatelessWidget {
             tooltip: 'Logout',
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
       ),
       body: Column(
         children: [

@@ -15,7 +15,13 @@ class SettingsScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: ThemedText.title('Settings')),
+      appBar: AppBar(
+        title: ThemedText.title('Settings'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [

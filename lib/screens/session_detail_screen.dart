@@ -78,6 +78,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: ThemedText.title(_session?.label ?? _session?.cmd ?? 'Session'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
       ),
       body: _loading
           ? const Center(child: NeonLoading())

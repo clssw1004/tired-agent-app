@@ -62,7 +62,13 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: ThemedText.title('Add Server')),
+      appBar: AppBar(
+        title: ThemedText.title('Add Server'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.four),
         child: Column(

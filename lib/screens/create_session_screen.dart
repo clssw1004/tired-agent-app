@@ -309,7 +309,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: ThemedText.title('New Session')),
+      appBar: AppBar(
+        title: ThemedText.title('New Session'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.four),
         child: Column(

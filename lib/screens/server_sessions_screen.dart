@@ -236,6 +236,10 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             tooltip: 'New Session',
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(0.5),
+          child: Container(color: AppColors.primary),
+        ),
       ),
       body: Column(
         children: [
