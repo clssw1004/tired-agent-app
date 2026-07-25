@@ -174,6 +174,39 @@ class AuthProvider extends ChangeNotifier {
 - 页面级状态放 `StatefulWidget` 内部
 - Session 级状态（SSE 流）放 `ClaudeChatView` 的 `StatefulWidget`
 
+## 常见陷阱
+
+### TextEditingController + Dialog 生命周期
+
+**错误做法**：在方法内创建 controller，弹窗关闭后同步 dispose。
+
+```dart
+// ❌ controller.dispose() 在 TextField 卸载前执行 → _dependents.isEmpty 崩溃
+final ctl = TextEditingController();
+final result = await showDialog<bool>(
+  builder: (_) => AlertDialog(content: TextField(controller: ctl)),
+);
+ctl.dispose(); // ← 此时 TextField 还挂在卸载中的路由上
+```
+
+**原因**：`Navigator.pop()` 触发路由移除但 TextField 的 widget 树不会立即销毁。`showDialog` 的 `await` 返回后同步调用 `controller.dispose()` 时，`ChangeNotifier` 发现还有 listener（TextField）→ 断言失败。
+
+**正确做法**：把 controller 放到 `StatefulWidget` 内部，`initState` 创建、`State.dispose` 释放。
+
+```dart
+class MyForm extends StatefulWidget { ... }
+class MyFormState extends State<MyForm> {
+  late final TextEditingController _ctl;
+  @override void initState() { super.initState(); _ctl = TextEditingController(); }
+  @override void dispose() { _ctl.dispose(); super.dispose(); }
+  @override Widget build(BuildContext context) => TextField(controller: _ctl);
+}
+```
+
+框架保证 widget 树从子到父依次销毁：`TextField` 先 dispose（移除 listener），然后 parent State 的 `dispose()` 才执行 → 安全释放 controller。
+
+相关文件：`lib/widgets/add_manager_form.dart`、`lib/screens/server_list_screen.dart:_ReconnectForm`
+
 ### 与 tired-agent/web 的同步
 
 - `lib/renderer/` 通过手工翻译自 `tired-agent/packages/web/src/renderer/`
