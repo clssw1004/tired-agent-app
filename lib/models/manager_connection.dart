@@ -53,14 +53,12 @@ class ManagerConnection extends ChangeNotifier {
   /// Created on first access with a [tokenProvider] that delegates to
   /// [ensureFreshSession] on this connection's own profile.
   HttpSseTransport get transport {
-    if (_transport == null) {
-      _transport = HttpSseTransport(
+    _transport ??= HttpSseTransport(
         tokenProvider: () async {
           await ensureFreshSession();
           return profile.sessionToken;
         },
       );
-    }
     return _transport!;
   }
 
@@ -140,8 +138,18 @@ class ManagerConnection extends ChangeNotifier {
 
       status = ConnectionStatus.connected;
     } catch (e) {
-      error = e.toString();
-      status = ConnectionStatus.error;
+      final msg = e.toString();
+      // Expired or invalid refresh token → normal idle state.
+      if (msg.contains('invalid_refresh') || msg.contains('token expired')) {
+        profile.refreshToken = null;
+        profile.sessionToken = null;
+        profile.sessionExpiresAtMs = 0;
+        error = msg;
+        status = ConnectionStatus.idle;
+      } else {
+        error = msg;
+        status = ConnectionStatus.error;
+      }
     }
     notifyListeners();
   }

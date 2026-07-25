@@ -106,6 +106,7 @@ class ServerListScreen extends StatelessWidget {
         return _ManagerCard(
           connection: conn,
           onAddAgent: () => _showAddAgent(context, auth, conn),
+          onReconnect: () => _showReconnect(context, auth, conn),
         );
       },
     );
@@ -265,6 +266,75 @@ class ServerListScreen extends StatelessWidget {
       }
     }
   }
+
+  Future<void> _showReconnect(
+    BuildContext context,
+    AuthProvider auth,
+    ManagerConnection conn,
+  ) async {
+    final tokenController = TextEditingController();
+
+    final result = await NeonDialog.show<bool>(
+      context: context,
+      title: 'Reconnect ${conn.profile.name}',
+      maxWidth: 380,
+      showRobot: true,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ThemedText.small(
+            'The session has expired. Enter the API token to reconnect.',
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: AppSpacing.three),
+          TextField(
+            controller: tokenController,
+            decoration: const InputDecoration(labelText: 'Access Token'),
+            obscureText: true,
+            autocorrect: false,
+          ),
+        ],
+      ),
+      actions: [
+        NeonDialogAction(
+          label: 'Cancel',
+          onPressed: (ctx) => Navigator.of(ctx).pop(false),
+        ),
+        NeonDialogAction(
+          label: 'Reconnect',
+          isPrimary: true,
+          onPressed: (ctx) => Navigator.of(ctx).pop(true),
+        ),
+      ],
+    );
+
+    final token = tokenController.text.trim();
+    tokenController.dispose();
+
+    if (result == true && token.isNotEmpty && context.mounted) {
+      try {
+        await conn.connect(apiToken: token);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: ThemedText.small('${conn.profile.name} reconnected'),
+              backgroundColor: AppColors.backgroundElement,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+        }
+      }
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -274,8 +344,9 @@ class ServerListScreen extends StatelessWidget {
 class _ManagerCard extends StatelessWidget {
   final ManagerConnection connection;
   final VoidCallback? onAddAgent;
+  final VoidCallback? onReconnect;
 
-  const _ManagerCard({required this.connection, this.onAddAgent});
+  const _ManagerCard({required this.connection, this.onAddAgent, this.onReconnect});
 
   @override
   Widget build(BuildContext context) {
@@ -370,6 +441,35 @@ class _ManagerCard extends StatelessWidget {
                 ],
               ),
             ),
+
+            // ── Reconnect button (when not connected) ─────────────
+            if (connStatus != ConnectionStatus.connected)
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.three + 10 + AppSpacing.two,
+                  bottom: 4,
+                ),
+                child: GestureDetector(
+                  onTap: onReconnect,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.refresh,
+                        size: 14,
+                        color: AppColors.primary.withAlpha(180),
+                      ),
+                      const SizedBox(width: 6),
+                      ThemedText.small(
+                        connStatus == ConnectionStatus.error
+                            ? 'Token expired — Tap to reconnect'
+                            : 'Tap to reconnect',
+                        color: AppColors.primary.withAlpha(180),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // ── Agent list ───────────────────────────────────────
             if (connection.agents.isEmpty)
