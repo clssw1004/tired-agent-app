@@ -159,51 +159,35 @@ class ServerListScreen extends StatelessWidget {
     AuthProvider auth,
     ManagerConnection conn,
   ) async {
-    final tokenController = TextEditingController();
+    final formKey = GlobalKey<_ReconnectFormState>();
 
-    final result = await NeonDialog.show<bool>(
+    final result = await NeonDialog.show<String?>(
       context: context,
       title: 'Reconnect ${conn.profile.name}',
       maxWidth: 380,
       showRobot: true,
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ThemedText.small(
-            'Session expired. Enter the API token to reconnect.',
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: AppSpacing.three),
-          TextField(
-            controller: tokenController,
-            decoration: const InputDecoration(labelText: 'Access Token'),
-            obscureText: true,
-            autocorrect: false,
-          ),
-        ],
-      ),
+      content: _ReconnectForm(key: formKey),
       actions: [
         NeonDialogAction(
           label: 'Cancel',
-          onPressed: (ctx) => Navigator.of(ctx).pop(false),
+          onPressed: (ctx) => Navigator.of(ctx).pop(null),
         ),
         NeonDialogAction(
           label: 'Reconnect',
           isPrimary: true,
-          onPressed: (ctx) => Navigator.of(ctx).pop(true),
+          onPressed: (ctx) {
+            final token = formKey.currentState?.token;
+            if (token != null && token.isNotEmpty) {
+              Navigator.of(ctx).pop(token);
+            }
+          },
         ),
       ],
     );
 
-    final token = tokenController.text.trim();
-    // Dispose after the dialog's route animation completes, otherwise
-    // the TextField may still have listeners → _dependents.isEmpty crash.
-    Future.microtask(() => tokenController.dispose());
-
-    if (result == true && token.isNotEmpty && context.mounted) {
+    if (result != null && context.mounted) {
       try {
-        await conn.connect(apiToken: token);
+        await conn.connect(apiToken: result);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -462,3 +446,54 @@ class _AgentRow extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+
+/// Reconnect form — owns its [TextEditingController] and disposes it in
+/// [State.dispose], in sync with the widget tree lifecycle.
+class _ReconnectForm extends StatefulWidget {
+  const _ReconnectForm({super.key});
+
+  @override
+  _ReconnectFormState createState() => _ReconnectFormState();
+}
+
+class _ReconnectFormState extends State<_ReconnectForm> {
+  late final TextEditingController _tokenController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _tokenController.dispose();
+    super.dispose();
+  }
+
+  String? get token {
+    final t = _tokenController.text.trim();
+    return t.isNotEmpty ? t : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ThemedText.small(
+          'Session expired. Enter the API token to reconnect.',
+          color: AppColors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.three),
+        TextField(
+          controller: _tokenController,
+          decoration: const InputDecoration(labelText: 'Access Token'),
+          obscureText: true,
+          autocorrect: false,
+        ),
+      ],
+    );
+  }
+}
