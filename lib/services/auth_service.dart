@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
@@ -78,6 +79,7 @@ class AuthService {
   /// Does NOT automatically connect — call [connectAll] separately.
   Future<void> loadProfiles() async {
     final saved = await storage.loadProfiles();
+    debugPrint('[AuthService] loadProfiles: ${saved.length} profiles loaded');
     _connections.clear();
     for (final profile in saved) {
       final conn = ManagerConnection(profile: profile);
@@ -88,6 +90,10 @@ class AuthService {
     for (final conn in _connections.values) {
       conn.profile.refreshToken =
           await storage.loadManagerRefreshToken(conn.profile.id);
+      debugPrint(
+        '[AuthService]  profile=${conn.profile.name} '
+        'refreshToken=${conn.profile.refreshToken != null}',
+      );
     }
   }
 

@@ -45,6 +45,8 @@ class AuthProvider extends ChangeNotifier {
   Future<void> boot() async {
     try {
       await _authService.loadProfiles();
+      // Show saved profiles immediately, even if connectAll() is slow.
+      notifyListeners();
       await _authService.connectAll();
     } catch (_) {
       // Individual connection errors are recorded per-connection;
