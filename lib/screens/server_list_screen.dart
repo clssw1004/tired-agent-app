@@ -186,8 +186,10 @@ class ServerListScreen extends StatelessWidget {
     );
 
     if (result != null && context.mounted) {
+      debugPrint('[Reconnect] token received, connecting…');
       try {
         await conn.connect(apiToken: result);
+        debugPrint('[Reconnect] connect() returned, status=${conn.status}');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

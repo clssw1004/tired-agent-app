@@ -88,10 +88,12 @@ class ManagerConnection extends ChangeNotifier {
     status = ConnectionStatus.connecting;
     error = null;
     notifyListeners();
+    debugPrint('[ManagerConnection] connect(${profile.name}) apiToken=${apiToken != null}');
 
     try {
       if (apiToken != null) {
         // Fresh login.
+        debugPrint('[ManagerConnection] logging in to ${profile.baseUrl}');
         final ref = ServerRef(
           id: '__manager__',
           name: 'manager',
@@ -99,6 +101,7 @@ class ManagerConnection extends ChangeNotifier {
           token: apiToken,
         );
         final result = await transport.login(ref, apiToken);
+        debugPrint('[ManagerConnection] login OK, session=${result.sessionToken.substring(0, 8)}…');
         profile.refreshToken = result.refreshToken;
         profile.sessionToken = result.sessionToken;
         profile.sessionExpiresAtMs =
@@ -136,8 +139,10 @@ class ManagerConnection extends ChangeNotifier {
       agents = await transport.listAgents(mgrRef);
 
       status = ConnectionStatus.connected;
+      debugPrint('[ManagerConnection] connected, agents=${agents.length}');
     } catch (e) {
       final msg = e.toString();
+      debugPrint('[ManagerConnection] connect failed: $msg');
       // Expired or invalid refresh token → normal idle state.
       if (msg.contains('invalid_refresh') || msg.contains('token expired')) {
         profile.refreshToken = null;
