@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -152,43 +153,16 @@ class SettingsScreen extends StatelessWidget {
     AuthProvider auth,
     ManagerProfile profile,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await NeonDialog.showConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        title: Row(
-          children: [
-            const ThemedText('🗑️', fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title('Remove "${profile.name}"?'),
-          ],
-        ),
-        content: ThemedText.small(
-          'This will delete the manager profile and its saved token. '
-          'You can re-add it later.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceAlt,
-              foregroundColor: AppColors.danger,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-                side: BorderSide(
-                  color: AppColors.danger.withAlpha(80),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: ThemedText.body('Remove', color: AppColors.danger),
-          ),
-        ],
+      title: 'Remove "${profile.name}"?',
+      showRobot: true,
+      content: ThemedText.small(
+        'This will delete the manager profile and its saved token. '
+        'You can re-add it later.',
       ),
+      confirmText: 'Remove',
+      confirmIsDanger: true,
     );
     if (confirmed == true && context.mounted) {
       await auth.removeManager(profile.id);
@@ -202,75 +176,66 @@ class SettingsScreen extends StatelessWidget {
       text: 'Manager ${auth.profiles.length + 1}',
     );
 
-    final result = await showDialog<bool>(
+    final result = await NeonDialog.show<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 40),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        title: Row(
+      title: 'Add Manager',
+      maxWidth: 480,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const ThemedText('➕', fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title('Add Manager'),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Label',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.three,
+                ),
+              ),
+              autocorrect: false,
+            ),
+            const SizedBox(height: AppSpacing.three),
+            TextField(
+              controller: urlController,
+              decoration: const InputDecoration(
+                labelText: 'Manager URL',
+                hintText: 'http://192.168.1.10:3099',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.three,
+                ),
+              ),
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+            ),
+            const SizedBox(height: AppSpacing.three),
+            TextField(
+              controller: tokenController,
+              decoration: const InputDecoration(
+                labelText: 'Access Token',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.three,
+                ),
+              ),
+              obscureText: true,
+              autocorrect: false,
+            ),
           ],
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Label',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.three,
-                    vertical: AppSpacing.three,
-                  ),
-                ),
-                autocorrect: false,
-              ),
-              const SizedBox(height: AppSpacing.three),
-              TextField(
-                controller: urlController,
-                decoration: const InputDecoration(
-                  labelText: 'Manager URL',
-                  hintText: 'http://192.168.1.10:3099',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.three,
-                    vertical: AppSpacing.three,
-                  ),
-                ),
-                keyboardType: TextInputType.url,
-                autocorrect: false,
-              ),
-              const SizedBox(height: AppSpacing.three),
-              TextField(
-                controller: tokenController,
-                decoration: const InputDecoration(
-                  labelText: 'Access Token',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.three,
-                    vertical: AppSpacing.three,
-                  ),
-                ),
-                obscureText: true,
-                autocorrect: false,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Connect'),
-          ),
-        ],
       ),
+      actions: [
+        NeonDialogAction(
+          label: 'Cancel',
+          onPressed: (ctx) => Navigator.of(ctx).pop(false),
+        ),
+        NeonDialogAction(
+          label: 'Connect',
+          isPrimary: true,
+          onPressed: (ctx) => Navigator.of(ctx).pop(true),
+        ),
+      ],
     );
 
     if (result == true && context.mounted) {
@@ -307,43 +272,16 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await NeonDialog.showConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        title: Row(
-          children: [
-            const ThemedText('🚪', fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title('Logout?'),
-          ],
-        ),
-        content: ThemedText.small(
-          'Disconnect from "${_activeName(auth)}". '
-          'The profile will be kept for later use.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceAlt,
-              foregroundColor: AppColors.danger,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-                side: BorderSide(
-                  color: AppColors.danger.withAlpha(80),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: ThemedText.body('Logout', color: AppColors.danger),
-          ),
-        ],
+      title: 'Logout?',
+      showRobot: true,
+      content: ThemedText.small(
+        'Disconnect from "${_activeName(auth)}". '
+        'The profile will be kept for later use.',
       ),
+      confirmText: 'Logout',
+      confirmIsDanger: true,
     );
     if (confirmed == true && context.mounted) {
       await auth.logout();

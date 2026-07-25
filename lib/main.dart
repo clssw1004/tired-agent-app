@@ -64,13 +64,13 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
         // ── Login (full-screen, no tabs) ──────────────────────────
         GoRoute(
           path: '/login',
-          builder: (_, __) => const LoginScreen(),
+          builder: (_, _) => const LoginScreen(),
           parentNavigatorKey: _rootNavigatorKey,
         ),
 
         // ── Main shell with bottom tabs ───────────────────────────
         StatefulShellRoute.indexedStack(
-          builder: (_, __, navigationShell) =>
+          builder: (_, _, navigationShell) =>
               MainShell(navigationShell: navigationShell),
           branches: [
             // Tab 0: Servers
@@ -78,11 +78,11 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
               routes: [
                 GoRoute(
                   path: '/',
-                  builder: (_, __) => const ServerListScreen(),
+                  builder: (_, _) => const ServerListScreen(),
                 ),
                 GoRoute(
                   path: '/server/new',
-                  builder: (_, __) => const ServerAddScreen(),
+                  builder: (_, _) => const ServerAddScreen(),
                 ),
                 GoRoute(
                   path: '/server/:id',
@@ -97,7 +97,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
               routes: [
                 GoRoute(
                   path: '/settings',
-                  builder: (_, __) => const SettingsScreen(),
+                  builder: (_, _) => const SettingsScreen(),
                 ),
               ],
             ),
