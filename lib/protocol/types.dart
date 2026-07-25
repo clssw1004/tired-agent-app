@@ -362,22 +362,81 @@ class LoginResponse {
   );
 }
 
+/// Online state of an agent backend.
+///
+/// Mirrors the server's heartbeat-tracked state.
+enum AgentState { online, offline, unknown }
+
+/// A registered agent backend behind a manager.
 class AgentInfo {
   final String id;
   final String name;
   final String baseUrl;
 
+  /// Whether the agent is enabled for session routing.
+  final bool enabled;
+
+  /// When this agent was registered (epoch ms).
+  final int createdAt;
+
+  /// Heartbeat-derived online state.
+  ///
+  /// - [AgentState.online] — agent has sent a heartbeat recently or
+  ///   was successfully probed.
+  /// - [AgentState.offline] — probe failed or heartbeat expired.
+  /// - [AgentState.unknown] — never seen (manually added, no probe yet).
+  final AgentState state;
+
+  /// Epoch ms of the last heartbeat (null if never seen).
+  final int? lastSeen;
+
+  /// Agent software version reported via heartbeat.
+  final String? version;
+
+  /// Hostname / machine name reported via heartbeat.
+  final String? hostname;
+
+  /// Agent process uptime in seconds reported via heartbeat.
+  final int? agentUptime;
+
   const AgentInfo({
     required this.id,
     required this.name,
     required this.baseUrl,
+    this.enabled = true,
+    this.createdAt = 0,
+    this.state = AgentState.unknown,
+    this.lastSeen,
+    this.version,
+    this.hostname,
+    this.agentUptime,
   });
 
-  factory AgentInfo.fromJson(Map<String, dynamic> json) => AgentInfo(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    baseUrl: json['baseUrl'] as String,
-  );
+  factory AgentInfo.fromJson(Map<String, dynamic> json) {
+    AgentState parseState(String? s) {
+      switch (s) {
+        case 'online':
+          return AgentState.online;
+        case 'offline':
+          return AgentState.offline;
+        default:
+          return AgentState.unknown;
+      }
+    }
+
+    return AgentInfo(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      baseUrl: json['baseUrl'] as String,
+      enabled: json['enabled'] as bool? ?? true,
+      createdAt: json['createdAt'] as int? ?? 0,
+      state: parseState(json['state'] as String?),
+      lastSeen: json['lastSeen'] as int?,
+      version: json['version'] as String?,
+      hostname: json['hostname'] as String?,
+      agentUptime: json['agentUptime'] as int?,
+    );
+  }
 }
 
 // ─── Structured content types (renderer output) ───────────────────────

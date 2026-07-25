@@ -473,9 +473,17 @@ class _AgentRow extends StatelessWidget {
               Container(
                 width: 6,
                 height: 6,
-                decoration: const BoxDecoration(
-                  color: AppColors.success,
+                decoration: BoxDecoration(
+                  color: _agentOnlineColor(agent.state),
                   shape: BoxShape.circle,
+                  boxShadow: agent.state == AgentState.online
+                      ? [
+                          BoxShadow(
+                            color: AppColors.success.withAlpha(80),
+                            blurRadius: 3,
+                          ),
+                        ]
+                      : null,
                 ),
               ),
               const SizedBox(width: AppSpacing.two),
@@ -500,4 +508,17 @@ class _AgentRow extends StatelessWidget {
       ),
     );
   }
+
+  Color _agentOnlineColor(AgentState s) {
+    switch (s) {
+      case AgentState.online:
+        return AppColors.success;
+      case AgentState.offline:
+        return AppColors.danger;
+      case AgentState.unknown:
+        return AppColors.textSecondary;
+    }
+  }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
