@@ -188,7 +188,10 @@ class PtyKeyboardPanel extends StatelessWidget {
             const Spacer(),
             // Dismiss system keyboard button
             GestureDetector(
-              onTap: () => onDismissKeyboard?.call(),
+              onTap: () {
+                onDismissKeyboard?.call();
+                onToggle();
+              },
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
