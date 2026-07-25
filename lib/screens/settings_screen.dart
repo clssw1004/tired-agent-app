@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -28,24 +29,19 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── Managers ────────────────────────────────────────────────
-          SectionHeader(label: 'Managers (${auth.profiles.length})'),
+          SectionHeader(label: 'Managers (${auth.connections.length})'),
           const SizedBox(height: AppSpacing.two),
 
-          if (auth.profiles.isEmpty)
+          if (auth.connections.isEmpty)
             ThemedText.small(
               'No managers saved',
               color: AppColors.textSecondary,
             )
           else
-            ...auth.profiles.map(
-              (profile) => _ManagerCard(
-                profile: profile,
-                isActive: profile.id == auth.activeProfileId,
-                isConnected:
-                    profile.id == auth.activeProfileId &&
-                    auth.status == AuthStatus.authenticated,
-                onSwitch: () => _switchTo(context, auth, profile.id),
-                onDelete: () => _deleteManager(context, auth, profile),
+            ...auth.connections.map(
+              (conn) => _ManagerCard(
+                connection: conn,
+                onDelete: () => _deleteManager(context, auth, conn.profile),
               ),
             ),
 
@@ -65,24 +61,25 @@ class SettingsScreen extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.four),
 
-          // ── Active connection ──────────────────────────────────────
-          SectionHeader(label: 'Active Connection'),
+          // ── Active connections ──────────────────────────────────────
+          SectionHeader(label: 'Connections'),
           const SizedBox(height: AppSpacing.two),
-          _InfoTile(label: 'Manager', value: _activeName(auth)),
-          const SizedBox(height: AppSpacing.one),
-          _InfoTile(label: 'Base URL', value: auth.baseUrl ?? '—'),
-          const SizedBox(height: AppSpacing.one),
-          _InfoTile(
-            label: 'Status',
-            value: auth.status == AuthStatus.authenticated
-                ? 'Connected'
-                : 'Disconnected',
-            valueColor: auth.status == AuthStatus.authenticated
-                ? AppColors.success
-                : AppColors.danger,
+          ...auth.connections.map(
+            (conn) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.one),
+              child: _InfoTile(
+                label: conn.profile.name,
+                value: _statusLabel(conn.status),
+                valueColor: _statusColor(conn.status),
+              ),
+            ),
           ),
-          const SizedBox(height: AppSpacing.one),
-          _InfoTile(label: 'Agents', value: '${auth.agents.length}'),
+          if (auth.connections.isEmpty)
+            _InfoTile(
+              label: 'Status',
+              value: 'No managers',
+              valueColor: AppColors.textSecondary,
+            ),
           const SizedBox(height: AppSpacing.four),
 
           // ── About ──────────────────────────────────────────────────
@@ -97,43 +94,33 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  String _activeName(AuthProvider auth) {
-    if (auth.activeProfileId == null) return '—';
-    final active = auth.profiles
-        .where((p) => p.id == auth.activeProfileId)
-        .firstOrNull;
-    return active?.name ?? '—';
+  String _statusLabel(ConnectionStatus s) {
+    switch (s) {
+      case ConnectionStatus.connected:
+        return 'Connected';
+      case ConnectionStatus.connecting:
+        return 'Connecting…';
+      case ConnectionStatus.error:
+        return 'Error';
+      case ConnectionStatus.idle:
+        return 'Disconnected';
+    }
+  }
+
+  Color _statusColor(ConnectionStatus s) {
+    switch (s) {
+      case ConnectionStatus.connected:
+        return AppColors.success;
+      case ConnectionStatus.connecting:
+        return AppColors.warning;
+      case ConnectionStatus.error:
+        return AppColors.danger;
+      case ConnectionStatus.idle:
+        return AppColors.textSecondary;
+    }
   }
 
   // ── Actions ──────────────────────────────────────────────────────────
-
-  Future<void> _switchTo(
-    BuildContext context,
-    AuthProvider auth,
-    String id,
-  ) async {
-    if (id == auth.activeProfileId) return;
-    try {
-      await auth.switchTo(id);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: ThemedText.small('Switched to ${_activeName(auth)}'),
-            backgroundColor: AppColors.backgroundElement,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: AppColors.danger,
-          ),
-        );
-      }
-    }
-  }
 
   Future<void> _deleteManager(
     BuildContext context,
@@ -165,7 +152,7 @@ class SettingsScreen extends StatelessWidget {
       maxWidth: 480,
       content: AddManagerForm(
         key: formKey,
-        initialName: 'Manager ${auth.profiles.length + 1}',
+        initialName: 'Manager ${auth.connections.length + 1}',
       ),
       actions: [
         NeonDialogAction(
@@ -185,7 +172,6 @@ class SettingsScreen extends StatelessWidget {
 
     if (formData != null && context.mounted) {
       if (formData.url.isEmpty || formData.token.isEmpty) return;
-
       try {
         await auth.login(
           formData.url,
@@ -217,31 +203,25 @@ class SettingsScreen extends StatelessWidget {
 // ── Manager card ──────────────────────────────────────────────────────
 
 class _ManagerCard extends StatelessWidget {
-  final ManagerProfile profile;
-  final bool isActive;
-  final bool isConnected;
-  final VoidCallback onSwitch;
+  final ManagerConnection connection;
   final VoidCallback onDelete;
 
-  const _ManagerCard({
-    required this.profile,
-    required this.isActive,
-    required this.isConnected,
-    required this.onSwitch,
-    required this.onDelete,
-  });
+  const _ManagerCard({required this.connection, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
+    final profile = connection.profile;
+    final connected = connection.status == ConnectionStatus.connected;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.one),
       child: Container(
         decoration: BoxDecoration(
-          color: isActive
+          color: connected
               ? AppColors.accent.withAlpha(18)
               : AppColors.backgroundElement,
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: isActive
+          border: connected
               ? Border.all(color: AppColors.accent.withAlpha(80), width: 1)
               : null,
         ),
@@ -261,7 +241,7 @@ class _ManagerCard extends StatelessWidget {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (isConnected)
+              if (connected)
                 Container(
                   width: 8,
                   height: 8,
@@ -270,21 +250,27 @@ class _ManagerCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 )
-              else if (isActive && !isConnected)
-                const ThemedText('⚠️', fontSize: 14),
-              if (!isActive)
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    size: 20,
+              else
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
                     color: AppColors.textSecondary,
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: onDelete,
-                  tooltip: 'Remove',
                 ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  size: 20,
+                  color: AppColors.textSecondary,
+                ),
+                onPressed: onDelete,
+                tooltip: 'Remove',
+              ),
             ],
           ),
-          onTap: isActive ? null : onSwitch,
         ),
       ),
     );

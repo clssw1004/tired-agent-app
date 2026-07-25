@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
+import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
-import 'package:tired_agent_app/widgets/server_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class ServerListScreen extends StatelessWidget {
@@ -17,7 +18,7 @@ class ServerListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title('Agents'),
+        title: ThemedText.title('Managers'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.primary),
@@ -25,113 +26,78 @@ class ServerListScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // ── Active manager indicator ──────────────────────────────
-          if (auth.profiles.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.four,
-                vertical: AppSpacing.two,
-              ),
-              child: _ManagerSwitcher(auth: auth),
-            ),
-
           Expanded(
-            child: auth.agents.isEmpty
-                ? _buildEmptyState(context, auth)
-                : ListView.builder(
-                    itemCount: auth.agents.length,
-                    itemBuilder: (context, index) {
-                      final agent = auth.agents[index];
-                      return ServerCard(
-                        agent: agent,
-                        onTap: () => context.push('/server/${agent.id}'),
-                      );
-                    },
-                  ),
+            child: auth.connections.isEmpty
+                ? _buildWelcomeEmpty(context, auth)
+                : _buildManagerList(context, auth),
           ),
-          if (auth.sessionToken != null)
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.four),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.push('/server/new'),
-                    icon: const Icon(Icons.add, size: 20),
-                    label: const Text('Add Agent'),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, AuthProvider auth) {
-    // First launch — no profiles at all → welcome guide
-    if (auth.profiles.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.smart_toy,
-                size: 80,
-                color: AppColors.primary.withAlpha(180),
-              ),
-              const SizedBox(height: AppSpacing.four),
-              ThemedText.title(
-                'Welcome to tiredAgent',
-                color: AppColors.text,
-              ),
-              const SizedBox(height: AppSpacing.two),
-              ThemedText(
-                '添加一个 Manager 服务器来管理你的\n代理服务器和会话',
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.six),
-              ElevatedButton.icon(
-                onPressed: () => _showAddManager(context, auth),
-                icon: const Icon(Icons.add, size: 20),
-                label: const Text('Add Manager'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+  // ── Welcome state (no profiles) ─────────────────────────────────────
 
-    // Has profiles but not connected → hint text
+  Widget _buildWelcomeEmpty(BuildContext context, AuthProvider auth) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ThemedText.small(
-            auth.sessionToken != null
-                ? 'No agents connected'
-                : 'Not connected',
-            color: AppColors.textSecondary,
-          ),
-          if (auth.sessionToken == null)
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.two),
-              child: ThemedText.small(
-                'Select a manager above or go to Settings to add one',
-                color: AppColors.textSecondary,
-              ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.smart_toy,
+              size: 80,
+              color: AppColors.primary.withAlpha(180),
             ),
-        ],
+            const SizedBox(height: AppSpacing.four),
+            ThemedText.title('Welcome to tiredAgent'),
+            const SizedBox(height: AppSpacing.two),
+            ThemedText(
+              '添加一个 Manager 服务器来管理你的\n代理服务器和会话',
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.six),
+            ElevatedButton.icon(
+              onPressed: () => _showAddManager(context, auth),
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text('Add Manager'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _showAddManager(BuildContext context, AuthProvider auth) async {
+  // ── Manager list ────────────────────────────────────────────────────
+
+  Widget _buildManagerList(BuildContext context, AuthProvider auth) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.four,
+        AppSpacing.two,
+        AppSpacing.four,
+        AppSpacing.four,
+      ),
+      itemCount: auth.connections.length,
+      itemBuilder: (context, index) {
+        final conn = auth.connections[index];
+        return _ManagerCard(
+          connection: conn,
+          onTap: () => _onTapCard(context, auth, conn),
+        );
+      },
+    );
+  }
+
+  // ── Add Manager dialog ──────────────────────────────────────────────
+
+  Future<void> _showAddManager(
+    BuildContext context,
+    AuthProvider auth,
+  ) async {
     final formKey = GlobalKey<AddManagerFormState>();
 
     final formData = await NeonDialog.show<AddManagerFormData?>(
@@ -140,7 +106,7 @@ class ServerListScreen extends StatelessWidget {
       maxWidth: 480,
       content: AddManagerForm(
         key: formKey,
-        initialName: 'Manager ${auth.profiles.length + 1}',
+        initialName: 'Manager ${auth.connections.length + 1}',
       ),
       actions: [
         NeonDialogAction(
@@ -160,7 +126,6 @@ class ServerListScreen extends StatelessWidget {
 
     if (formData != null && context.mounted) {
       if (formData.url.isEmpty || formData.token.isEmpty) return;
-
       try {
         await auth.login(
           formData.url,
@@ -187,118 +152,269 @@ class ServerListScreen extends StatelessWidget {
       }
     }
   }
-}
 
-/// Compact manager switcher pill shown at the top of the server list.
-class _ManagerSwitcher extends StatelessWidget {
-  final AuthProvider auth;
+  Future<void> _showReconnectDialog(
+    BuildContext context,
+    AuthProvider auth,
+    ManagerConnection conn,
+  ) async {
+    final formKey = GlobalKey<_ReconnectFormState>();
 
-  const _ManagerSwitcher({required this.auth});
-
-  @override
-  Widget build(BuildContext context) {
-    final active = auth.profiles
-        .where((p) => p.id == auth.activeProfileId)
-        .firstOrNull;
-    return Material(
-      color: AppColors.backgroundElement,
-      borderRadius: BorderRadius.circular(AppSpacing.three),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.three),
-        onTap: () => _showPicker(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.three,
-            vertical: AppSpacing.two,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: auth.status == AuthStatus.authenticated
-                      ? AppColors.success
-                      : AppColors.textSecondary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.two),
-              Expanded(
-                child: ThemedText.small(
-                  active?.name ?? 'Select manager',
-                  color: AppColors.text,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.one),
-              const Icon(
-                Icons.unfold_more,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showPicker(BuildContext context) async {
-    final result = await showModalBottomSheet<String>(
+    final result = await NeonDialog.show<String?>(
       context: context,
-      backgroundColor: AppColors.backgroundElement,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.four),
-              child: ThemedText.title('Switch Manager'),
-            ),
-            ...auth.profiles.map(
-              (p) => ListTile(
-                leading: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: p.id == auth.activeProfileId
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                title: ThemedText.body(p.name),
-                subtitle: ThemedText.small(
-                  p.baseUrl,
-                  color: AppColors.textSecondary,
-                ),
-                trailing: p.id == auth.activeProfileId
-                    ? const Icon(Icons.check, color: AppColors.primary)
-                    : null,
-                onTap: () => Navigator.of(ctx).pop(p.id),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.two),
-          ],
+      title: 'Reconnect ${conn.profile.name}',
+      maxWidth: 380,
+      showRobot: true,
+      content: _ReconnectForm(key: formKey),
+      actions: [
+        NeonDialogAction(
+          label: 'Cancel',
+          onPressed: (ctx) => Navigator.of(ctx).pop(null),
         ),
-      ),
+        NeonDialogAction(
+          label: 'Reconnect',
+          isPrimary: true,
+          onPressed: (ctx) {
+            final token = formKey.currentState?.token;
+            if (token != null && token.isNotEmpty) {
+              Navigator.of(ctx).pop(token);
+            }
+          },
+        ),
+      ],
     );
 
-    if (result != null && result != auth.activeProfileId && context.mounted) {
-      try {
-        await auth.switchTo(result);
-      } catch (e) {
-        if (context.mounted) {
+    if (result != null && context.mounted) {
+      debugPrint('[Reconnect] token received, connecting…');
+      final ok = await auth.reconnect(conn.profile.id, result);
+      debugPrint('[Reconnect] ok=$ok');
+      if (context.mounted) {
+        if (ok) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: ThemedText.small('${conn.profile.name} reconnected'),
+              backgroundColor: AppColors.backgroundElement,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(conn.error ?? 'Reconnect failed'),
               backgroundColor: AppColors.danger,
             ),
           );
         }
       }
     }
+  }
+
+  Future<void> _onTapCard(
+    BuildContext context,
+    AuthProvider auth,
+    ManagerConnection conn,
+  ) async {
+    // Silent retry with stored credentials (handles transient network errors).
+    await conn.connect();
+    if (conn.status == ConnectionStatus.connected) return;
+
+    // Any failure → show reconnect dialog (token expired or cleared).
+    if (context.mounted) {
+      await _showReconnectDialog(context, auth, conn);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Manager card
+// ═══════════════════════════════════════════════════════════════════════
+
+class _ManagerCard extends StatelessWidget {
+  final ManagerConnection connection;
+  final VoidCallback? onTap;
+
+  const _ManagerCard({required this.connection, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = connection.profile;
+    final connStatus = connection.status;
+
+    // Status color + label
+    Color statusColor;
+    String statusLabel;
+    switch (connStatus) {
+      case ConnectionStatus.connected:
+        statusColor = AppColors.success;
+        statusLabel = 'Connected';
+      case ConnectionStatus.connecting:
+        statusColor = AppColors.warning;
+        statusLabel = 'Connecting…';
+      case ConnectionStatus.error:
+        statusColor = AppColors.danger;
+        statusLabel = 'Error';
+      case ConnectionStatus.idle:
+        statusColor = AppColors.textSecondary;
+        statusLabel = 'Disconnected';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.three),
+      child: GestureDetector(
+        onTap: () {
+          if (connStatus == ConnectionStatus.connected) {
+            context.push('/profile/${profile.id}');
+          } else {
+            onTap?.call();
+          }
+        },
+        child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(
+            color: connStatus == ConnectionStatus.connected
+                ? AppColors.primary.withAlpha(60)
+                : AppColors.border.withAlpha(80),
+            width: connStatus == ConnectionStatus.connected ? 0.5 : 0.5,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Header row ───────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.three,
+                AppSpacing.two,
+                AppSpacing.two,
+                AppSpacing.one,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                      boxShadow: connStatus == ConnectionStatus.connected
+                          ? [
+                              BoxShadow(
+                                color: statusColor.withAlpha(80),
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.two),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ThemedText.body(
+                          profile.name,
+                          color: AppColors.text,
+                        ),
+                        ThemedText.label(
+                          profile.baseUrl,
+                          color: AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                  ThemedText.label(
+                    statusLabel,
+                    color: statusColor,
+                  ),
+                  if (connection.error != null)
+                    IconButton(
+                      icon: const Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: AppColors.danger,
+                      ),
+                      onPressed: () => _showError(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 28,
+                        minHeight: 28,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // ── Tap card to view agents ──────────────────────────
+          ],
+        ),
+      ),
+    ),
+  );
+  }
+
+  void _showError(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(connection.error!),
+        backgroundColor: AppColors.danger,
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Reconnect form
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Reconnect form — owns its [TextEditingController] and disposes it in
+/// [State.dispose], in sync with the widget tree lifecycle.
+class _ReconnectForm extends StatefulWidget {
+  const _ReconnectForm({super.key});
+
+  @override
+  _ReconnectFormState createState() => _ReconnectFormState();
+}
+
+class _ReconnectFormState extends State<_ReconnectForm> {
+  late final TextEditingController _tokenController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _tokenController.dispose();
+    super.dispose();
+  }
+
+  String? get token {
+    final t = _tokenController.text.trim();
+    return t.isNotEmpty ? t : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ThemedText.small(
+          'Session expired. Enter the API token to reconnect.',
+          color: AppColors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.three),
+        TextField(
+          controller: _tokenController,
+          decoration: const InputDecoration(labelText: 'Access Token'),
+          obscureText: true,
+          autocorrect: false,
+        ),
+      ],
+    );
   }
 }

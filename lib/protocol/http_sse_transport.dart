@@ -27,10 +27,16 @@ class HttpSseTransport implements Transport {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onError: (error, handler) async {
+          // Avoid recursive retry — only attempt once per request.
+          if (error.requestOptions.extra['_retried'] == true) {
+            handler.next(error);
+            return;
+          }
           if (error.response?.statusCode == 401 && _tokenProvider != null) {
             try {
               final freshToken = await _tokenProvider();
               if (freshToken != null && freshToken.isNotEmpty) {
+                error.requestOptions.extra['_retried'] = true;
                 error.requestOptions.headers['Authorization'] =
                     'Bearer $freshToken';
                 final response = await _dio.fetch<dynamic>(

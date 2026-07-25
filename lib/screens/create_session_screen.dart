@@ -178,9 +178,14 @@ const _presets = [
 ];
 
 class CreateSessionScreen extends StatefulWidget {
-  final String serverId;
+  final String profileId;
+  final String agentId;
 
-  const CreateSessionScreen({super.key, required this.serverId});
+  const CreateSessionScreen({
+    super.key,
+    required this.profileId,
+    required this.agentId,
+  });
 
   @override
   State<CreateSessionScreen> createState() => _CreateSessionScreenState();
@@ -222,19 +227,25 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     setState(() => _busy = true);
     try {
       final auth = context.read<AuthProvider>();
-      await auth.ensureFreshSession();
-      final ref = auth.managerRef;
-      if (ref == null) {
+      final conn = auth.connectionFor(widget.profileId);
+      if (conn == null || conn.profile.sessionToken == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Not authenticated'),
+              content: Text('Not connected'),
               backgroundColor: AppColors.danger,
             ),
           );
         }
         return;
       }
+      await conn.ensureFreshSession();
+      final mgrRef = ServerRef(
+        id: '__manager__',
+        name: conn.profile.name,
+        baseUrl: conn.profile.baseUrl,
+        token: conn.profile.sessionToken!,
+      );
 
       final manualArgs = _argsController.text
           .trim()
@@ -257,14 +268,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         mode: _mode,
       );
 
-      final session = await auth.authService.transport.createSession(
-        ref,
+      final session = await conn.transport.createSession(
+        mgrRef,
         spec,
-        agentId: widget.serverId,
+        agentId: widget.agentId,
       );
 
       if (mounted) {
-        context.replace('/session/${widget.serverId}/${session.id}');
+        context.replace(
+          '/session/${widget.profileId}/${widget.agentId}/${session.id}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -282,14 +295,20 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   Future<void> _pickDirectory() async {
     final auth = context.read<AuthProvider>();
-    await auth.ensureFreshSession();
-    final ref = auth.managerRef;
-    if (ref == null) return;
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null || conn.profile.sessionToken == null) return;
+    await conn.ensureFreshSession();
+    final mgrRef = ServerRef(
+      id: '__manager__',
+      name: conn.profile.name,
+      baseUrl: conn.profile.baseUrl,
+      token: conn.profile.sessionToken!,
+    );
 
     final path = await DirectoryPickerModal.show(
       context,
-      serverRef: ref,
-      agentId: widget.serverId,
+      serverRef: mgrRef,
+      agentId: widget.agentId,
       initialPath: _cwdController.text.isNotEmpty ? _cwdController.text : null,
     );
     if (path != null && mounted) {

@@ -3,11 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/auth_provider.dart';
+import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/create_session_screen.dart';
+import 'package:tired_agent_app/screens/manager_detail_screen.dart';
+import 'package:tired_agent_app/screens/pinned_sessions_screen.dart';
 import 'package:tired_agent_app/screens/server_list_screen.dart';
-import 'package:tired_agent_app/screens/server_add_screen.dart';
 import 'package:tired_agent_app/screens/server_sessions_screen.dart';
 import 'package:tired_agent_app/screens/session_detail_screen.dart';
 import 'package:tired_agent_app/screens/settings_screen.dart';
@@ -31,6 +33,7 @@ class TiredAgentApp extends StatefulWidget {
 class _TiredAgentAppState extends State<TiredAgentApp> {
   late final AuthService _authService;
   late final AuthProvider _authProvider;
+  late final PinnedSessionProvider _pinnedSessionProvider;
   late final ServerProvider _serverProvider;
   late final ToastProvider _toastProvider;
   late final GoRouter _router;
@@ -42,39 +45,38 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     final storage = StorageService();
     _authService = AuthService(storage: storage);
     _authProvider = AuthProvider(authService: _authService);
+    _pinnedSessionProvider = PinnedSessionProvider();
     _serverProvider = ServerProvider(_authService);
     _toastProvider = ToastProvider();
 
     _router = GoRouter(
       navigatorKey: _rootNavigatorKey,
-      // Re-evaluate redirects when auth state changes
       refreshListenable: _authProvider,
       routes: [
-        // ── Main shell with bottom tabs ───────────────────────────
+        // ── Main shell with bottom tabs ──────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (_, _, navigationShell) =>
               MainShell(navigationShell: navigationShell),
           branches: [
-            // Tab 0: Servers
+            // Tab 0: Managers — multi-manager list
             StatefulShellBranch(
               routes: [
                 GoRoute(
                   path: '/',
                   builder: (_, _) => const ServerListScreen(),
                 ),
+              ],
+            ),
+            // Tab 1: Sessions — pinned sessions
+            StatefulShellBranch(
+              routes: [
                 GoRoute(
-                  path: '/server/new',
-                  builder: (_, _) => const ServerAddScreen(),
-                ),
-                GoRoute(
-                  path: '/server/:id',
-                  builder: (_, state) => ServerSessionsScreen(
-                    serverId: state.pathParameters['id'] ?? '',
-                  ),
+                  path: '/sessions',
+                  builder: (_, _) => const PinnedSessionsScreen(),
                 ),
               ],
             ),
-            // Tab 1: Settings
+            // Tab 2: Settings
             StatefulShellBranch(
               routes: [
                 GoRoute(
@@ -86,25 +88,47 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
           ],
         ),
 
-        // ── Full-screen routes (no tabs) ──────────────────────────
+        // ── Manager detail (full-screen) ─────────────────────────
         GoRoute(
-          path: '/session/:serverId/:sessionId',
-          builder: (_, state) => SessionDetailScreen(
-            serverId: state.pathParameters['serverId'] ?? '',
-            sessionId: state.pathParameters['sessionId'] ?? '',
+          path: '/profile/:profileId',
+          builder: (_, state) => ManagerDetailScreen(
+            profileId: state.pathParameters['profileId'] ?? '',
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+        // ── Agent sessions (full-screen, no tabs) ────────────────
+        GoRoute(
+          path: '/profile/:profileId/agent/:agentId',
+          builder: (_, state) => ServerSessionsScreen(
+            profileId: state.pathParameters['profileId'] ?? '',
+            agentId: state.pathParameters['agentId'] ?? '',
           ),
           parentNavigatorKey: _rootNavigatorKey,
         ),
         GoRoute(
-          path: '/server/:id/create-session',
-          builder: (_, state) =>
-              CreateSessionScreen(serverId: state.pathParameters['id'] ?? ''),
+          path: '/profile/:profileId/agent/:agentId/create',
+          builder: (_, state) => CreateSessionScreen(
+            profileId: state.pathParameters['profileId'] ?? '',
+            agentId: state.pathParameters['agentId'] ?? '',
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+
+        // ── Session detail (full-screen) ─────────────────────────
+        GoRoute(
+          path: '/session/:profileId/:agentId/:sessionId',
+          builder: (_, state) => SessionDetailScreen(
+            profileId: state.pathParameters['profileId'] ?? '',
+            agentId: state.pathParameters['agentId'] ?? '',
+            sessionId: state.pathParameters['sessionId'] ?? '',
+          ),
           parentNavigatorKey: _rootNavigatorKey,
         ),
       ],
     );
 
     _authProvider.boot();
+    _pinnedSessionProvider.load();
   }
 
   @override
@@ -112,6 +136,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
+        ChangeNotifierProvider.value(value: _pinnedSessionProvider),
         ChangeNotifierProvider.value(value: _serverProvider),
         ChangeNotifierProvider.value(value: _toastProvider),
       ],
