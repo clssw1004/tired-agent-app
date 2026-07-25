@@ -106,7 +106,56 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   // ── Actions ────────────────────────────────────────────────────────
 
+  void _requestKill(String sessionId) {
+    _showConfirm(
+      title: 'Kill this session?',
+      desc: 'The running process will be terminated and removed from the list.',
+      onConfirm: () async {
+        final auth = context.read<AuthProvider>();
+        final conn = auth.connectionFor(widget.profileId);
+        if (conn == null) return;
+        await conn.ensureFreshSession();
+        final mgrRef = ServerRef(
+          id: '__manager__',
+          name: conn.profile.name,
+          baseUrl: conn.profile.baseUrl,
+          token: conn.profile.sessionToken!,
+        );
+        await conn.transport.killSession(
+          mgrRef,
+          sessionId,
+          agentId: widget.agentId,
+        );
+        await _load();
+      },
+    );
+  }
 
+  void _requestDelete(String sessionId) {
+    _showConfirm(
+      title: 'Delete session log?',
+      desc:
+          'Removes the database row and the on-disk output log. Cannot be undone.',
+      onConfirm: () async {
+        final auth = context.read<AuthProvider>();
+        final conn = auth.connectionFor(widget.profileId);
+        if (conn == null) return;
+        await conn.ensureFreshSession();
+        final mgrRef = ServerRef(
+          id: '__manager__',
+          name: conn.profile.name,
+          baseUrl: conn.profile.baseUrl,
+          token: conn.profile.sessionToken!,
+        );
+        await conn.transport.deleteSession(
+          mgrRef,
+          sessionId,
+          agentId: widget.agentId,
+        );
+        await _load();
+      },
+    );
+  }
 
   void _requestPrune() {
     _showConfirm(
@@ -432,6 +481,12 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                         sessionId: session.id,
                       ),
                       onPin: () => _onPin(session),
+                      onKill: session.status == SessionStatus.running
+                          ? () => _requestKill(session.id)
+                          : null,
+                      onDelete: session.status == SessionStatus.exited
+                          ? () => _requestDelete(session.id)
+                          : null,
                       onTap: () => context.push(
                         '/session/${widget.profileId}/${widget.agentId}/${session.id}',
                       ),
