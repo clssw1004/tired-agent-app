@@ -45,6 +45,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> boot() async {
     try {
       await _authService.loadProfiles();
+      _listenToAll();
       // Show saved profiles immediately, even if connectAll() is slow.
       notifyListeners();
       await _authService.connectAll();
@@ -68,6 +69,7 @@ class AuthProvider extends ChangeNotifier {
     String? name,
   }) async {
     final conn = await _authService.login(url, token, name: name);
+    conn.addListener(notifyListeners);
     notifyListeners();
     return conn;
   }
@@ -78,8 +80,48 @@ class AuthProvider extends ChangeNotifier {
 
   /// Remove a manager profile and its connection entirely.
   Future<void> removeManager(String profileId) async {
+    final conn = _authService.connectionFor(profileId);
+    conn?.removeListener(notifyListeners);
     await _authService.removeManager(profileId);
     notifyListeners();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Reconnect (login with new API token)
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// Reconnect a manager with a fresh [apiToken].
+  ///
+  /// Persists the new refresh token so the connection survives app restarts.
+  Future<bool> reconnect(String profileId, String apiToken) async {
+    final conn = _authService.connectionFor(profileId);
+    if (conn == null) return false;
+    await conn.connect(apiToken: apiToken);
+    debugPrint('[AuthProvider] reconnect status=${conn.status} error=${conn.error}');
+    if (conn.status == ConnectionStatus.connected) {
+      if (conn.profile.refreshToken != null) {
+        debugPrint('[AuthProvider] saving refresh token for $profileId');
+        await _authService.storage.saveManagerRefreshToken(
+          profileId,
+          conn.profile.refreshToken!,
+        );
+      } else {
+        debugPrint('[AuthProvider] WARN refreshToken is null after connect');
+      }
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Internal helpers
+  // ═══════════════════════════════════════════════════════════════════
+
+  void _listenToAll() {
+    for (final conn in _authService.connections) {
+      conn.addListener(notifyListeners);
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════

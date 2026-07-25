@@ -87,7 +87,7 @@ class ServerListScreen extends StatelessWidget {
         final conn = auth.connections[index];
         return _ManagerCard(
           connection: conn,
-          onReconnect: () => _showReconnectDialog(context, auth, conn),
+          onTap: () => _onTapCard(context, auth, conn),
         );
       },
     );
@@ -187,27 +187,40 @@ class ServerListScreen extends StatelessWidget {
 
     if (result != null && context.mounted) {
       debugPrint('[Reconnect] token received, connecting…');
-      try {
-        await conn.connect(apiToken: result);
-        debugPrint('[Reconnect] connect() returned, status=${conn.status}');
-        if (context.mounted) {
+      final ok = await auth.reconnect(conn.profile.id, result);
+      debugPrint('[Reconnect] ok=$ok');
+      if (context.mounted) {
+        if (ok) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: ThemedText.small('${conn.profile.name} reconnected'),
               backgroundColor: AppColors.backgroundElement,
             ),
           );
-        }
-      } catch (e) {
-        if (context.mounted) {
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(conn.error ?? 'Reconnect failed'),
               backgroundColor: AppColors.danger,
             ),
           );
         }
       }
+    }
+  }
+
+  Future<void> _onTapCard(
+    BuildContext context,
+    AuthProvider auth,
+    ManagerConnection conn,
+  ) async {
+    // Silent retry with stored credentials (handles transient network errors).
+    await conn.connect();
+    if (conn.status == ConnectionStatus.connected) return;
+
+    // Any failure → show reconnect dialog (token expired or cleared).
+    if (context.mounted) {
+      await _showReconnectDialog(context, auth, conn);
     }
   }
 }
@@ -218,9 +231,9 @@ class ServerListScreen extends StatelessWidget {
 
 class _ManagerCard extends StatelessWidget {
   final ManagerConnection connection;
-  final VoidCallback? onReconnect;
+  final VoidCallback? onTap;
 
-  const _ManagerCard({required this.connection, this.onReconnect});
+  const _ManagerCard({required this.connection, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +261,7 @@ class _ManagerCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
       child: GestureDetector(
-        onTap: connStatus != ConnectionStatus.connected ? onReconnect : null,
+        onTap: connStatus != ConnectionStatus.connected ? onTap : null,
         child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,

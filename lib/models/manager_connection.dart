@@ -109,22 +109,27 @@ class ManagerConnection extends ChangeNotifier {
             result.sessionExpiresIn * 1000;
         profile.lastUsedMs = DateTime.now().millisecondsSinceEpoch;
       } else if (profile.refreshToken != null) {
-        // Restore via refresh token.
-        final ref = ServerRef(
-          id: '__manager__',
-          name: profile.name,
-          baseUrl: profile.baseUrl,
-          token: profile.refreshToken!,
-        );
-        final result = await transport.refreshSession(
-          ref,
-          profile.refreshToken!,
-        );
-        profile.sessionToken = result.sessionToken;
-        profile.sessionExpiresAtMs =
-            DateTime.now().millisecondsSinceEpoch +
-            result.sessionExpiresIn * 1000;
-        profile.refreshToken = result.refreshToken;
+        // Session still valid → skip refresh.
+        if (isSessionFresh) {
+          debugPrint('[ManagerConnection] session fresh, skipping refresh');
+        } else {
+          // Restore via refresh token.
+          final ref = ServerRef(
+            id: '__manager__',
+            name: profile.name,
+            baseUrl: profile.baseUrl,
+            token: profile.refreshToken!,
+          );
+          final result = await transport.refreshSession(
+            ref,
+            profile.refreshToken!,
+          );
+          profile.sessionToken = result.sessionToken;
+          profile.sessionExpiresAtMs =
+              DateTime.now().millisecondsSinceEpoch +
+              result.sessionExpiresIn * 1000;
+          profile.refreshToken = result.refreshToken;
+        }
       } else {
         throw Exception('No credentials available for ${profile.name}');
       }
@@ -151,8 +156,10 @@ class ManagerConnection extends ChangeNotifier {
         error = msg;
         status = ConnectionStatus.idle;
       } else {
+        // Network / transient error → keep tokens, show idle.
+        // Next boot (or manual retry) will try again without re-auth.
         error = msg;
-        status = ConnectionStatus.error;
+        status = ConnectionStatus.idle;
       }
     }
     notifyListeners();

@@ -49,6 +49,15 @@ class AuthService {
     final conn = _connections[profileId];
     if (conn == null) throw Exception('Profile not found: $profileId');
     await conn.connect(apiToken: apiToken);
+
+    // Persist the new refresh token after any successful auth.
+    if (conn.status == ConnectionStatus.connected &&
+        conn.profile.refreshToken != null) {
+      await storage.saveManagerRefreshToken(
+        profileId,
+        conn.profile.refreshToken!,
+      );
+    }
   }
 
   /// Disconnect and unregister a connection.
@@ -66,6 +75,14 @@ class AuthService {
       _connections.values.map((conn) async {
         if (conn.profile.refreshToken != null || conn.profile.sessionToken != null) {
           await conn.connect();
+          // Persist rotated refresh token (single-use sliding refresh).
+          if (conn.status == ConnectionStatus.connected &&
+              conn.profile.refreshToken != null) {
+            await storage.saveManagerRefreshToken(
+              conn.profile.id,
+              conn.profile.refreshToken!,
+            );
+          }
         }
       }),
       eagerError: false,
@@ -118,6 +135,14 @@ class AuthService {
     if (existing != null) {
       await existing.disconnect();
       await existing.connect(apiToken: apiToken);
+      // Persist the new refresh token (rotated by login).
+      if (existing.status == ConnectionStatus.connected &&
+          existing.profile.refreshToken != null) {
+        await storage.saveManagerRefreshToken(
+          existing.profile.id,
+          existing.profile.refreshToken!,
+        );
+      }
       // Update name if caller provided one.
       if (name != null) existing.profile.name = name;
       await _persistProfiles();
