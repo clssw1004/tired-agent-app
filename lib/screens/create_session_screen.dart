@@ -19,7 +19,7 @@ String _generateDefaultLabel() {
     (_) => _labelChars[Random().nextInt(_labelChars.length)],
   ).join();
   final now = DateTime.now();
-  final pad = (int n) => n.toString().padLeft(2, '0');
+  String pad(int n) => n.toString().padLeft(2, '0');
   final stamp =
       '${now.year}${pad(now.month)}${pad(now.day)}T${pad(now.hour)}${pad(now.minute)}${pad(now.second)}';
   return '${rnd}_$stamp';
@@ -348,7 +348,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _presets.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(width: AppSpacing.two),
                 itemBuilder: (context, index) {
                   final p = _presets[index];

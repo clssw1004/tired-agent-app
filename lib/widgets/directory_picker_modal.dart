@@ -373,7 +373,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _favorites.length,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           const Divider(color: AppColors.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final fav = _favorites[index];
@@ -398,7 +398,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _recent.length,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           const Divider(color: AppColors.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final recent = _recent[index];
@@ -430,7 +430,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _entries.length,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           const Divider(color: AppColors.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final entry = _entries[index];
