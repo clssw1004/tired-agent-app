@@ -7,6 +7,8 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
+import 'package:tired_agent_app/widgets/pty_keyboard_panel.dart';
 
 /// PTY session view using xterm2 for terminal emulation.
 class PtySessionView extends StatefulWidget {
@@ -28,8 +30,14 @@ class PtySessionView extends StatefulWidget {
 class _PtySessionViewState extends State<PtySessionView> {
   final Terminal _terminal = Terminal(maxLines: 10000);
   final HttpSseTransport _transport = HttpSseTransport();
+  final PtyModifierState _modifierState = PtyModifierState();
   Subscription? _subscription;
   int _currentOffset = 0;
+  bool _keyboardExpanded = false;
+
+  /// Resolve keyboard layout from the session command.
+  PtyKeyboardConfig get _keyboardConfig =>
+      PtyKeyboardConfig.fromCommand(widget.session.cmd);
 
   @override
   void initState() {
@@ -71,6 +79,14 @@ class _PtySessionViewState extends State<PtySessionView> {
   }
 
   void _setupTerminal() {
+    // Inject modifier handler into the xterm2 input pipeline so that
+    // toggling Ctrl/Alt/Meta from the virtual keyboard affects physical
+    // keystrokes coming from the system keyboard.
+    _terminal.inputHandler = PtyModifierHandler(
+      state: _modifierState,
+      next: defaultInputHandler,
+    );
+
     _terminal.onOutput = (String data) {
       _pendingOutput += data;
       _scheduleFlush();
@@ -139,6 +155,7 @@ class _PtySessionViewState extends State<PtySessionView> {
   @override
   void dispose() {
     _subscription?.close();
+    _modifierState.dispose();
     super.dispose();
   }
 
@@ -147,11 +164,31 @@ class _PtySessionViewState extends State<PtySessionView> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: TerminalView(
-          _terminal,
-          autofocus: true,
-          backgroundOpacity: 1.0,
-          deleteDetection: true,
+        child: Column(
+          children: [
+            Expanded(
+              child: TerminalView(
+                _terminal,
+                autofocus: false,
+                backgroundOpacity: 1.0,
+                deleteDetection: true,
+              ),
+            ),
+            PtyKeyboardPanel(
+              config: _keyboardConfig,
+              modifierState: _modifierState,
+              expanded: _keyboardExpanded,
+              onToggle: () =>
+                  setState(() => _keyboardExpanded = !_keyboardExpanded),
+              onSendBytes: (bytes) => _transport.sendInput(
+                widget.serverRef,
+                widget.session.id,
+                bytes,
+                agentId: widget.agentId,
+              ),
+              onDismissKeyboard: () => FocusScope.of(context).unfocus(),
+            ),
+          ],
         ),
       ),
     );
