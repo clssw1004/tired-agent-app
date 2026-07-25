@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/pinned_session_provider.dart';
-import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/create_session_screen.dart';
 import 'package:tired_agent_app/screens/manager_detail_screen.dart';
@@ -34,7 +33,6 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
   late final AuthService _authService;
   late final AuthProvider _authProvider;
   late final PinnedSessionProvider _pinnedSessionProvider;
-  late final ServerProvider _serverProvider;
   late final ToastProvider _toastProvider;
   late final GoRouter _router;
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -46,7 +44,6 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     _authService = AuthService(storage: storage);
     _authProvider = AuthProvider(authService: _authService);
     _pinnedSessionProvider = PinnedSessionProvider();
-    _serverProvider = ServerProvider(_authService);
     _toastProvider = ToastProvider();
 
     _router = GoRouter(
@@ -137,7 +134,6 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProvider.value(value: _pinnedSessionProvider),
-        ChangeNotifierProvider.value(value: _serverProvider),
         ChangeNotifierProvider.value(value: _toastProvider),
       ],
       child: MaterialApp.router(

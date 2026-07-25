@@ -1,4 +1,4 @@
-package com.example.tired_agent_app
+package com.clssw.tiredAgent
 
 import io.flutter.embedding.android.FlutterActivity
 

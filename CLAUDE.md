@@ -7,6 +7,7 @@
 - 分支名称格式：`${修改类型(feat/fix/refactor)}/${内容相关-${日期(年月日)}}`
 - 任何 Dart 代码改动前，查阅 [Flutter API 文档](https://api.flutter.dev/) 确认最佳实践
 - 修改 android/ios 原生配置时，优先使用 Flutter plugin 的 Dart 层配置（如 `AndroidManifest.xml` 配置在 plugin 的 `android/src/main/` 下），不直接触碰 `android/app/` 下的原生文件
+- **涉及服务端交互（Transport、协议类型、Session 管理等）时，参考 `C:\wspec\tired-agent\` 仓库中对应的 TypeScript 实现**，保持 Dart 端与协议对齐
 
 ## Branch strategy
 
@@ -48,19 +49,11 @@ flutter pub outdated           # 检查过期依赖
 
 ## 架构概要
 
-`@tired-agent/protocol` 是后端仓库的共享 npm 包（`file:../tired-agent/packages/protocol`），Flutter 端手写 Dart 镜像类型和 Transport 实现，协议完全对齐。
-
-Mobile 端在自己仓库内保留以下源码副本：
-
-- `lib/protocol/` — Dart 手写类型 + Transport 接口 + HttpSseTransport 实现（对应 TS 的 `@tired-agent/protocol`）
-- `lib/renderer/` — ClaudeRenderer NDJSON 解析器（从 tired-agent/web 的手工 Dart 翻译）
-- `lib/utils/` — 纯函数工具集（从 tired-agent/web 的手工 Dart 翻译）
-
 ### 数据流
 
 ```
 App → AuthProvider(login) → transport.login(ref) → manager /v1/manager/auth/login
-    → ServerProvider(listAgents) → transport.listAgents(ref) → manager /v1/manager/agents
+    → AuthProvider.connectionFor(profileId) → transport.listAgents(ref) → manager /v1/manager/agents
     → subscribe → transport.subscribe(ref, sessionId, handlers) → agent SSE stream
     → chunk accumulation → ClaudeRenderer.processChunk → UI 渲染
 ```
@@ -69,10 +62,10 @@ App → AuthProvider(login) → transport.login(ref) → manager /v1/manager/aut
 
 | 模块 | 说明 |
 |---|---|
-| `screens/` | 页面层（go_router 路由），对应原 Expo 的 `src/app/` |
-| `providers/` | 状态管理层（Provider + ChangeNotifier），对应原 store/ |
-| `protocol/` | 协议层 Dart 镜像，手写自 `@tired-agent/protocol` |
-| `renderer/` | ClaudeRenderer NDJSON 解析引擎，Dart 翻译 |
+| `screens/` | 页面层（go_router 路由） |
+| `providers/` | 状态管理层（Provider + ChangeNotifier） |
+| `protocol/` | 协议层 Dart 镜像（手写自 TypeScript） |
+| `renderer/` | ClaudeRenderer NDJSON 解析引擎 |
 | `widgets/pty_session_view.dart` | WebView + xterm.js + 自定义键盘 bridge |
 
 ## 代码规范
@@ -273,21 +266,6 @@ Future<void> _refresh() async {
 - Flutter 在 Windows 上开发 Android 应用工作正常；iOS 构建需 macOS
 - 路径 separator：Dart 使用 `Uri` / `Platform.pathSeparator`，**不**硬编码 `/` 或 `\\`
 - `webview_flutter` 在 Windows 上可用 Android 模拟器/真机测试
-
-## 跨端引用（与 tired-agent 的关系）
-
-```
-C:\wspec\tired_agent_app\              （独立仓库 — 当前 Flutter 项目）
-  lib/protocol/    → Dart 翻译自 tired-agent/packages/protocol/src/（类型 + Transport）
-  lib/renderer/    → Dart 翻译自 tired-agent/packages/web/src/renderer/（NDJSON 解析）
-  lib/utils/       → Dart 翻译自 tired-agent/packages/web/src/lib/（纯函数工具集）
-
-C:\wspec\tired-agent\                 （独立仓库 — 后端 monorepo）
-  packages/protocol/  @tired-agent/protocol  （唯一 TS 共享包，Dart 端手动镜像）
-  packages/agent/     （零改动）
-  packages/manager/   （零改动）
-  packages/web/       （长期管理后台，Flutter 端翻译来源）
-```
 
 ## Release
 
