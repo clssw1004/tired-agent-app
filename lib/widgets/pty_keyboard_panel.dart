@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:xterm2/xterm.dart';
 
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 
 /// Toggle state for modifier keys. Shared between [PtyModifierHandler] and
@@ -88,26 +89,27 @@ class PtyModifierHandler implements TerminalInputHandler {
   }
 }
 
-// --- Key definitions ----------------------------------------------------
-
 /// Collapsible virtual keyboard panel providing modifier keys (Shift/Ctrl/Alt),
 /// arrow keys, and other special keys (Esc/Tab/Enter/Backspace/Home/End) that
 /// are missing from mobile soft keyboards.
 ///
-/// Layout (2 fixed rows when expanded):
-///   Row 1 - [Shift] [Tab] [Esc] [^] [<-] [Enter]
-///   Row 2 - [<-] [down] [->] [Home] [End] [Ctrl] [Alt]
+/// Button rows are defined by [PtyKeyboardConfig] — different session presets
+/// (shell, windows, repl, …) load different layouts.
 ///
 /// When collapsed only a thin toggle handle is visible.
 class PtyKeyboardPanel extends StatelessWidget {
   const PtyKeyboardPanel({
     super.key,
+    required this.config,
     required this.modifierState,
     required this.expanded,
     required this.onToggle,
     required this.onSendBytes,
     this.onDismissKeyboard,
   });
+
+  /// The layout configuration (which rows and keys to show).
+  final PtyKeyboardConfig config;
 
   final PtyModifierState modifierState;
   final bool expanded;
@@ -118,64 +120,17 @@ class PtyKeyboardPanel extends StatelessWidget {
   /// The parent should call [FocusScope.of(context).unfocus()] or similar.
   final VoidCallback? onDismissKeyboard;
 
-  // -- Row layout (reorder or move keys between rows here) ---------------
-
-  static final _row1 = [
-    // Shift+Tab → backtab
-    TerminalKeys.combo([
-      TerminalKeyCode.shift,
-      TerminalKeyCode.tab,
-    ], label: 'Mode'),
-    TerminalKeys.commandShowIcon(
-      icon: Icons.cleaning_services,
-      command: '/clear',
-      withEnter: true,
-      confirm: true,
-    ),
-    TerminalKeys.commandShowIcon(
-      icon: Icons.compress,
-      command: '/compact',
-      withEnter: true,
-      confirm: true,
-    ),
-    TerminalKeys.commandShowIcon(
-      icon: Icons.extension,
-      command: '/plugin',
-      withEnter: true,
-      confirm: true,
-    ),
-    TerminalKeys.backspace,
-  ];
-  static const _row2 = [
-    TerminalKeys.escape,
-    TerminalKeys.shift,
-    TerminalKeys.tab,
-
-    TerminalKeys.up,
-    TerminalKeys.enter,
-  ];
-  static const _row3 = [
-    TerminalKeys.ctrl,
-    TerminalKeys.alt,
-    TerminalKeys.left,
-    TerminalKeys.down,
-    TerminalKeys.right,
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // -- Toggle handle ----------------------------------------------
         _buildHandle(),
         if (expanded) ...[
-          const SizedBox(height: 4),
-          _buildRow(_row1),
-          const SizedBox(height: 4),
-          _buildRow(_row2),
-          const SizedBox(height: 2),
-          _buildRow(_row3),
+          for (final row in config.rows) ...[
+            const SizedBox(height: 4),
+            _buildRow(row),
+          ],
           const SizedBox(height: 2),
         ],
       ],
@@ -187,18 +142,17 @@ class PtyKeyboardPanel extends StatelessWidget {
       onTap: onToggle,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        height: 22,
+        height: 28,
         color: AppColors.surfaceAlt,
-        padding: const EdgeInsets.only(right: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Row(
           children: [
-            const SizedBox(width: 4),
             AnimatedRotation(
               duration: _animDuration,
               turns: expanded ? 0.5 : 0,
               child: Icon(
                 Icons.keyboard_arrow_down,
-                size: 14,
+                size: 16,
                 color: AppColors.primary.withAlpha(160),
               ),
             ),
@@ -206,7 +160,7 @@ class PtyKeyboardPanel extends StatelessWidget {
             Text(
               expanded ? 'Close keyboard' : 'Keys',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 color: AppColors.primary.withAlpha(140),
                 letterSpacing: 1.0,
               ),
@@ -237,10 +191,10 @@ class PtyKeyboardPanel extends StatelessWidget {
               onTap: () => onDismissKeyboard?.call(),
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Icon(
                   Icons.keyboard_hide_outlined,
-                  size: 13,
+                  size: 15,
                   color: AppColors.textSecondary.withAlpha(160),
                 ),
               ),
@@ -380,8 +334,6 @@ class _ModifierButton extends StatelessWidget {
 }
 
 /// A single-shot key button that sends its escape sequence when tapped.
-/// Knows the [PtyModifierState] so keys like Tab can produce Shift+Tab
-/// when Shift is toggled on.
 class _KeyButton extends StatelessWidget {
   const _KeyButton({
     required this.keyDef,
@@ -399,7 +351,6 @@ class _KeyButton extends StatelessWidget {
   void _onTap(BuildContext context) {
     HapticFeedback.lightImpact();
 
-    // If confirm is enabled, show confirmation dialog first.
     if (keyDef.confirm) {
       showDialog<bool>(
         context: context,

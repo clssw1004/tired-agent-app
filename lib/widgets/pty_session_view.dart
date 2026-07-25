@@ -7,6 +7,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/widgets/pty_keyboard_panel.dart';
 
 /// PTY session view using xterm2 for terminal emulation.
@@ -33,6 +34,10 @@ class _PtySessionViewState extends State<PtySessionView> {
   Subscription? _subscription;
   int _currentOffset = 0;
   bool _keyboardExpanded = false;
+
+  /// Resolve keyboard layout from the session command.
+  PtyKeyboardConfig get _keyboardConfig =>
+      PtyKeyboardConfig.fromCommand(widget.session.cmd);
 
   @override
   void initState() {
@@ -164,12 +169,13 @@ class _PtySessionViewState extends State<PtySessionView> {
             Expanded(
               child: TerminalView(
                 _terminal,
-                autofocus: true,
+                autofocus: false,
                 backgroundOpacity: 1.0,
                 deleteDetection: true,
               ),
             ),
             PtyKeyboardPanel(
+              config: _keyboardConfig,
               modifierState: _modifierState,
               expanded: _keyboardExpanded,
               onToggle: () =>
