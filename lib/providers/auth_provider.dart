@@ -1,152 +1,96 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 
-enum AuthStatus { idle, loading, authenticated, error }
-
+/// Reactive provider for multi-manager connections.
+///
+/// No longer has a single "active profile" or global [AuthStatus].
+/// All state is per-connection — access it via [connections] or
+/// [connectionFor].
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
-
-  AuthStatus _status = AuthStatus.idle;
-  String? _error;
 
   AuthProvider({AuthService? authService})
     : _authService = authService ?? AuthService();
 
-  // ─── Core getters (delegate to AuthService's active profile) ────────
+  // ─── Connection access ───────────────────────────────────────────────
 
-  AuthStatus get status => _status;
-  String? get error => _error;
-  AuthService get authService => _authService;
+  /// All managed connections.
+  List<ManagerConnection> get connections => _authService.connections;
 
-  String? get baseUrl => _authService.baseUrl;
-  String? get sessionToken => _authService.sessionToken;
-  List<AgentInfo> get agents => _authService.agents;
+  /// All stored profiles (derived from connections).
   List<ManagerProfile> get profiles => _authService.profiles;
-  String? get activeProfileId => _authService.activeProfileId;
 
-  /// Manager-level [ServerRef] for proxied API calls.
-  /// Returns `null` when not authenticated.
-  ServerRef? get managerRef => _authService.managerRef;
+  /// Look up a connection by [profileId].
+  ManagerConnection? connectionFor(String profileId) =>
+      _authService.connectionFor(profileId);
+
+  /// Convenience helper — the transport for [profileId].
+  Transport? transportFor(String profileId) =>
+      _authService.transportFor(profileId);
+
+  /// Whether there is at least one connected manager.
+  bool get hasAnyConnection =>
+      _authService.connections.any((c) => c.status == ConnectionStatus.connected);
 
   // ═══════════════════════════════════════════════════════════════════
-  //  Boot / load profiles
+  //  Boot
   // ═══════════════════════════════════════════════════════════════════
 
-  /// Load profiles from storage and try to restore the active session.
+  /// Load profiles from storage and connect all.
   Future<void> boot() async {
-    _status = AuthStatus.loading;
-    notifyListeners();
     try {
       await _authService.loadProfiles();
-      final ap = _authService.activeProfileId;
-      if (ap != null && _authService.sessionToken != null) {
-        _status = AuthStatus.authenticated;
-      } else if (ap != null && _authService.sessionToken == null) {
-        // Profile exists but needs re-authentication — try restore.
-        if (_authService.managerRef == null &&
-            _authService.profiles.any((p) => p.refreshToken != null)) {
-          try {
-            await _authService.switchTo(ap);
-          } catch (_) {}
-        }
-        _status = _authService.sessionToken != null
-            ? AuthStatus.authenticated
-            : AuthStatus.idle;
-      } else {
-        _status = AuthStatus.idle;
-      }
-    } catch (e) {
-      _error = e.toString();
-      _status = AuthStatus.idle;
+      await _authService.connectAll();
+    } catch (_) {
+      // Individual connection errors are recorded per-connection;
+      // a boot failure is not fatal.
     }
     notifyListeners();
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  Login
+  //  Login / add manager
   // ═══════════════════════════════════════════════════════════════════
 
-  /// Log in to a manager, creating or re-authenticating a profile.
-  Future<void> login(String url, String token, {String? name}) async {
-    _status = AuthStatus.loading;
-    _error = null;
+  /// Add a new manager and connect it.
+  ///
+  /// Returns the new [ManagerConnection] on success.
+  Future<ManagerConnection> login(
+    String url,
+    String token, {
+    String? name,
+  }) async {
+    final conn = await _authService.login(url, token, name: name);
     notifyListeners();
-    debugPrint('[AuthProvider] login: $url');
-    try {
-      await _authService.login(url, token, name: name);
-      _status = _authService.sessionToken != null
-          ? AuthStatus.authenticated
-          : AuthStatus.error;
-      debugPrint(
-        '[AuthProvider] login OK, agents: ${_authService.agents.length}',
-      );
-    } catch (e) {
-      debugPrint('[AuthProvider] login FAILED: $e');
-      _error = e.toString();
-      _status = AuthStatus.error;
-    }
+    return conn;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Remove manager
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// Remove a manager profile and its connection entirely.
+  Future<void> removeManager(String profileId) async {
+    await _authService.removeManager(profileId);
     notifyListeners();
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  Profile management
+  //  Server ref helpers
   // ═══════════════════════════════════════════════════════════════════
 
-  /// Switch active profile.
-  Future<void> switchTo(String id) async {
-    _status = AuthStatus.loading;
-    notifyListeners();
-    try {
-      await _authService.switchTo(id);
-      _status = _authService.sessionToken != null
-          ? AuthStatus.authenticated
-          : AuthStatus.idle;
-    } catch (e) {
-      _error = e.toString();
-      _status = AuthStatus.error;
-    }
-    notifyListeners();
-  }
-
-  /// Remove a manager profile entirely.
-  Future<void> removeManager(String id) async {
-    await _authService.removeManager(id);
-    _status = _authService.sessionToken != null
-        ? AuthStatus.authenticated
-        : AuthStatus.idle;
-    notifyListeners();
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  //  Logout
-  // ═══════════════════════════════════════════════════════════════════
-
-  /// Log out of the active profile (keeps the profile for later).
-  Future<void> logout() async {
-    await _authService.logoutActiveSession();
-    _status = AuthStatus.idle;
-    _error = null;
-    notifyListeners();
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  //  Agents
-  // ═══════════════════════════════════════════════════════════════════
-
-  Future<List<AgentInfo>> refreshAgents() async {
-    final agents = await _authService.refreshAgents();
-    notifyListeners();
-    return agents;
-  }
-
-  Future<ServerRef?> getServerRef(String agentId) =>
-      _authService.getServerRef(agentId);
-  Future<void> setServerToken(String agentId, String token) =>
-      _authService.setServerToken(agentId, token);
-  Future<void> forgetServer(String agentId) =>
-      _authService.forgetServer(agentId);
-  Future<void> ensureFreshSession() => _authService.ensureFreshSession();
+  Future<ServerRef?> getServerRef(String profileId, String agentId) =>
+      _authService.getServerRef(profileId, agentId);
+  Future<void> setServerToken(
+    String profileId,
+    String agentId,
+    String token,
+  ) => _authService.setServerToken(profileId, agentId, token);
+  Future<void> forgetServer(String profileId, String agentId) =>
+      _authService.forgetServer(profileId, agentId);
 }
