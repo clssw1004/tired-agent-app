@@ -50,15 +50,14 @@ class ManagerConnection extends ChangeNotifier {
 
   /// The per-connection [HttpSseTransport].
   ///
-  /// Created on first access with a [tokenProvider] that delegates to
-  /// [ensureFreshSession] on this connection's own profile.
+  /// Created on first access with a [tokenProvider] that simply returns
+  /// the current session token.  Token refresh is handled explicitly by
+  /// [connect] / [ensureFreshSession] — the Dio 401 interceptor only
+  /// retries with whatever token is available (no recursive refresh).
   HttpSseTransport get transport {
     _transport ??= HttpSseTransport(
-        tokenProvider: () async {
-          await ensureFreshSession();
-          return profile.sessionToken;
-        },
-      );
+      tokenProvider: () async => profile.sessionToken,
+    );
     return _transport!;
   }
 
