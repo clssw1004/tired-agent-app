@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
-import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_manager_form.dart';
@@ -19,7 +18,7 @@ class ServerListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title('Agents'),
+        title: ThemedText.title('Managers'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.primary),
@@ -261,7 +260,13 @@ class _ManagerCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
       child: GestureDetector(
-        onTap: connStatus != ConnectionStatus.connected ? onTap : null,
+        onTap: () {
+          if (connStatus == ConnectionStatus.connected) {
+            context.push('/profile/${profile.id}');
+          } else {
+            onTap?.call();
+          }
+        },
         child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -341,29 +346,7 @@ class _ManagerCard extends StatelessWidget {
               ),
             ),
 
-            // ── Agent list ───────────────────────────────────────
-            if (connection.agents.isEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.three + 10 + AppSpacing.two,
-                  0,
-                  AppSpacing.three,
-                  AppSpacing.two,
-                ),
-                child: ThemedText.small(
-                  connStatus == ConnectionStatus.connected
-                      ? 'No agents available'
-                      : 'Connecting…',
-                  color: AppColors.textSecondary,
-                ),
-              )
-            else
-              ...connection.agents.map(
-                (agent) => _AgentRow(
-                  agent: agent,
-                  profileId: profile.id,
-                ),
-              ),
+            // ── Tap card to view agents ──────────────────────────
           ],
         ),
       ),
@@ -382,84 +365,7 @@ class _ManagerCard extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Agent row inside a Manager card
-// ═══════════════════════════════════════════════════════════════════════
-
-class _AgentRow extends StatelessWidget {
-  final AgentInfo agent;
-  final String profileId;
-
-  const _AgentRow({required this.agent, required this.profileId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.three,
-      ),
-      child: InkWell(
-        onTap: () => context.push(
-          '/profile/$profileId/agent/${agent.id}',
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.one),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.two,
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 12),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: _agentOnlineColor(agent.state),
-                  shape: BoxShape.circle,
-                  boxShadow: agent.state == AgentState.online
-                      ? [
-                          BoxShadow(
-                            color: AppColors.success.withAlpha(80),
-                            blurRadius: 3,
-                          ),
-                        ]
-                      : null,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.two),
-              Expanded(
-                child: ThemedText.small(
-                  agent.name,
-                  color: AppColors.text,
-                ),
-              ),
-              ThemedText.label(
-                agent.baseUrl,
-                color: AppColors.textSecondary,
-              ),
-              const Icon(
-                Icons.chevron_right,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _agentOnlineColor(AgentState s) {
-    switch (s) {
-      case AgentState.online:
-        return AppColors.success;
-      case AgentState.offline:
-        return AppColors.danger;
-      case AgentState.unknown:
-        return AppColors.textSecondary;
-    }
-  }
-}
-
+// Reconnect form
 // ═══════════════════════════════════════════════════════════════════════
 
 /// Reconnect form — owns its [TextEditingController] and disposes it in

@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
+import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/theme.dart';
-import 'package:tired_agent_app/widgets/neon_card.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -105,56 +106,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   // ── Actions ────────────────────────────────────────────────────────
 
-  void _requestKill(String sessionId) {
-    _showConfirm(
-      title: 'Kill this session?',
-      desc: 'The running process will be terminated and removed from the list.',
-      onConfirm: () async {
-        final auth = context.read<AuthProvider>();
-        final conn = auth.connectionFor(widget.profileId);
-        if (conn == null) return;
-        await conn.ensureFreshSession();
-        final mgrRef = ServerRef(
-          id: '__manager__',
-          name: conn.profile.name,
-          baseUrl: conn.profile.baseUrl,
-          token: conn.profile.sessionToken!,
-        );
-        await conn.transport.killSession(
-          mgrRef,
-          sessionId,
-          agentId: widget.agentId,
-        );
-        await _load();
-      },
-    );
-  }
 
-  void _requestDelete(String sessionId) {
-    _showConfirm(
-      title: 'Delete session log?',
-      desc:
-          'Removes the database row and the on-disk output log. Cannot be undone.',
-      onConfirm: () async {
-        final auth = context.read<AuthProvider>();
-        final conn = auth.connectionFor(widget.profileId);
-        if (conn == null) return;
-        await conn.ensureFreshSession();
-        final mgrRef = ServerRef(
-          id: '__manager__',
-          name: conn.profile.name,
-          baseUrl: conn.profile.baseUrl,
-          token: conn.profile.sessionToken!,
-        );
-        await conn.transport.deleteSession(
-          mgrRef,
-          sessionId,
-          agentId: widget.agentId,
-        );
-        await _load();
-      },
-    );
-  }
 
   void _requestPrune() {
     _showConfirm(
@@ -211,19 +163,95 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     }
   }
 
+  // ── Pin / unpin ────────────────────────────────────────────────────
+
+  Future<void> _onPin(Session session) async {
+    final pinService = context.read<PinnedSessionProvider>();
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null) return;
+
+    final agentName = conn.agents
+        .where((a) => a.id == widget.agentId)
+        .firstOrNull
+        ?.name;
+
+    if (pinService.isPinned(
+      profileId: widget.profileId,
+      agentId: widget.agentId,
+      sessionId: session.id,
+    )) {
+      // Already pinned → unpin.
+      await pinService.unpinBySession(
+        profileId: widget.profileId,
+        agentId: widget.agentId,
+        sessionId: session.id,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: ThemedText.small('Session unpinned'),
+            backgroundColor: AppColors.backgroundElement,
+          ),
+        );
+      }
+    } else {
+      // Not pinned → show label dialog then pin.
+      final formKey = GlobalKey<_PinLabelFormState>();
+      final result = await NeonDialog.show<String?>(
+        context: context,
+        title: 'Pin Session',
+        showRobot: true,
+        maxWidth: 400,
+        content: _PinLabelForm(
+          key: formKey,
+          initialLabel: session.label ?? session.cmd,
+        ),
+        actions: [
+          NeonDialogAction(
+            label: 'Cancel',
+            onPressed: (ctx) => Navigator.of(ctx).pop(null),
+          ),
+          NeonDialogAction(
+            label: 'Pin',
+            isPrimary: true,
+            onPressed: (ctx) {
+              final label = formKey.currentState?.label;
+              if (label != null && label.isNotEmpty) {
+                Navigator.of(ctx).pop(label);
+              }
+            },
+          ),
+        ],
+      );
+      if (result == null || !mounted) return;
+      await pinService.pin(
+        profileId: widget.profileId,
+        profileName: conn.profile.name,
+        agentId: widget.agentId,
+        agentName: agentName ?? widget.agentId,
+        sessionId: session.id,
+        sessionLabel: result,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: ThemedText.small('Session pinned'),
+            backgroundColor: AppColors.backgroundElement,
+          ),
+        );
+      }
+    }
+  }
+
   // ── Helpers ─────────────────────────────────────────────────────────
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s < 60000) return '${s ~/ 1000}s ago';
-    if (s < 3600000) return '${s ~/ 60000}m ago';
-    if (s < 86400000) return '${s ~/ 3600000}h ago';
-    return '${s ~/ 86400000}d ago';
-  }
-
-  int _count(SessionStatus? status) {
-    if (status == null) return _sessions.length;
-    return _sessions.where((s) => s.status == status).length;
+    if (s < 60000) return '${s ~/ 1000}s';
+    if (s < 3600000) return '${s ~/ 60000}m';
+    if (s < 86400000) return '${s ~/ 3600000}h';
+    return '${s ~/ 86400000}d';
   }
 
   List<Session> get _visible {
@@ -231,188 +259,232 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     return _sessions.where((s) => s.status == _statusFilter).toList();
   }
 
-  static const _filters = <_StatusFilter>[
-    null,
-    SessionStatus.starting,
-    SessionStatus.running,
-    SessionStatus.exited,
-  ];
-  static const _filterLabels = ['all', 'starting', 'running', 'exited'];
-
   @override
   Widget build(BuildContext context) {
-    final exitedCount = _count(SessionStatus.exited);
+    final auth = context.watch<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    final agentName = _agentName;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title(_agentName ?? 'Sessions'),
+        title: ThemedText.title(agentName ?? widget.agentId),
         actions: [
+          // Status filter
+          PopupMenuButton<_StatusFilter>(
+            icon: const Icon(Icons.filter_list, color: AppColors.textSecondary),
+            onSelected: (f) => setState(() => _statusFilter = f),
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: null, child: Text('All')),
+              const PopupMenuItem(
+                value: SessionStatus.running,
+                child: Text('Running'),
+              ),
+              const PopupMenuItem(
+                value: SessionStatus.exited,
+                child: Text('Exited'),
+              ),
+            ],
+          ),
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.accent),
+            icon: const Icon(Icons.add, color: AppColors.primary),
+            tooltip: 'New Session',
             onPressed: () => context.push(
               '/profile/${widget.profileId}/agent/${widget.agentId}/create',
             ),
-            tooltip: 'New Session',
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: AppColors.primary),
-        ),
       ),
-      body: Column(
-        children: [
-          // ── Toolbar: filters + refresh + prune ────────────────────
-          Padding(
+      body: _buildContent(conn),
+    );
+  }
+
+  Widget _buildContent(ManagerConnection? conn) {
+    if (conn == null) {
+      return Center(child: ThemedText.small('Manager not found'));
+    }
+
+    if (_loading && _sessions.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Column(
+      children: [
+        // ── Prune bar ─────────────────────────────────────────────────
+        if (_pruneInfo != null)
+          Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.four,
               vertical: AppSpacing.two,
             ),
+            color: AppColors.primary.withAlpha(15),
             child: Row(
               children: [
-                ...List.generate(_filters.length, (i) {
-                  final f = _filters[i];
-                  final active = _statusFilter == f;
-                  final cnt = _count(f);
-                  return Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.one),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _statusFilter = f),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.two,
-                          vertical: AppSpacing.one,
-                        ),
-                        decoration: BoxDecoration(
-                          color: active
-                              ? AppColors.surfaceAlt
-                              : AppColors.backgroundElement,
-                          borderRadius: BorderRadius.circular(AppSpacing.three),
-                          border: Border.all(
-                            color: active
-                                ? AppColors.primary.withAlpha(80)
-                                : Colors.transparent,
-                            width: 0.5,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ThemedText.small(
-                              _filterLabels[i],
-                              color: active
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                            ),
-                            if (cnt > 0) ...[
-                              const SizedBox(width: 4),
-                              ThemedText.small(
-                                '$cnt',
-                                color: active
-                                    ? AppColors.primary
-                                    : AppColors.textSecondary,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+                const Icon(
+                  Icons.cleaning_services,
+                  size: 14,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: AppSpacing.one),
+                ThemedText.small(
+                  'Pruned $_pruneInfo session(s)',
+                  color: AppColors.primary,
+                ),
                 const Spacer(),
-                if (_lastLoaded > 0)
-                  ThemedText.small(
-                    _loading ? '⟳' : '⟳ ${_timeSince(_lastLoaded)}',
+                GestureDetector(
+                  onTap: () => setState(() => _pruneInfo = null),
+                  child: const Icon(
+                    Icons.close,
+                    size: 14,
                     color: AppColors.textSecondary,
                   ),
+                ),
               ],
             ),
           ),
 
-          // ── Error / Prune info ─────────────────────────────────────
-          if (_error != null)
-            Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.four,
-                vertical: AppSpacing.one,
-              ),
-              padding: const EdgeInsets.all(AppSpacing.three),
-              decoration: BoxDecoration(
-                color: AppColors.danger.withAlpha(20),
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ThemedText.small(_error!, color: AppColors.danger),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => _error = null),
-                    child: const Icon(
-                      Icons.close,
-                      color: AppColors.danger,
-                      size: 18,
-                    ),
-                  ),
-                ],
-              ),
+        // ── Error banner ──────────────────────────────────────────────
+        if (_error != null)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.four,
+              vertical: AppSpacing.one,
             ),
-
-          if (_pruneInfo != null)
-            Container(
-              margin: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.four,
-                vertical: AppSpacing.one,
-              ),
-              padding: const EdgeInsets.all(AppSpacing.three),
-              decoration: BoxDecoration(
-                color: AppColors.success.withAlpha(20),
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ThemedText.small(
-                      'Cleaned up $_pruneInfo stale sessions.',
-                      color: AppColors.success,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => _pruneInfo = null),
-                    child: const Icon(
-                      Icons.close,
-                      color: AppColors.success,
-                      size: 18,
-                    ),
-                  ),
-                ],
-              ),
+            padding: const EdgeInsets.all(AppSpacing.three),
+            decoration: BoxDecoration(
+              color: AppColors.danger.withAlpha(20),
+              borderRadius: BorderRadius.circular(AppSpacing.two),
             ),
-
-          // ── Session list ────────────────────────────────────────────
-          Expanded(
-            child: _visible.isEmpty
-                ? Center(
-                    child: ThemedText.small(
-                      _loading ? 'Loading…' : 'No sessions',
-                      color: AppColors.textSecondary,
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _visible.length,
-                    itemBuilder: (context, index) {
-                      final session = _visible[index];
-                      return SessionCard(
-                        session: session,
-                        onTap: () => context.push(
-                          '/session/${widget.profileId}/${widget.agentId}/${session.id}',
-                        ),
-                      );
-                    },
-                  ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ThemedText.small(_error!, color: AppColors.danger),
+                ),
+                TextButton(onPressed: _load, child: const Text('Retry')),
+              ],
+            ),
           ),
-        ],
+
+        // ── Header ────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.four,
+            AppSpacing.two,
+            AppSpacing.four,
+            0,
+          ),
+          child: Row(
+            children: [
+              ThemedText.label(
+                '${_visible.length} session(s)',
+                color: AppColors.textSecondary,
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap:
+                    (_sessions
+                            .where((s) => s.status != SessionStatus.exited)
+                            .length) >
+                        0
+                    ? _requestPrune
+                    : null,
+                child: ThemedText.small(
+                  'Prune',
+                  color:
+                      (_sessions
+                              .where((s) => s.status != SessionStatus.exited)
+                              .length) >
+                          0
+                      ? AppColors.textSecondary
+                      : AppColors.textSecondary.withAlpha(60),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.two),
+              ThemedText.small(
+                _loading ? '⟳' : '⟳ ${_timeSince(_lastLoaded)}',
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+
+        // ── Session list ────────────────────────────────────────────
+        Expanded(
+          child: _visible.isEmpty
+              ? Center(
+                  child: ThemedText.small(
+                    _loading ? 'Loading…' : 'No sessions',
+                    color: AppColors.textSecondary,
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _visible.length,
+                  itemBuilder: (context, index) {
+                    final session = _visible[index];
+                    final pinService = context.watch<PinnedSessionProvider>();
+                    return SessionCard(
+                      session: session,
+                      isPinned: pinService.isPinned(
+                        profileId: widget.profileId,
+                        agentId: widget.agentId,
+                        sessionId: session.id,
+                      ),
+                      onPin: () => _onPin(session),
+                      onTap: () => context.push(
+                        '/session/${widget.profileId}/${widget.agentId}/${session.id}',
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Pin label form — owns its TextEditingController to avoid
+// `_dependents.isEmpty` crash on dialog close.
+// ═══════════════════════════════════════════════════════════════════════
+
+class _PinLabelForm extends StatefulWidget {
+  final String initialLabel;
+  const _PinLabelForm({super.key, required this.initialLabel});
+
+  @override
+  _PinLabelFormState createState() => _PinLabelFormState();
+}
+
+class _PinLabelFormState extends State<_PinLabelForm> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialLabel);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String? get label {
+    final t = _controller.text.trim();
+    return t.isNotEmpty ? t : null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: TextField(
+        controller: _controller,
+        decoration: const InputDecoration(labelText: 'Display label'),
+        autofocus: true,
       ),
     );
   }

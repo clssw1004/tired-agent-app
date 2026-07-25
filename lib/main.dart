@@ -3,9 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/auth_provider.dart';
+import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/create_session_screen.dart';
+import 'package:tired_agent_app/screens/manager_detail_screen.dart';
 import 'package:tired_agent_app/screens/pinned_sessions_screen.dart';
 import 'package:tired_agent_app/screens/server_list_screen.dart';
 import 'package:tired_agent_app/screens/server_sessions_screen.dart';
@@ -31,6 +33,7 @@ class TiredAgentApp extends StatefulWidget {
 class _TiredAgentAppState extends State<TiredAgentApp> {
   late final AuthService _authService;
   late final AuthProvider _authProvider;
+  late final PinnedSessionProvider _pinnedSessionProvider;
   late final ServerProvider _serverProvider;
   late final ToastProvider _toastProvider;
   late final GoRouter _router;
@@ -42,6 +45,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     final storage = StorageService();
     _authService = AuthService(storage: storage);
     _authProvider = AuthProvider(authService: _authService);
+    _pinnedSessionProvider = PinnedSessionProvider();
     _serverProvider = ServerProvider(_authService);
     _toastProvider = ToastProvider();
 
@@ -54,7 +58,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
           builder: (_, _, navigationShell) =>
               MainShell(navigationShell: navigationShell),
           branches: [
-            // Tab 0: Agents — multi-manager agent list
+            // Tab 0: Managers — multi-manager list
             StatefulShellBranch(
               routes: [
                 GoRoute(
@@ -84,6 +88,14 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
           ],
         ),
 
+        // ── Manager detail (full-screen) ─────────────────────────
+        GoRoute(
+          path: '/profile/:profileId',
+          builder: (_, state) => ManagerDetailScreen(
+            profileId: state.pathParameters['profileId'] ?? '',
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
         // ── Agent sessions (full-screen, no tabs) ────────────────
         GoRoute(
           path: '/profile/:profileId/agent/:agentId',
@@ -116,6 +128,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     );
 
     _authProvider.boot();
+    _pinnedSessionProvider.load();
   }
 
   @override
@@ -123,6 +136,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _authProvider),
+        ChangeNotifierProvider.value(value: _pinnedSessionProvider),
         ChangeNotifierProvider.value(value: _serverProvider),
         ChangeNotifierProvider.value(value: _toastProvider),
       ],

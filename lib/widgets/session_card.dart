@@ -10,6 +10,8 @@ class SessionCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onKill;
   final VoidCallback? onDelete;
+  final bool isPinned;
+  final VoidCallback? onPin;
 
   const SessionCard({
     super.key,
@@ -17,6 +19,8 @@ class SessionCard extends StatelessWidget {
     required this.onTap,
     this.onKill,
     this.onDelete,
+    this.isPinned = false,
+    this.onPin,
   });
 
   String _timeSince(int ts) {
@@ -38,10 +42,24 @@ class SessionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top row: label + status badge
+          // Top row: label + status badge + pin
           Row(
             children: [
               Expanded(child: ThemedText.mono(session.label ?? session.cmd)),
+              if (onPin != null)
+                GestureDetector(
+                  onTap: onPin,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      size: 16,
+                      color: isPinned
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
               GlowBadge(
                 status: switch (session.status) {
                   SessionStatus.running => BadgeStatus.running,
