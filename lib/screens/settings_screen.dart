@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -90,21 +91,7 @@ class SettingsScreen extends StatelessWidget {
           _InfoTile(label: 'App', value: 'tiredAgentMobile'),
           const SizedBox(height: AppSpacing.one),
           _InfoTile(label: 'Version', value: '1.0.0'),
-          const SizedBox(height: AppSpacing.six),
-
-          // ── Logout ─────────────────────────────────────────────────
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _confirmLogout(context, auth),
-              icon: const Icon(Icons.logout, size: 18, color: AppColors.danger),
-              label: ThemedText.body('Logout', color: AppColors.danger),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.danger.withAlpha(80)),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.three),
-              ),
-            ),
-          ),
+          const SizedBox(height: AppSpacing.four),
         ],
       ),
     );
@@ -170,13 +157,13 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _addManager(BuildContext context, AuthProvider auth) async {
-    final formKey = GlobalKey<_AddManagerFormState>();
+    final formKey = GlobalKey<AddManagerFormState>();
 
-    final formData = await NeonDialog.show<_AddManagerFormData?>(
+    final formData = await NeonDialog.show<AddManagerFormData?>(
       context: context,
       title: 'Add Manager',
       maxWidth: 480,
-      content: _AddManagerForm(
+      content: AddManagerForm(
         key: formKey,
         initialName: 'Manager ${auth.profiles.length + 1}',
       ),
@@ -223,23 +210,6 @@ class SettingsScreen extends StatelessWidget {
           );
         }
       }
-    }
-  }
-
-  Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
-    final confirmed = await NeonDialog.showConfirm(
-      context: context,
-      title: 'Logout?',
-      showRobot: true,
-      content: ThemedText.small(
-        'Disconnect from "${_activeName(auth)}". '
-        'The profile will be kept for later use.',
-      ),
-      confirmText: 'Logout',
-      confirmIsDanger: true,
-    );
-    if (confirmed == true && context.mounted) {
-      await auth.logout();
     }
   }
 }
@@ -352,102 +322,6 @@ class _InfoTile extends StatelessWidget {
               fontSize: 12,
               textAlign: TextAlign.end,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Form data returned by [_AddManagerForm].
-class _AddManagerFormData {
-  final String name;
-  final String url;
-  final String token;
-  const _AddManagerFormData(this.name, this.url, this.token);
-}
-
-/// Stateful form widget that owns its [TextEditingController]s and disposes
-/// them in sync with the dialog's widget tree lifecycle.
-class _AddManagerForm extends StatefulWidget {
-  final String initialName;
-
-  const _AddManagerForm({super.key, required this.initialName});
-
-  @override
-  _AddManagerFormState createState() => _AddManagerFormState();
-}
-
-class _AddManagerFormState extends State<_AddManagerForm> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _urlController;
-  late final TextEditingController _tokenController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.initialName);
-    _urlController = TextEditingController();
-    _tokenController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _urlController.dispose();
-    _tokenController.dispose();
-    super.dispose();
-  }
-
-  _AddManagerFormData get data => _AddManagerFormData(
-        _nameController.text.trim(),
-        _urlController.text.trim(),
-        _tokenController.text.trim(),
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Label',
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
-            ),
-            autocorrect: false,
-          ),
-          const SizedBox(height: AppSpacing.three),
-          TextField(
-            controller: _urlController,
-            decoration: const InputDecoration(
-              labelText: 'Manager URL',
-              hintText: 'http://192.168.1.10:3099',
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
-            ),
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-          ),
-          const SizedBox(height: AppSpacing.three),
-          TextField(
-            controller: _tokenController,
-            decoration: const InputDecoration(
-              labelText: 'Access Token',
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
-            ),
-            obscureText: true,
-            autocorrect: false,
           ),
         ],
       ),

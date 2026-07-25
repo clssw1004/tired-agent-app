@@ -6,7 +6,6 @@ import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/create_session_screen.dart';
-import 'package:tired_agent_app/screens/login_screen.dart';
 import 'package:tired_agent_app/screens/server_list_screen.dart';
 import 'package:tired_agent_app/screens/server_add_screen.dart';
 import 'package:tired_agent_app/screens/server_sessions_screen.dart';
@@ -50,24 +49,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
       navigatorKey: _rootNavigatorKey,
       // Re-evaluate redirects when auth state changes
       refreshListenable: _authProvider,
-      initialLocation: '/login',
-      redirect: (context, state) {
-        final isLoggedIn = _authProvider.status == AuthStatus.authenticated;
-        final path = state.matchedLocation;
-        final allowedWithoutLogin = ['/login', '/settings'];
-
-        if (!isLoggedIn && !allowedWithoutLogin.contains(path)) return '/login';
-        if (isLoggedIn && path == '/login') return '/';
-        return null;
-      },
       routes: [
-        // ── Login (full-screen, no tabs) ──────────────────────────
-        GoRoute(
-          path: '/login',
-          builder: (_, _) => const LoginScreen(),
-          parentNavigatorKey: _rootNavigatorKey,
-        ),
-
         // ── Main shell with bottom tabs ───────────────────────────
         StatefulShellRoute.indexedStack(
           builder: (_, _, navigationShell) =>

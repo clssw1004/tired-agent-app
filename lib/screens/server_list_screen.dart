@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/add_manager_form.dart';
+import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/server_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -16,13 +18,6 @@ class ServerListScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: ThemedText.title('Servers'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.textSecondary),
-            onPressed: () => auth.logout(),
-            tooltip: 'Logout',
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.primary),
@@ -43,27 +38,7 @@ class ServerListScreen extends StatelessWidget {
 
           Expanded(
             child: auth.agents.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ThemedText.small(
-                          auth.sessionToken != null
-                              ? 'No agents connected'
-                              : 'Not connected',
-                          color: AppColors.textSecondary,
-                        ),
-                        if (auth.sessionToken == null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: AppSpacing.two),
-                            child: ThemedText.small(
-                              'Go to Settings to add or switch a manager',
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                      ],
-                    ),
-                  )
+                ? _buildEmptyState(context, auth)
                 : ListView.builder(
                     itemCount: auth.agents.length,
                     itemBuilder: (context, index) {
@@ -92,6 +67,125 @@ class ServerListScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildEmptyState(BuildContext context, AuthProvider auth) {
+    // First launch — no profiles at all → welcome guide
+    if (auth.profiles.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.smart_toy,
+                size: 80,
+                color: AppColors.primary.withAlpha(180),
+              ),
+              const SizedBox(height: AppSpacing.four),
+              ThemedText.title(
+                'Welcome to tiredAgent',
+                color: AppColors.text,
+              ),
+              const SizedBox(height: AppSpacing.two),
+              ThemedText(
+                '添加一个 Manager 服务器来管理你的\n代理服务器和会话',
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.six),
+              ElevatedButton.icon(
+                onPressed: () => _showAddManager(context, auth),
+                icon: const Icon(Icons.add, size: 20),
+                label: const Text('Add Manager'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Has profiles but not connected → hint text
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ThemedText.small(
+            auth.sessionToken != null
+                ? 'No agents connected'
+                : 'Not connected',
+            color: AppColors.textSecondary,
+          ),
+          if (auth.sessionToken == null)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.two),
+              child: ThemedText.small(
+                'Select a manager above or go to Settings to add one',
+                color: AppColors.textSecondary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAddManager(BuildContext context, AuthProvider auth) async {
+    final formKey = GlobalKey<AddManagerFormState>();
+
+    final formData = await NeonDialog.show<AddManagerFormData?>(
+      context: context,
+      title: 'Add Manager',
+      maxWidth: 480,
+      content: AddManagerForm(
+        key: formKey,
+        initialName: 'Manager ${auth.profiles.length + 1}',
+      ),
+      actions: [
+        NeonDialogAction(
+          label: 'Cancel',
+          onPressed: (ctx) => Navigator.of(ctx).pop(null),
+        ),
+        NeonDialogAction(
+          label: 'Connect',
+          isPrimary: true,
+          onPressed: (ctx) {
+            final data = formKey.currentState?.data;
+            if (data != null) Navigator.of(ctx).pop(data);
+          },
+        ),
+      ],
+    );
+
+    if (formData != null && context.mounted) {
+      if (formData.url.isEmpty || formData.token.isEmpty) return;
+
+      try {
+        await auth.login(
+          formData.url,
+          formData.token,
+          name: formData.name.isNotEmpty ? formData.name : null,
+        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: ThemedText.small('Manager added'),
+              backgroundColor: AppColors.backgroundElement,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 
