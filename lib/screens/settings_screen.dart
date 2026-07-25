@@ -266,9 +266,13 @@ class SettingsScreen extends StatelessWidget {
       }
     }
 
-    urlController.dispose();
-    tokenController.dispose();
-    nameController.dispose();
+    // Dispose controllers after the dialog's route animation completes,
+    // otherwise TextField listeners may still be active → crash.
+    Future.microtask(() {
+      urlController.dispose();
+      tokenController.dispose();
+      nameController.dispose();
+    });
   }
 
   Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
