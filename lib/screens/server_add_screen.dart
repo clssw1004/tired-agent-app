@@ -63,7 +63,7 @@ class _ServerAddScreenState extends State<ServerAddScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title('Add Server'),
+        title: ThemedText.title('Add Agent'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.primary),

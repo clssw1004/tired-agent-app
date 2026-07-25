@@ -17,7 +17,7 @@ class ServerListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title('Servers'),
+        title: ThemedText.title('Agents'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.primary),
@@ -59,7 +59,7 @@ class ServerListScreen extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => context.push('/server/new'),
                     icon: const Icon(Icons.add, size: 20),
-                    label: const Text('Add Server'),
+                    label: const Text('Add Agent'),
                   ),
                 ),
               ),
