@@ -205,7 +205,48 @@ class MyFormState extends State<MyForm> {
 
 框架保证 widget 树从子到父依次销毁：`TextField` 先 dispose（移除 listener），然后 parent State 的 `dispose()` 才执行 → 安全释放 controller。
 
-相关文件：`lib/widgets/add_manager_form.dart`、`lib/screens/server_list_screen.dart:_ReconnectForm`
+相关文件：`lib/widgets/add_manager_form.dart`、`lib/screens/server_list_screen.dart:_ReconnectForm`、`lib/screens/server_sessions_screen.dart:_PinLabelForm`
+
+### initState 中触发 notifyListeners 链
+
+**错误做法**：`initState` 调用异步方法 → `notifyListeners()` → GoRouter/AuthProvider 在 build 阶段收到通知 → "setState() called during build" 崩溃。
+
+```dart
+// ❌ conn.connect() → ManagerConnection.notifyListeners() → AuthProvider → GoRouter rebuild
+@override
+void initState() {
+  super.initState();
+  _loadAgents(); // 内部调用 conn.connect() → notifyListeners()
+}
+```
+
+**原因**：`initState` 在 widget 首次构建期间执行。`connect()` 调用 `notifyListeners()` 后通知链传到 `GoRouter`，GoRouter 尝试在 build 阶段调用 `setState()` → Flutter 抛出异常（`Router<Object>` 不允许在 build 中标记 dirty）。
+
+**正确做法**：
+1. **同步加载缓存数据** — 直接从已有状态读取（如 `conn.agents`），避免 notifyListeners
+2. **异步刷新延迟到首帧后** — 用 `addPostFrameCallback` 或 `Future.microtask`
+
+```dart
+@override
+void initState() {
+  super.initState();
+  // 第1步：同步从缓存加载（不会触发 notifyListeners）
+  final conn = context.read<AuthProvider>().connectionFor(profileId);
+  _agents = conn?.agents ?? [];
+
+  // 第2步：首帧后异步刷新
+  WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
+}
+
+Future<void> _refresh() async {
+  await conn?.connect();  // 此时 build 阶段已过，安全
+  setState(() { _agents = List.from(conn!.agents); });
+}
+```
+
+**触发途径**：`ManagerConnection.connect()` → `notifyListeners()` → `AuthProvider`（监听 ManagerConnection）→ `notifyListeners()` → `GoRouter`（`refreshListenable` 监听 AuthProvider）→ 触发路由重建。
+
+相关文件：`lib/screens/manager_detail_screen.dart`
 
 ### 与 tired-agent/web 的同步
 
