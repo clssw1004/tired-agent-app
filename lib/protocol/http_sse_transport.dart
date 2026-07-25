@@ -110,7 +110,7 @@ class HttpSseTransport implements Transport {
       method: method,
       headers: {
         if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-        if (agentId != null) 'X-Agent-Id': agentId,
+        'X-Agent-Id': ?agentId,
       },
     );
 
@@ -340,7 +340,7 @@ class HttpSseTransport implements Transport {
           headers: {
             'Authorization': 'Bearer $token',
             'Accept': 'text/event-stream',
-            if (agentId != null) 'X-Agent-Id': agentId,
+            'X-Agent-Id': ?agentId,
           },
           // Don't throw on non-2xx so we can read the error body.
           validateStatus: (_) => true,
@@ -538,7 +538,7 @@ class HttpSseTransport implements Transport {
     final data = await _request(
       'POST',
       '${_directoriesUrl(ref.baseUrl, agentId: agentId)}/favorites',
-      body: {'path': path, if (name != null) 'name': name},
+      body: {'path': path, 'name': ?name},
       token: ref.token,
       agentId: agentId,
     );

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/add_manager_form.dart';
+import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -89,21 +91,7 @@ class SettingsScreen extends StatelessWidget {
           _InfoTile(label: 'App', value: 'tiredAgentMobile'),
           const SizedBox(height: AppSpacing.one),
           _InfoTile(label: 'Version', value: '1.0.0'),
-          const SizedBox(height: AppSpacing.six),
-
-          // ── Logout ─────────────────────────────────────────────────
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _confirmLogout(context, auth),
-              icon: const Icon(Icons.logout, size: 18, color: AppColors.danger),
-              label: ThemedText.body('Logout', color: AppColors.danger),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.danger.withAlpha(80)),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.three),
-              ),
-            ),
-          ),
+          const SizedBox(height: AppSpacing.four),
         ],
       ),
     );
@@ -152,43 +140,16 @@ class SettingsScreen extends StatelessWidget {
     AuthProvider auth,
     ManagerProfile profile,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await NeonDialog.showConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        title: Row(
-          children: [
-            const ThemedText('🗑️', fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title('Remove "${profile.name}"?'),
-          ],
-        ),
-        content: ThemedText.small(
-          'This will delete the manager profile and its saved token. '
-          'You can re-add it later.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceAlt,
-              foregroundColor: AppColors.danger,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-                side: BorderSide(
-                  color: AppColors.danger.withAlpha(80),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: ThemedText.body('Remove', color: AppColors.danger),
-          ),
-        ],
+      title: 'Remove "${profile.name}"?',
+      showRobot: true,
+      content: ThemedText.small(
+        'This will delete the manager profile and its saved token. '
+        'You can re-add it later.',
       ),
+      confirmText: 'Remove',
+      confirmIsDanger: true,
     );
     if (confirmed == true && context.mounted) {
       await auth.removeManager(profile.id);
@@ -196,91 +157,41 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _addManager(BuildContext context, AuthProvider auth) async {
-    final urlController = TextEditingController();
-    final tokenController = TextEditingController();
-    final nameController = TextEditingController(
-      text: 'Manager ${auth.profiles.length + 1}',
-    );
+    final formKey = GlobalKey<AddManagerFormState>();
 
-    final result = await showDialog<bool>(
+    final formData = await NeonDialog.show<AddManagerFormData?>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 40),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        title: Row(
-          children: [
-            const ThemedText('➕', fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title('Add Manager'),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Label',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.three,
-                    vertical: AppSpacing.three,
-                  ),
-                ),
-                autocorrect: false,
-              ),
-              const SizedBox(height: AppSpacing.three),
-              TextField(
-                controller: urlController,
-                decoration: const InputDecoration(
-                  labelText: 'Manager URL',
-                  hintText: 'http://192.168.1.10:3099',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.three,
-                    vertical: AppSpacing.three,
-                  ),
-                ),
-                keyboardType: TextInputType.url,
-                autocorrect: false,
-              ),
-              const SizedBox(height: AppSpacing.three),
-              TextField(
-                controller: tokenController,
-                decoration: const InputDecoration(
-                  labelText: 'Access Token',
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: AppSpacing.three,
-                    vertical: AppSpacing.three,
-                  ),
-                ),
-                obscureText: true,
-                autocorrect: false,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Connect'),
-          ),
-        ],
+      title: 'Add Manager',
+      maxWidth: 480,
+      content: AddManagerForm(
+        key: formKey,
+        initialName: 'Manager ${auth.profiles.length + 1}',
       ),
+      actions: [
+        NeonDialogAction(
+          label: 'Cancel',
+          onPressed: (ctx) => Navigator.of(ctx).pop(null),
+        ),
+        NeonDialogAction(
+          label: 'Connect',
+          isPrimary: true,
+          onPressed: (ctx) {
+            final data = formKey.currentState?.data;
+            if (data != null) Navigator.of(ctx).pop(data);
+          },
+        ),
+      ],
     );
 
-    if (result == true && context.mounted) {
-      final url = urlController.text.trim();
-      final token = tokenController.text.trim();
-      final name = nameController.text.trim();
-      if (url.isEmpty || token.isEmpty) return;
+    if (formData != null && context.mounted) {
+      if (formData.url.isEmpty || formData.token.isEmpty) return;
 
       try {
-        await auth.login(url, token, name: name.isNotEmpty ? name : null);
+        await auth.login(
+          formData.url,
+          formData.token,
+          name: formData.name.isNotEmpty ? formData.name : null,
+        );
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -299,54 +210,6 @@ class SettingsScreen extends StatelessWidget {
           );
         }
       }
-    }
-
-    urlController.dispose();
-    tokenController.dispose();
-    nameController.dispose();
-  }
-
-  Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        title: Row(
-          children: [
-            const ThemedText('🚪', fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title('Logout?'),
-          ],
-        ),
-        content: ThemedText.small(
-          'Disconnect from "${_activeName(auth)}". '
-          'The profile will be kept for later use.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceAlt,
-              foregroundColor: AppColors.danger,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-                side: BorderSide(
-                  color: AppColors.danger.withAlpha(80),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: ThemedText.body('Logout', color: AppColors.danger),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && context.mounted) {
-      await auth.logout();
     }
   }
 }

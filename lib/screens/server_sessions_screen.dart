@@ -8,6 +8,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/neon_card.dart';
+import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -27,7 +28,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   bool _loading = true;
   String? _error;
   ServerRef? _ref;
-  _StatusFilter _statusFilter = null;
+  _StatusFilter _statusFilter;
   int _lastLoaded = 0;
   Timer? _autoRefreshTimer;
   Timer? _tickTimer;
@@ -79,12 +80,13 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         _ref!,
         agentId: widget.serverId,
       );
-      if (mounted)
+      if (mounted) {
         setState(() {
           _sessions = sessions;
           _error = null;
           _lastLoaded = DateTime.now().millisecondsSinceEpoch;
         });
+      }
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());
     }
@@ -94,7 +96,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   void _requestKill(String sessionId) {
     _showConfirm(
-      icon: '⚠️',
       title: 'Kill this session?',
       desc: 'The running process will be terminated and removed from the list.',
       onConfirm: () async {
@@ -111,7 +112,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   void _requestDelete(String sessionId) {
     _showConfirm(
-      icon: '🗑️',
       title: 'Delete session log?',
       desc:
           'Removes the database row and the on-disk output log. Cannot be undone.',
@@ -129,7 +129,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   void _requestPrune() {
     _showConfirm(
-      icon: '🧹',
       title: 'Clean stale sessions?',
       desc:
           'Drops all sessions that have been inactive for more than 24 hours.',
@@ -147,45 +146,17 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   }
 
   Future<void> _showConfirm({
-    required String icon,
     required String title,
     required String desc,
     required Future<void> Function() onConfirm,
   }) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await NeonDialog.showConfirm(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.backgroundElement,
-        title: Row(
-          children: [
-            ThemedText(icon, fontSize: 20),
-            const SizedBox(width: AppSpacing.two),
-            ThemedText.title(title),
-          ],
-        ),
-        content: ThemedText.small(desc),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: ThemedText.body('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.surfaceAlt,
-              foregroundColor: AppColors.danger,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.two),
-                side: BorderSide(
-                  color: AppColors.danger.withAlpha(80),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: ThemedText.body('Confirm', color: AppColors.danger),
-          ),
-        ],
-      ),
+      title: title,
+      showRobot: true,
+      content: ThemedText.small(desc),
+      confirmText: 'Confirm',
+      confirmIsDanger: true,
     );
     if (confirmed == true && mounted) {
       try {
@@ -446,7 +417,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     return ListView.builder(
       padding: const EdgeInsets.only(top: AppSpacing.two),
       itemCount: 5,
-      itemBuilder: (_, __) => NeonCard(
+      itemBuilder: (_, _) => NeonCard(
         margin: const EdgeInsets.symmetric(
           horizontal: AppSpacing.four,
           vertical: AppSpacing.one,

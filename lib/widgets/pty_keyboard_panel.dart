@@ -5,6 +5,8 @@ import 'package:xterm2/xterm.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
+import 'package:tired_agent_app/widgets/neon_dialog.dart';
+import 'package:tired_agent_app/widgets/themed_text.dart';
 
 /// Toggle state for modifier keys. Shared between [PtyModifierHandler] and
 /// [PtyKeyboardPanel] so that toggling Ctrl/Alt/Shift in the panel causes
@@ -355,32 +357,27 @@ class _KeyButton extends StatelessWidget {
     HapticFeedback.lightImpact();
 
     if (keyDef.confirm) {
-      showDialog<bool>(
+      assert(keyDef.confirmMessage != null);
+      NeonDialog.show<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surface,
-          title: const Text('Confirm', style: TextStyle(color: AppColors.text)),
-          content: Text(
-            keyDef.confirmMessage!,
-            style: const TextStyle(color: AppColors.text),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(
-                'Send',
-                style: TextStyle(color: AppColors.danger),
-              ),
-            ),
-          ],
+        title: keyDef.confirmMessage!,
+        maxWidth: 340,
+        showRobot: true,
+        content: ThemedText.body(
+          'Are you sure you want to send this key sequence?',
+          color: AppColors.textSecondary,
         ),
+        actions: [
+          NeonDialogAction(
+            label: 'Cancel',
+            onPressed: (ctx) => Navigator.of(ctx).pop(false),
+          ),
+          NeonDialogAction(
+            label: 'Send',
+            isDanger: true,
+            onPressed: (ctx) => Navigator.of(ctx).pop(true),
+          ),
+        ],
       ).then((confirmed) {
         if (confirmed == true) _send();
       });

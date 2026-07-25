@@ -6,7 +6,6 @@ import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/create_session_screen.dart';
-import 'package:tired_agent_app/screens/login_screen.dart';
 import 'package:tired_agent_app/screens/server_list_screen.dart';
 import 'package:tired_agent_app/screens/server_add_screen.dart';
 import 'package:tired_agent_app/screens/server_sessions_screen.dart';
@@ -50,27 +49,10 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
       navigatorKey: _rootNavigatorKey,
       // Re-evaluate redirects when auth state changes
       refreshListenable: _authProvider,
-      initialLocation: '/login',
-      redirect: (context, state) {
-        final isLoggedIn = _authProvider.status == AuthStatus.authenticated;
-        final path = state.matchedLocation;
-        final allowedWithoutLogin = ['/login', '/settings'];
-
-        if (!isLoggedIn && !allowedWithoutLogin.contains(path)) return '/login';
-        if (isLoggedIn && path == '/login') return '/';
-        return null;
-      },
       routes: [
-        // ── Login (full-screen, no tabs) ──────────────────────────
-        GoRoute(
-          path: '/login',
-          builder: (_, __) => const LoginScreen(),
-          parentNavigatorKey: _rootNavigatorKey,
-        ),
-
         // ── Main shell with bottom tabs ───────────────────────────
         StatefulShellRoute.indexedStack(
-          builder: (_, __, navigationShell) =>
+          builder: (_, _, navigationShell) =>
               MainShell(navigationShell: navigationShell),
           branches: [
             // Tab 0: Servers
@@ -78,11 +60,11 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
               routes: [
                 GoRoute(
                   path: '/',
-                  builder: (_, __) => const ServerListScreen(),
+                  builder: (_, _) => const ServerListScreen(),
                 ),
                 GoRoute(
                   path: '/server/new',
-                  builder: (_, __) => const ServerAddScreen(),
+                  builder: (_, _) => const ServerAddScreen(),
                 ),
                 GoRoute(
                   path: '/server/:id',
@@ -97,7 +79,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
               routes: [
                 GoRoute(
                   path: '/settings',
-                  builder: (_, __) => const SettingsScreen(),
+                  builder: (_, _) => const SettingsScreen(),
                 ),
               ],
             ),

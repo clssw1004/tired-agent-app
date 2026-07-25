@@ -34,7 +34,7 @@ class MainShell extends StatelessWidget {
             BottomNavigationBarItem(
               icon: Icon(Icons.dns_outlined),
               activeIcon: Icon(Icons.dns),
-              label: 'Servers',
+              label: 'Agents',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
