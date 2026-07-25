@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
-import 'package:tired_agent_app/providers/server_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
@@ -83,30 +82,12 @@ class ServerListScreen extends StatelessWidget {
         AppSpacing.four,
         AppSpacing.four,
       ),
-      itemCount: auth.connections.length + 1, // +1 for Add Manager button
+      itemCount: auth.connections.length,
       itemBuilder: (context, index) {
-        if (index == auth.connections.length) {
-          return Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.three),
-            child: OutlinedButton.icon(
-              onPressed: () => _showAddManager(context, auth),
-              icon: const Icon(Icons.add, size: 18, color: AppColors.accent),
-              label: ThemedText.body(
-                'Add Manager',
-                color: AppColors.accent,
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.accent.withAlpha(60)),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.three),
-              ),
-            ),
-          );
-        }
         final conn = auth.connections[index];
         return _ManagerCard(
           connection: conn,
-          onAddAgent: () => _showAddAgent(context, auth, conn),
-          onReconnect: () => _showReconnect(context, auth, conn),
+          onReconnect: () => _showReconnectDialog(context, auth, conn),
         );
       },
     );
@@ -173,101 +154,7 @@ class ServerListScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _showAddAgent(
-    BuildContext context,
-    AuthProvider auth,
-    ManagerConnection conn,
-  ) async {
-    final nameController = TextEditingController();
-    final urlController = TextEditingController();
-    final tokenController = TextEditingController();
-
-    final result = await NeonDialog.show<bool>(
-      context: context,
-      title: 'Add Agent to ${conn.profile.name}',
-      maxWidth: 420,
-      showRobot: true,
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-              autocorrect: false,
-            ),
-            const SizedBox(height: AppSpacing.three),
-            TextField(
-              controller: urlController,
-              decoration: const InputDecoration(
-                labelText: 'Base URL',
-                hintText: 'http://agent.local:8444',
-              ),
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-            ),
-            const SizedBox(height: AppSpacing.three),
-            TextField(
-              controller: tokenController,
-              decoration: const InputDecoration(labelText: 'Access Token'),
-              obscureText: true,
-              autocorrect: false,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        NeonDialogAction(
-          label: 'Cancel',
-          onPressed: (ctx) => Navigator.of(ctx).pop(false),
-        ),
-        NeonDialogAction(
-          label: 'Add',
-          isPrimary: true,
-          onPressed: (ctx) => Navigator.of(ctx).pop(true),
-        ),
-      ],
-    );
-
-    if (result == true && context.mounted) {
-      final name = nameController.text.trim();
-      final url = urlController.text.trim();
-      final token = tokenController.text.trim();
-      nameController.dispose();
-      urlController.dispose();
-      tokenController.dispose();
-      if (name.isEmpty || url.isEmpty || token.isEmpty) return;
-
-      try {
-        final serverProvider = context.read<ServerProvider>();
-        await serverProvider.addServer(
-          conn.profile.id,
-          name,
-          url,
-          token,
-        );
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: ThemedText.small('Agent "$name" added'),
-              backgroundColor: AppColors.backgroundElement,
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: AppColors.danger,
-            ),
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _showReconnect(
+  Future<void> _showReconnectDialog(
     BuildContext context,
     AuthProvider auth,
     ManagerConnection conn,
@@ -284,7 +171,7 @@ class ServerListScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ThemedText.small(
-            'The session has expired. Enter the API token to reconnect.',
+            'Session expired. Enter the API token to reconnect.',
             color: AppColors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.three),
@@ -343,10 +230,9 @@ class ServerListScreen extends StatelessWidget {
 
 class _ManagerCard extends StatelessWidget {
   final ManagerConnection connection;
-  final VoidCallback? onAddAgent;
   final VoidCallback? onReconnect;
 
-  const _ManagerCard({required this.connection, this.onAddAgent, this.onReconnect});
+  const _ManagerCard({required this.connection, this.onReconnect});
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +259,9 @@ class _ManagerCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
-      child: Container(
+      child: GestureDetector(
+        onTap: connStatus != ConnectionStatus.connected ? onReconnect : null,
+        child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.two),
@@ -415,9 +303,19 @@ class _ManagerCard extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.two),
                   Expanded(
-                    child: ThemedText.body(
-                      profile.name,
-                      color: AppColors.text,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ThemedText.body(
+                          profile.name,
+                          color: AppColors.text,
+                        ),
+                        ThemedText.label(
+                          profile.baseUrl,
+                          color: AppColors.textSecondary,
+                        ),
+                      ],
                     ),
                   ),
                   ThemedText.label(
@@ -442,35 +340,6 @@ class _ManagerCard extends StatelessWidget {
               ),
             ),
 
-            // ── Reconnect button (when not connected) ─────────────
-            if (connStatus != ConnectionStatus.connected)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.three + 10 + AppSpacing.two,
-                  bottom: 4,
-                ),
-                child: GestureDetector(
-                  onTap: onReconnect,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.refresh,
-                        size: 14,
-                        color: AppColors.primary.withAlpha(180),
-                      ),
-                      const SizedBox(width: 6),
-                      ThemedText.small(
-                        connStatus == ConnectionStatus.error
-                            ? 'Token expired — Tap to reconnect'
-                            : 'Tap to reconnect',
-                        color: AppColors.primary.withAlpha(180),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
             // ── Agent list ───────────────────────────────────────
             if (connection.agents.isEmpty)
               Padding(
@@ -494,42 +363,11 @@ class _ManagerCard extends StatelessWidget {
                   profileId: profile.id,
                 ),
               ),
-            // ── Add Agent button ───────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.only(
-                left: AppSpacing.three + 10 + AppSpacing.two,
-                top: 4,
-                bottom: 8,
-              ),
-              child: GestureDetector(
-                onTap: connStatus == ConnectionStatus.connected
-                    ? onAddAgent
-                    : null,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      size: 14,
-                      color: connStatus == ConnectionStatus.connected
-                          ? AppColors.primary.withAlpha(180)
-                          : AppColors.textSecondary.withAlpha(80),
-                    ),
-                    const SizedBox(width: 6),
-                    ThemedText.small(
-                      'Add Agent',
-                      color: connStatus == ConnectionStatus.connected
-                          ? AppColors.primary.withAlpha(180)
-                          : AppColors.textSecondary.withAlpha(80),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   void _showError(BuildContext context) {
