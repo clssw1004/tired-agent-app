@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
-import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -91,7 +90,21 @@ class SettingsScreen extends StatelessWidget {
           _InfoTile(label: 'App', value: 'tiredAgentMobile'),
           const SizedBox(height: AppSpacing.one),
           _InfoTile(label: 'Version', value: '1.0.0'),
-          const SizedBox(height: AppSpacing.four),
+          const SizedBox(height: AppSpacing.six),
+
+          // ── Logout ─────────────────────────────────────────────────
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _confirmLogout(context, auth),
+              icon: const Icon(Icons.logout, size: 18, color: AppColors.danger),
+              label: ThemedText.body('Logout', color: AppColors.danger),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: AppColors.danger.withAlpha(80)),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.three),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -157,41 +170,82 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _addManager(BuildContext context, AuthProvider auth) async {
-    final formKey = GlobalKey<AddManagerFormState>();
+    final urlController = TextEditingController();
+    final tokenController = TextEditingController();
+    final nameController = TextEditingController(
+      text: 'Manager ${auth.profiles.length + 1}',
+    );
 
-    final formData = await NeonDialog.show<AddManagerFormData?>(
+    final result = await NeonDialog.show<bool>(
       context: context,
       title: 'Add Manager',
       maxWidth: 480,
-      content: AddManagerForm(
-        key: formKey,
-        initialName: 'Manager ${auth.profiles.length + 1}',
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Label',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.three,
+                ),
+              ),
+              autocorrect: false,
+            ),
+            const SizedBox(height: AppSpacing.three),
+            TextField(
+              controller: urlController,
+              decoration: const InputDecoration(
+                labelText: 'Manager URL',
+                hintText: 'http://192.168.1.10:3099',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.three,
+                ),
+              ),
+              keyboardType: TextInputType.url,
+              autocorrect: false,
+            ),
+            const SizedBox(height: AppSpacing.three),
+            TextField(
+              controller: tokenController,
+              decoration: const InputDecoration(
+                labelText: 'Access Token',
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.three,
+                ),
+              ),
+              obscureText: true,
+              autocorrect: false,
+            ),
+          ],
+        ),
       ),
       actions: [
         NeonDialogAction(
           label: 'Cancel',
-          onPressed: (ctx) => Navigator.of(ctx).pop(null),
+          onPressed: (ctx) => Navigator.of(ctx).pop(false),
         ),
         NeonDialogAction(
           label: 'Connect',
           isPrimary: true,
-          onPressed: (ctx) {
-            final data = formKey.currentState?.data;
-            if (data != null) Navigator.of(ctx).pop(data);
-          },
+          onPressed: (ctx) => Navigator.of(ctx).pop(true),
         ),
       ],
     );
 
-    if (formData != null && context.mounted) {
-      if (formData.url.isEmpty || formData.token.isEmpty) return;
+    if (result == true && context.mounted) {
+      final url = urlController.text.trim();
+      final token = tokenController.text.trim();
+      final name = nameController.text.trim();
+      if (url.isEmpty || token.isEmpty) return;
 
       try {
-        await auth.login(
-          formData.url,
-          formData.token,
-          name: formData.name.isNotEmpty ? formData.name : null,
-        );
+        await auth.login(url, token, name: name.isNotEmpty ? name : null);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -210,6 +264,27 @@ class SettingsScreen extends StatelessWidget {
           );
         }
       }
+    }
+
+    urlController.dispose();
+    tokenController.dispose();
+    nameController.dispose();
+  }
+
+  Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
+    final confirmed = await NeonDialog.showConfirm(
+      context: context,
+      title: 'Logout?',
+      showRobot: true,
+      content: ThemedText.small(
+        'Disconnect from "${_activeName(auth)}". '
+        'The profile will be kept for later use.',
+      ),
+      confirmText: 'Logout',
+      confirmIsDanger: true,
+    );
+    if (confirmed == true && context.mounted) {
+      await auth.logout();
     }
   }
 }
