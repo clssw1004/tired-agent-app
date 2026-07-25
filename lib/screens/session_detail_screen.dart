@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -9,12 +11,14 @@ import 'package:tired_agent_app/widgets/pty_session_view.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 class SessionDetailScreen extends StatefulWidget {
-  final String serverId;
+  final String profileId;
+  final String agentId;
   final String sessionId;
 
   const SessionDetailScreen({
     super.key,
-    required this.serverId,
+    required this.profileId,
+    required this.agentId,
     required this.sessionId,
   });
 
@@ -24,7 +28,7 @@ class SessionDetailScreen extends StatefulWidget {
 
 class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Session? _session;
-  ServerRef? _ref;
+  ManagerConnection? _conn;
   String? _error;
   bool _loading = true;
 
@@ -37,38 +41,40 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Future<void> _load() async {
     try {
       final auth = context.read<AuthProvider>();
-      await auth.authService.ensureFreshSession();
-      final agent = auth.agents
-          .where((a) => a.id == widget.serverId)
-          .firstOrNull;
-      debugPrint(
-        '[SessionDetail] serverId=${widget.serverId} agent=${agent?.id} agents=${auth.agents.length} managerRef=${auth.managerRef != null}',
-      );
-      if (agent == null || auth.managerRef == null) {
+      final conn = auth.connectionFor(widget.profileId);
+      if (conn == null || conn.profile.sessionToken == null) {
         setState(() {
-          _error = 'Server credentials missing';
+          _error = 'Manager not connected';
           _loading = false;
         });
         return;
       }
-      _ref = auth.managerRef!;
-      final session = await auth.authService.transport.getSession(
-        auth.managerRef!,
-        widget.sessionId,
-        agentId: widget.serverId,
+      await conn.ensureFreshSession();
+      final mgrRef = ServerRef(
+        id: '__manager__',
+        name: conn.profile.name,
+        baseUrl: conn.profile.baseUrl,
+        token: conn.profile.sessionToken!,
       );
-      if (mounted)
+      final session = await conn.transport.getSession(
+        mgrRef,
+        widget.sessionId,
+        agentId: widget.agentId,
+      );
+      if (mounted) {
         setState(() {
           _session = session;
-          _ref = auth.managerRef!;
+          _conn = conn;
           _loading = false;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = e.toString();
           _loading = false;
         });
+      }
     }
   }
 
@@ -87,16 +93,16 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
           ? const Center(child: NeonLoading())
           : _error != null
           ? Center(child: ThemedText.small(_error!, color: AppColors.danger))
-          : _session != null && _ref != null
+          : _session != null && _conn != null
           ? _session!.mode == SessionMode.persistent
                 ? ClaudeChatView(
-                    serverRef: _ref!,
-                    agentId: widget.serverId,
+                    serverRef: _conn!.managerRef,
+                    agentId: widget.agentId,
                     session: _session!,
                   )
                 : PtySessionView(
-                    serverRef: _ref!,
-                    agentId: widget.serverId,
+                    serverRef: _conn!.managerRef,
+                    agentId: widget.agentId,
                     session: _session!,
                   )
           : Center(child: ThemedText.small('Session not found')),

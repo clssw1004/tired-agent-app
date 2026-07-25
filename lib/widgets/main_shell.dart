@@ -37,6 +37,11 @@ class MainShell extends StatelessWidget {
               label: 'Agents',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.push_pin_outlined),
+              activeIcon: Icon(Icons.push_pin),
+              label: 'Sessions',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
               activeIcon: Icon(Icons.settings),
               label: 'Settings',
