@@ -128,6 +128,47 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     }
   }
 
+  Future<void> _deleteAgent(AgentInfo agent) async {
+    final confirmed = await NeonDialog.showConfirm(
+      context: context,
+      title: 'Remove agent "${agent.name}"?',
+      showRobot: true,
+      content: ThemedText.small(
+        'Unregisters the agent and removes its sessions. '
+        'You can re-add it later.',
+      ),
+      confirmText: 'Remove',
+      confirmIsDanger: true,
+    );
+    if (confirmed != true || !mounted) return;
+
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null || conn.status != ConnectionStatus.connected) return;
+
+    try {
+      await conn.transport.deleteAgent(conn.managerRef, agent.id);
+      await _loadAgents();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: ThemedText.small('Agent ${agent.name} removed'),
+            backgroundColor: AppColors.backgroundElement,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to remove agent: $e'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -222,6 +263,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           return _ManagerAgentCard(
             agent: agent,
             profileId: widget.profileId,
+            onDelete: () => _deleteAgent(agent),
           );
         },
       ),
@@ -233,10 +275,12 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
 class _ManagerAgentCard extends StatelessWidget {
   final AgentInfo agent;
   final String profileId;
+  final VoidCallback? onDelete;
 
   const _ManagerAgentCard({
     required this.agent,
     required this.profileId,
+    this.onDelete,
   });
 
   @override
@@ -290,6 +334,22 @@ class _ManagerAgentCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Delete button
+                if (onDelete != null)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
+                    onPressed: () => onDelete?.call(),
+                    tooltip: 'Remove agent',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                    ),
+                  ),
                 // Chevron
                 Icon(
                   Icons.chevron_right,
