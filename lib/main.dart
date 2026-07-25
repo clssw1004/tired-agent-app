@@ -137,7 +137,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
         ChangeNotifierProvider.value(value: _toastProvider),
       ],
       child: MaterialApp.router(
-        title: 'tiredAgentMobile',
+        title: 'TiredAgent',
         theme: buildDarkTheme(),
         routerConfig: _router,
         debugShowCheckedModeBanner: false,

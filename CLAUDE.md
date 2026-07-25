@@ -7,7 +7,7 @@
 - 分支名称格式：`${修改类型(feat/fix/refactor)}/${内容相关-${日期(年月日)}}`
 - 任何 Dart 代码改动前，查阅 [Flutter API 文档](https://api.flutter.dev/) 确认最佳实践
 - 修改 android/ios 原生配置时，优先使用 Flutter plugin 的 Dart 层配置（如 `AndroidManifest.xml` 配置在 plugin 的 `android/src/main/` 下），不直接触碰 `android/app/` 下的原生文件
-- **涉及服务端交互（Transport、协议类型、Session 管理等）时，参考 `C:\wspec\tired-agent\` 仓库中对应的 TypeScript 实现**，保持 Dart 端与协议对齐
+- **涉及服务端交互（Transport、协议类型、Session 管理等）时，参考 `tired-agent` 仓库中对应的 TypeScript 实现**，保持 Dart 端与协议对齐
 
 ## Branch strategy
 

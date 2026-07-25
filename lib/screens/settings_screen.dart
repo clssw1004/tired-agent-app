@@ -85,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
           // ── About ──────────────────────────────────────────────────
           SectionHeader(label: 'About'),
           const SizedBox(height: AppSpacing.two),
-          _InfoTile(label: 'App', value: 'tiredAgentMobile'),
+          _InfoTile(label: 'App', value: 'TiredAgent'),
           const SizedBox(height: AppSpacing.one),
           _InfoTile(label: 'Version', value: '1.0.0'),
           const SizedBox(height: AppSpacing.four),
