@@ -170,82 +170,41 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _addManager(BuildContext context, AuthProvider auth) async {
-    final urlController = TextEditingController();
-    final tokenController = TextEditingController();
-    final nameController = TextEditingController(
-      text: 'Manager ${auth.profiles.length + 1}',
-    );
+    final formKey = GlobalKey<_AddManagerFormState>();
 
-    final result = await NeonDialog.show<bool>(
+    final formData = await NeonDialog.show<_AddManagerFormData?>(
       context: context,
       title: 'Add Manager',
       maxWidth: 480,
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Label',
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.three,
-                  vertical: AppSpacing.three,
-                ),
-              ),
-              autocorrect: false,
-            ),
-            const SizedBox(height: AppSpacing.three),
-            TextField(
-              controller: urlController,
-              decoration: const InputDecoration(
-                labelText: 'Manager URL',
-                hintText: 'http://192.168.1.10:3099',
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.three,
-                  vertical: AppSpacing.three,
-                ),
-              ),
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-            ),
-            const SizedBox(height: AppSpacing.three),
-            TextField(
-              controller: tokenController,
-              decoration: const InputDecoration(
-                labelText: 'Access Token',
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.three,
-                  vertical: AppSpacing.three,
-                ),
-              ),
-              obscureText: true,
-              autocorrect: false,
-            ),
-          ],
-        ),
+      content: _AddManagerForm(
+        key: formKey,
+        initialName: 'Manager ${auth.profiles.length + 1}',
       ),
       actions: [
         NeonDialogAction(
           label: 'Cancel',
-          onPressed: (ctx) => Navigator.of(ctx).pop(false),
+          onPressed: (ctx) => Navigator.of(ctx).pop(null),
         ),
         NeonDialogAction(
           label: 'Connect',
           isPrimary: true,
-          onPressed: (ctx) => Navigator.of(ctx).pop(true),
+          onPressed: (ctx) {
+            final data = formKey.currentState?.data;
+            if (data != null) Navigator.of(ctx).pop(data);
+          },
         ),
       ],
     );
 
-    if (result == true && context.mounted) {
-      final url = urlController.text.trim();
-      final token = tokenController.text.trim();
-      final name = nameController.text.trim();
-      if (url.isEmpty || token.isEmpty) return;
+    if (formData != null && context.mounted) {
+      if (formData.url.isEmpty || formData.token.isEmpty) return;
 
       try {
-        await auth.login(url, token, name: name.isNotEmpty ? name : null);
+        await auth.login(
+          formData.url,
+          formData.token,
+          name: formData.name.isNotEmpty ? formData.name : null,
+        );
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -265,14 +224,6 @@ class SettingsScreen extends StatelessWidget {
         }
       }
     }
-
-    // Dispose controllers after the dialog's route animation completes,
-    // otherwise TextField listeners may still be active → crash.
-    Future.microtask(() {
-      urlController.dispose();
-      tokenController.dispose();
-      nameController.dispose();
-    });
   }
 
   Future<void> _confirmLogout(BuildContext context, AuthProvider auth) async {
@@ -401,6 +352,102 @@ class _InfoTile extends StatelessWidget {
               fontSize: 12,
               textAlign: TextAlign.end,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Form data returned by [_AddManagerForm].
+class _AddManagerFormData {
+  final String name;
+  final String url;
+  final String token;
+  const _AddManagerFormData(this.name, this.url, this.token);
+}
+
+/// Stateful form widget that owns its [TextEditingController]s and disposes
+/// them in sync with the dialog's widget tree lifecycle.
+class _AddManagerForm extends StatefulWidget {
+  final String initialName;
+
+  const _AddManagerForm({super.key, required this.initialName});
+
+  @override
+  _AddManagerFormState createState() => _AddManagerFormState();
+}
+
+class _AddManagerFormState extends State<_AddManagerForm> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _urlController;
+  late final TextEditingController _tokenController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _urlController = TextEditingController();
+    _tokenController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _urlController.dispose();
+    _tokenController.dispose();
+    super.dispose();
+  }
+
+  _AddManagerFormData get data => _AddManagerFormData(
+        _nameController.text.trim(),
+        _urlController.text.trim(),
+        _tokenController.text.trim(),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Label',
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.three,
+                vertical: AppSpacing.three,
+              ),
+            ),
+            autocorrect: false,
+          ),
+          const SizedBox(height: AppSpacing.three),
+          TextField(
+            controller: _urlController,
+            decoration: const InputDecoration(
+              labelText: 'Manager URL',
+              hintText: 'http://192.168.1.10:3099',
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.three,
+                vertical: AppSpacing.three,
+              ),
+            ),
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+          ),
+          const SizedBox(height: AppSpacing.three),
+          TextField(
+            controller: _tokenController,
+            decoration: const InputDecoration(
+              labelText: 'Access Token',
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.three,
+                vertical: AppSpacing.three,
+              ),
+            ),
+            obscureText: true,
+            autocorrect: false,
           ),
         ],
       ),
