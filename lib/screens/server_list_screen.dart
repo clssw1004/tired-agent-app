@@ -197,7 +197,9 @@ class ServerListScreen extends StatelessWidget {
     );
 
     final token = tokenController.text.trim();
-    tokenController.dispose();
+    // Dispose after the dialog's route animation completes, otherwise
+    // the TextField may still have listeners → _dependents.isEmpty crash.
+    Future.microtask(() => tokenController.dispose());
 
     if (result == true && token.isNotEmpty && context.mounted) {
       try {
