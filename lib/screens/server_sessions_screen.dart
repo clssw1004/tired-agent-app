@@ -481,7 +481,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                         sessionId: session.id,
                       ),
                       onPin: () => _onPin(session),
-                      onKill: session.status == SessionStatus.running
+                      onKill: session.status != SessionStatus.exited
                           ? () => _requestKill(session.id)
                           : null,
                       onDelete: session.status == SessionStatus.exited
