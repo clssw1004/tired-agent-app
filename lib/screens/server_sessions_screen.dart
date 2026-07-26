@@ -434,18 +434,16 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
               GestureDetector(
                 onTap:
                     (_sessions
-                            .where((s) => s.status != SessionStatus.exited)
-                            .length) >
-                        0
+                        .where((s) => s.status != SessionStatus.exited)
+                        .isNotEmpty)
                     ? _requestPrune
                     : null,
                 child: ThemedText.small(
                   'Prune',
                   color:
                       (_sessions
-                              .where((s) => s.status != SessionStatus.exited)
-                              .length) >
-                          0
+                          .where((s) => s.status != SessionStatus.exited)
+                          .isNotEmpty)
                       ? AppColors.textSecondary
                       : AppColors.textSecondary.withAlpha(60),
                 ),

@@ -248,6 +248,9 @@ Future<void> _refresh() async {
 - 翻译后必须跑 `flutter test` 验证无回归
 - 关键同步契约：`ClaudeRenderer.processChunk`、`formatBytes`、`stripAnsi`
 
+### 关于组件的封装与页面的拆分
+当一个页面/组件文件行数大于300行时，就要考虑该页面是否需要真的那么大，里面组件是否可提取出来，若判断可提取，则需要进行页面/组件重构拆分。
+
 ## Key config
 
 | 配置 | 位置 | 说明 |
