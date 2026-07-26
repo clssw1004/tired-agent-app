@@ -113,7 +113,7 @@ class SessionCard extends StatelessWidget {
               children: [
                 _ModeBadge(mode: session.mode!),
                 const Spacer(),
-                if (session.mode == SessionMode.persistent && onKill != null)
+                if (onKill != null)
                   _ActionButton(
                     icon: '⏹',
                     label: 'Kill',
