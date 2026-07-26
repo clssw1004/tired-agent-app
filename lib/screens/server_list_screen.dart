@@ -294,7 +294,7 @@ class _ManagerCard extends StatelessWidget {
     final totalAgents = agents.length;
     final onlineAgents = agents.where((a) => a.state == AgentState.online).length;
     final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
-    final unknownAgents = agents.where((a) => a.state == AgentState.unknown).length;
+    final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
     final hasAgentInfo = totalAgents > 0;
 
     return Padding(
@@ -424,7 +424,7 @@ class _ManagerCard extends StatelessWidget {
                             '$totalAgents agents · '
                             '$onlineAgents online · '
                             '$offlineAgents offline'
-                            '${unknownAgents > 0 ? ' · $unknownAgents unknown' : ''}',
+                            '${pendingAgents > 0 ? ' · $pendingAgents pending' : ''}',
                             color: AppColors.textSecondary,
                           ),
                         ),

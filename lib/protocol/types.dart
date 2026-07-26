@@ -362,10 +362,38 @@ class LoginResponse {
   );
 }
 
-/// Online state of an agent backend.
+/// Operating system platform information for an agent.
+class PlatformInfo {
+  /// OS type: 'win32' | 'linux' | 'darwin'
+  final String os;
+
+  /// CPU architecture: 'x64' | 'arm64' | 'ia32'
+  final String arch;
+
+  /// OS version, e.g. '10.0.26200', '6.1.7601'
+  final String release;
+
+  const PlatformInfo({
+    required this.os,
+    required this.arch,
+    required this.release,
+  });
+
+  factory PlatformInfo.fromJson(Map<String, dynamic> json) => PlatformInfo(
+    os: json['os'] as String? ?? '',
+    arch: json['arch'] as String? ?? '',
+    release: json['release'] as String? ?? '',
+  );
+}
+
+/// Agent status — derived from the server's active health polling.
 ///
-/// Mirrors the server's heartbeat-tracked state.
-enum AgentState { online, offline, unknown }
+/// Mirrors the server's DB `status` column.
+///
+/// - [AgentState.pending] — never polled yet (freshly registered).
+/// - [AgentState.online] — last health poll succeeded.
+/// - [AgentState.offline] — last health poll failed / timed out.
+enum AgentState { pending, online, offline }
 
 /// A registered agent backend behind a manager.
 class AgentInfo {
@@ -379,25 +407,11 @@ class AgentInfo {
   /// When this agent was registered (epoch ms).
   final int createdAt;
 
-  /// Heartbeat-derived online state.
-  ///
-  /// - [AgentState.online] — agent has sent a heartbeat recently or
-  ///   was successfully probed.
-  /// - [AgentState.offline] — probe failed or heartbeat expired.
-  /// - [AgentState.unknown] — never seen (manually added, no probe yet).
+  /// Health polling-derived online state ([pending] / [online] / [offline]).
   final AgentState state;
 
-  /// Epoch ms of the last heartbeat (null if never seen).
-  final int? lastSeen;
-
-  /// Agent software version reported via heartbeat.
-  final String? version;
-
-  /// Hostname / machine name reported via heartbeat.
-  final String? hostname;
-
-  /// Agent process uptime in seconds reported via heartbeat.
-  final int? agentUptime;
+  /// OS platform info (may be empty strings if not yet reported).
+  final PlatformInfo? platform;
 
   const AgentInfo({
     required this.id,
@@ -405,22 +419,19 @@ class AgentInfo {
     required this.baseUrl,
     this.enabled = true,
     this.createdAt = 0,
-    this.state = AgentState.unknown,
-    this.lastSeen,
-    this.version,
-    this.hostname,
-    this.agentUptime,
+    this.state = AgentState.pending,
+    this.platform,
   });
 
   factory AgentInfo.fromJson(Map<String, dynamic> json) {
-    AgentState parseState(String? s) {
+    AgentState parseStatus(String? s) {
       switch (s) {
         case 'online':
           return AgentState.online;
         case 'offline':
           return AgentState.offline;
         default:
-          return AgentState.unknown;
+          return AgentState.pending;
       }
     }
 
@@ -430,11 +441,10 @@ class AgentInfo {
       baseUrl: json['baseUrl'] as String,
       enabled: json['enabled'] as bool? ?? true,
       createdAt: json['createdAt'] as int? ?? 0,
-      state: parseState(json['state'] as String?),
-      lastSeen: json['lastSeen'] as int?,
-      version: json['version'] as String?,
-      hostname: json['hostname'] as String?,
-      agentUptime: json['agentUptime'] as int?,
+      state: parseStatus(json['status'] as String?),
+      platform: json['platform'] != null
+          ? PlatformInfo.fromJson(json['platform'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

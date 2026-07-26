@@ -29,10 +29,15 @@ class SubscribeHandlers {
   final void Function(Session session) onState;
   final void Function(Object error) onError;
 
+  /// Optional — called when an SSE heartbeat is received.
+  /// Useful for detecting connection liveness without waiting for data.
+  final void Function()? onHeartbeat;
+
   SubscribeHandlers({
     required this.onChunk,
     required this.onState,
     required this.onError,
+    this.onHeartbeat,
   });
 }
 
