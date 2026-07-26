@@ -87,6 +87,25 @@ class SessionCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+          // Working directory
+          if (session.cwd != null && session.cwd!.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.folder_outlined, size: 12, color: AppColors.primary.withAlpha(120)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: ThemedText.mono(
+                    session.cwd!,
+                    color: AppColors.primary.withAlpha(140),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
           // Mode badge + action buttons
           if (session.mode != null) ...[
             const SizedBox(height: AppSpacing.two),

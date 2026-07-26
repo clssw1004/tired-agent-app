@@ -40,6 +40,11 @@ class BuiltinPreset {
   final String hint;
   final String emoji;
   final List<PresetOption> options;
+
+  /// OS families this preset applies to. `null` = all platforms.
+  /// `['win32']` = Windows only; `['linux', 'darwin']` = Unix only.
+  final List<String>? platforms;
+
   const BuiltinPreset({
     required this.id,
     required this.label,
@@ -47,6 +52,7 @@ class BuiltinPreset {
     required this.hint,
     required this.emoji,
     this.options = const [],
+    this.platforms,
   });
 }
 
@@ -60,6 +66,7 @@ const List<BuiltinPreset> builtinPresets = [
     cmd: 'claude',
     hint: 'Anthropic Claude Code CLI',
     emoji: '✦',
+    // All platforms
     options: [
       PresetOption(
         id: 'permission-mode',
@@ -90,6 +97,7 @@ const List<BuiltinPreset> builtinPresets = [
     cmd: 'bash',
     hint: 'POSIX shell',
     emoji: r'$',
+    platforms: ['linux', 'darwin'],
     options: [
       PresetOption(
         id: 'interactive',
@@ -115,6 +123,7 @@ const List<BuiltinPreset> builtinPresets = [
     cmd: 'zsh',
     hint: 'Z shell',
     emoji: r'$',
+    platforms: ['linux', 'darwin'],
     options: [
       PresetOption(
         id: 'interactive',
@@ -140,6 +149,7 @@ const List<BuiltinPreset> builtinPresets = [
     cmd: 'cmd.exe',
     hint: 'Windows command prompt',
     emoji: '>',
+    platforms: ['win32'],
     options: [
       PresetOption(
         id: 'no-auto-run',
@@ -157,6 +167,7 @@ const List<BuiltinPreset> builtinPresets = [
     cmd: 'powershell.exe',
     hint: 'Windows PowerShell',
     emoji: '>',
+    platforms: ['win32'],
     options: [
       PresetOption(
         id: 'no-logo',
