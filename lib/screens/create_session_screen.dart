@@ -87,6 +87,22 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   final Map<String, String?> _optionSelections = {};
   bool _busy = false;
 
+  /// Agent OS platform — used to filter builtin presets.
+  /// `null` = platform unknown (show all presets).
+  String? _platform;
+
+  /// Builtin presets filtered by [PlatformInfo.os].
+  List<BuiltinPreset> get _visibleBuiltinPresets {
+    if (_platform == null) return builtinPresets;
+    return builtinPresets.where(
+      (p) => p.platforms == null || p.platforms!.contains(_platform),
+    ).toList();
+  }
+
+  /// The currently selected builtin preset (from filtered list).
+  BuiltinPreset? get _selectedPreset =>
+      _visibleBuiltinPresets.where((p) => p.id == _selectedBuiltinId).firstOrNull;
+
   // ── Custom & recent presets ─────────────────────────────────────
   List<_UserPreset> _customPresets = [];
   List<_UserPreset> _recentPresets = [];
@@ -94,10 +110,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   static const _kCustomPresets = 'create_session_custom_presets';
   static const _kRecentPresets = 'create_session_recent_presets';
   static const _maxRecent = 5;
-
-  /// The currently selected builtin preset, if any.
-  BuiltinPreset? get _selectedPreset =>
-      builtinPresets.where((p) => p.id == _selectedBuiltinId).firstOrNull;
 
   /// Assemble effective args from option selections + manual args.
   List<String> get _effectiveArgs {
@@ -133,7 +145,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   /// All presets for the dropdown: builtin → Recent → Custom.
   List<_DropdownItem> get _dropdownItems {
     final items = <_DropdownItem>[];
-    for (final p in builtinPresets) {
+    for (final p in _visibleBuiltinPresets) {
       items.add(_DropdownItem.builtin(p));
     }
     if (_recentPresets.isNotEmpty) {
@@ -377,6 +389,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   @override
   void initState() {
     super.initState();
+    // Read agent platform from cache (agents already loaded by this point).
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn != null) {
+      final agent = conn.agents.where(
+        (a) => a.id == widget.agentId,
+      ).firstOrNull;
+      _platform = agent?.platform?.os;
+    }
     _loadPresets();
   }
 

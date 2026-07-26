@@ -331,6 +331,20 @@ class _ManagerAgentCard extends StatelessWidget {
                         agent.baseUrl,
                         color: AppColors.textSecondary,
                       ),
+                      if (agent.platform != null) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _platformIcon(agent.platform!.os),
+                            const SizedBox(width: 4),
+                            ThemedText.mono(
+                              '${agent.platform!.os} · ${agent.platform!.arch}',
+                              color: AppColors.primary.withAlpha(120),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -373,5 +387,25 @@ class _ManagerAgentCard extends StatelessWidget {
       case AgentState.pending:
         return AppColors.textSecondary;
     }
+  }
+
+  static Widget _platformIcon(String os) {
+    IconData icon;
+    Color color;
+    switch (os) {
+      case 'win32':
+        icon = Icons.window;
+        color = AppColors.primary;
+      case 'darwin':
+        icon = Icons.laptop_mac;
+        color = AppColors.text;
+      case 'linux':
+        icon = Icons.terminal;
+        color = AppColors.warning;
+      default:
+        icon = Icons.devices;
+        color = AppColors.textSecondary;
+    }
+    return Icon(icon, size: 14, color: color.withAlpha(160));
   }
 }
