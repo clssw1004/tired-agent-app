@@ -149,19 +149,17 @@ class PtySessionViewState extends State<PtySessionView> {
       widget.serverRef,
       widget.session.id,
       SubscribeHandlers(
-        onChunk: (OutputChunk chunk) {
-          // Reconnected after a disconnect — update status.
+        onHeartbeat: () {
+          // Heartbeat received — SSE connection is alive.
           if (_connectionStatus == PtyConnectionStatus.reconnecting && mounted) {
             setState(() => _connectionStatus = PtyConnectionStatus.connected);
           }
+        },
+        onChunk: (OutputChunk chunk) {
           final text = utf8.decode(chunk.data, allowMalformed: true);
           _terminal.write(text);
         },
         onState: (Session session) {
-          // Reconnected after a disconnect — update status.
-          if (_connectionStatus == PtyConnectionStatus.reconnecting && mounted) {
-            setState(() => _connectionStatus = PtyConnectionStatus.connected);
-          }
           if (session.status == SessionStatus.exited) {
             _terminal.write('\r\n\x1b[33m[Session exited]\x1b[0m\r\n');
             _sessionExited = true;

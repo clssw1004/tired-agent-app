@@ -433,7 +433,8 @@ class HttpSseTransport implements Transport {
                           handlers.onState(event.session);
                         case HeartbeatEvent():
                           // Heartbeats keep the connection alive;
-                          // nothing to dispatch to handlers.
+                          // dispatch liveness callback if provided.
+                          handlers.onHeartbeat?.call();
                           break;
                       }
                     } catch (e) {
