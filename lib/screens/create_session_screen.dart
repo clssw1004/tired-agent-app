@@ -34,6 +34,10 @@ class _Preset {
   final String emoji;
   final List<_Option> options;
 
+  /// OS families this preset applies to. `null` = all platforms.
+  /// `['win32']` = Windows only; `['linux', 'darwin']` = Unix only.
+  final List<String>? platforms;
+
   const _Preset({
     required this.id,
     required this.label,
@@ -42,6 +46,7 @@ class _Preset {
     required this.hint,
     required this.emoji,
     this.options = const [],
+    this.platforms,
   });
 }
 
@@ -65,6 +70,7 @@ const _presets = [
     cmd: 'claude',
     hint: 'Anthropic Claude Code CLI',
     emoji: '✦',
+    // All platforms
   ),
   _Preset(
     id: 'bash',
@@ -72,6 +78,7 @@ const _presets = [
     cmd: 'bash',
     hint: 'POSIX shell',
     emoji: r'$',
+    platforms: ['linux', 'darwin'],
     options: [
       _Option(
         id: 'interactive',
@@ -93,6 +100,7 @@ const _presets = [
     cmd: 'zsh',
     hint: 'Z shell',
     emoji: r'$',
+    platforms: ['linux', 'darwin'],
     options: [
       _Option(
         id: 'interactive',
@@ -114,6 +122,7 @@ const _presets = [
     cmd: 'cmd.exe',
     hint: 'Windows command prompt',
     emoji: '>',
+    platforms: ['win32'],
     options: [
       _Option(
         id: 'no-auto-run',
@@ -129,6 +138,7 @@ const _presets = [
     cmd: 'powershell.exe',
     hint: 'Windows PowerShell',
     emoji: '>',
+    platforms: ['win32'],
     options: [
       _Option(
         id: 'no-logo',
@@ -151,6 +161,7 @@ const _presets = [
     args: ['-i'],
     hint: 'Interactive Python REPL',
     emoji: '🐍',
+    // All platforms
     options: [
       _Option(
         id: 'interactive',
@@ -166,6 +177,7 @@ const _presets = [
     cmd: 'node',
     hint: 'Node.js REPL',
     emoji: '⬢',
+    // All platforms
     options: [
       _Option(
         id: 'interactive',
@@ -198,11 +210,34 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   String _cmd = 'bash';
   final Set<String> _activeOptionIds = {};
-  SessionMode _mode = SessionMode.process;
   bool _busy = false;
 
+  /// Agent OS platform — used to filter presets.
+  /// `null` = platform unknown (show all presets).
+  String? _platform;
+
+  @override
+  void initState() {
+    super.initState();
+    // Read agent platform from cache (already loaded by the time we get here).
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn != null) {
+      final agent = conn.agents.where((a) => a.id == widget.agentId).firstOrNull;
+      _platform = agent?.platform?.os;
+    }
+  }
+
+  /// Presets visible on the current agent platform.
+  List<_Preset> get _visiblePresets {
+    if (_platform == null) return _presets;
+    return _presets.where(
+      (p) => p.platforms == null || p.platforms!.contains(_platform),
+    ).toList();
+  }
+
   _Preset? get _selectedPreset =>
-      _presets.where((p) => p.cmd == _cmd).firstOrNull;
+      _visiblePresets.where((p) => p.cmd == _cmd).firstOrNull;
 
   List<String> get _effectiveArgs {
     final preset = _selectedPreset;
@@ -219,7 +254,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _activeOptionIds.clear();
       _argsController.clear();
       _labelController.clear();
-      _mode = p.cmd == 'claude' ? SessionMode.persistent : SessionMode.process;
     });
   }
 
@@ -265,7 +299,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             : _generateDefaultLabel(),
         cols: 80,
         rows: 24,
-        mode: _mode,
+        mode: SessionMode.process,
       );
 
       final session = await conn.transport.createSession(
@@ -312,7 +346,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       initialPath: _cwdController.text.isNotEmpty ? _cwdController.text : null,
     );
     if (path != null && mounted) {
-      _cwdController.text = path;
+      setState(() {
+        _cwdController.text = path;
+      });
     }
   }
 
@@ -347,11 +383,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               height: 64,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: _presets.length,
+                itemCount: _visiblePresets.length,
                 separatorBuilder: (_, _) =>
                     const SizedBox(width: AppSpacing.two),
                 itemBuilder: (context, index) {
-                  final p = _presets[index];
+                  final p = _visiblePresets[index];
                   final active = p.cmd == _cmd;
                   return GestureDetector(
                     onTap: () => _applyPreset(p),
@@ -391,31 +427,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             ),
             const SizedBox(height: AppSpacing.four),
 
-            // ── Lifecycle mode ────────────────────────────────────────
-            ThemedText.small('Lifecycle', color: AppColors.textSecondary),
-            const SizedBox(height: AppSpacing.two),
-            Row(
-              children: [
-                _modeChip(SessionMode.process, 'Process', 'Ends with process'),
-                const SizedBox(width: AppSpacing.two),
-                _modeChip(
-                  SessionMode.persistent,
-                  'Persistent',
-                  'Manual kill only',
-                  available: _cmd == 'claude',
-                ),
-              ],
-            ),
-            if (_cmd != 'claude')
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.one),
-                child: ThemedText.small(
-                  'Persistent mode only available for Claude',
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            const SizedBox(height: AppSpacing.four),
-
             // ── Command ──────────────────────────────────────────────
             ThemedText.small('Command', color: AppColors.textSecondary),
             const SizedBox(height: AppSpacing.two),
@@ -426,9 +437,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               onChanged: (v) {
                 setState(() {
                   _cmd = v;
-                  if (_cmd != 'claude' && _mode == SessionMode.persistent) {
-                    _mode = SessionMode.process;
-                  }
                 });
               },
               style: const TextStyle(
@@ -657,48 +665,4 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
   }
 
-  Widget _modeChip(
-    SessionMode m,
-    String label,
-    String desc, {
-    bool available = true,
-  }) {
-    final active = _mode == m;
-    return Expanded(
-      child: GestureDetector(
-        onTap: available ? () => setState(() => _mode = m) : null,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.three),
-          decoration: BoxDecoration(
-            color: active
-                ? AppColors.accent.withAlpha(30)
-                : AppColors.backgroundElement,
-            borderRadius: BorderRadius.circular(AppSpacing.two),
-            border: Border.all(
-              color: active ? AppColors.accent : Colors.transparent,
-              width: 1.5,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ThemedText.body(
-                label,
-                color: active
-                    ? AppColors.accent
-                    : (available ? AppColors.text : AppColors.textSecondary),
-              ),
-              const SizedBox(height: AppSpacing.one),
-              ThemedText.small(
-                desc,
-                color: available
-                    ? AppColors.textSecondary
-                    : AppColors.textSecondary.withAlpha(100),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -195,6 +195,23 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
     }
   }
 
+  /// Remove a specific favorite by entry (used in Favorites tab).
+  Future<void> _removeFavorite(DirectoryFavorite fav) async {
+    setState(() => _savingFavorite = true);
+    try {
+      await _transport.removeDirectoryFavorite(
+        widget.serverRef,
+        fav.id,
+        agentId: widget.agentId,
+      );
+      setState(() => _favorites.removeWhere((f) => f.id == fav.id));
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      setState(() => _savingFavorite = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -385,6 +402,26 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          trailing: _savingFavorite
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
+                  onPressed: () => _removeFavorite(fav),
+                  tooltip: 'Remove favorite',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 24,
+                    minHeight: 24,
+                  ),
+                ),
           onTap: () => _pickShortcut(fav.path),
         );
       },
