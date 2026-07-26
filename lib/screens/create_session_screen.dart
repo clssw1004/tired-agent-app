@@ -570,15 +570,68 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   // ─── UI ─────────────────────────────────────────────────────────────────
 
+  /// Neon section header: monospace uppercase label + cyan accent line.
+  static Widget _sectionHeader(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.two),
+      child: Row(
+        children: [
+          ThemedText.mono(label.toUpperCase(), color: AppColors.primary),
+          const SizedBox(width: AppSpacing.two),
+          Expanded(
+            child: Container(height: 1, color: AppColors.primary.withAlpha(40)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shared [InputDecoration] for neon-styled text fields.
+  static InputDecoration _neonInput({String? hint, String? prefixText}) {
+    return InputDecoration(
+      isDense: true,
+      hintText: hint,
+      prefixText: prefixText,
+      prefixStyle: TextStyle(
+        fontFamily: 'monospace',
+        color: AppColors.primary.withAlpha(140),
+        fontSize: 13,
+      ),
+      filled: true,
+      fillColor: AppColors.surface,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.three,
+        vertical: AppSpacing.two,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        borderSide: BorderSide(color: AppColors.border.withAlpha(60)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        borderSide: BorderSide(color: AppColors.border.withAlpha(60)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        borderSide: BorderSide(color: AppColors.primary.withAlpha(100), width: 1),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        borderSide: BorderSide(color: AppColors.border.withAlpha(30)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title('New Session'),
+        title: ThemedText.mono('NEW SESSION', color: AppColors.primary),
+        centerTitle: false,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: AppColors.primary),
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: AppColors.primary.withAlpha(80)),
         ),
       ),
       body: SingleChildScrollView(
@@ -586,148 +639,101 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Preset dropdown + Save ─────────────────────────────
+            // ── PRESET ─────────────────────────────────────────
+            _sectionHeader('Preset'),
             Row(
               children: [
                 Expanded(child: _buildPresetDropdown()),
                 const SizedBox(width: AppSpacing.two),
-                GestureDetector(
-                  onTap: _showAddCustomPresetDialog,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: AppSpacing.one),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundElement,
-                      borderRadius: BorderRadius.circular(AppSpacing.one),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add, size: 14, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        ThemedText.small('Save', color: AppColors.textSecondary),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildSavePresetButton(),
               ],
             ),
-            const SizedBox(height: AppSpacing.three),
+            const SizedBox(height: AppSpacing.four),
 
-            // ── Command preview ──────────────────────────────────
+            // ── TERMINAL PREVIEW ──────────────────────────────
             if (_previewCommand.isNotEmpty) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.two),
-                decoration: BoxDecoration(
-                  color: AppColors.codeBackground,
-                  borderRadius: BorderRadius.circular(AppSpacing.two),
-                ),
-                child: ThemedText.code(_previewCommand),
-              ),
-              const SizedBox(height: AppSpacing.two),
+              _sectionHeader('Preview'),
+              _buildTerminalPreview(),
+              const SizedBox(height: AppSpacing.four),
             ],
 
-            // ── Command ─────────────────────────────────────────
-            ThemedText.small('Command', color: AppColors.textSecondary),
-            const SizedBox(height: AppSpacing.two),
+            // ── COMMAND ───────────────────────────────────────
+            _sectionHeader('Command'),
             TextField(
-              controller: TextEditingController.fromValue(TextEditingValue(text: _cmd)),
-              onChanged: (v) => setState(() => _cmd = v),
-              style: const TextStyle(fontFamily: 'monospace', color: AppColors.textCode),
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.three, vertical: AppSpacing.two),
+              controller: TextEditingController.fromValue(
+                TextEditingValue(text: _cmd),
               ),
+              onChanged: (v) => setState(() => _cmd = v),
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                color: AppColors.textCode,
+                fontSize: 14,
+              ),
+              decoration: _neonInput(prefixText: r'$ '),
             ),
-            const SizedBox(height: AppSpacing.three),
+            const SizedBox(height: AppSpacing.four),
 
-            // ── Args ────────────────────────────────────────────
-            ThemedText.small('Arguments (space-separated)', color: AppColors.textSecondary),
-            const SizedBox(height: AppSpacing.one),
+            // ── ARGUMENTS ─────────────────────────────────────
+            _sectionHeader('Arguments'),
             TextField(
               controller: _argsController,
-              style: const TextStyle(fontFamily: 'monospace', color: AppColors.textCode),
-              decoration: const InputDecoration(
-                hintText: '--no-input',
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.three, vertical: AppSpacing.two),
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                color: AppColors.textCode,
+                fontSize: 14,
               ),
+              decoration: _neonInput(hint: '--no-input  --verbose'),
               onChanged: (_) => setState(() {}),
               enabled: !_busy,
             ),
 
-            // ── Option chips (inline + more) ────────────────────
-            if (_selectedPreset != null && _selectedPreset!.options.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.two),
+            // ── OPTIONS ───────────────────────────────────────
+            if (_selectedPreset != null &&
+                _selectedPreset!.options.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.four),
+              _sectionHeader('Options'),
               _buildOptionChips(),
             ],
 
             const SizedBox(height: AppSpacing.four),
 
-            // ── Label ───────────────────────────────────────────
-            ThemedText.small('Label (optional)', color: AppColors.textSecondary),
-            const SizedBox(height: AppSpacing.one),
+            // ── LABEL ─────────────────────────────────────────
+            _sectionHeader('Session label'),
             TextField(
               controller: _labelController,
-              decoration: const InputDecoration(
-                hintText: 'Leave empty to auto-generate',
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.three, vertical: AppSpacing.two),
-              ),
+              style: const TextStyle(color: AppColors.text, fontSize: 14),
+              decoration: _neonInput(hint: 'Auto-generated if empty'),
               enabled: !_busy,
             ),
-            const SizedBox(height: AppSpacing.three),
+            const SizedBox(height: AppSpacing.four),
 
-            // ── Working directory ───────────────────────────────
-            ThemedText.small('Working directory', color: AppColors.textSecondary),
-            const SizedBox(height: AppSpacing.one),
-            GestureDetector(
-              onTap: _busy ? null : _pickDirectory,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.three),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundElement,
-                  borderRadius: BorderRadius.circular(AppSpacing.two),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.folder_outlined, color: AppColors.textSecondary, size: 18),
-                    const SizedBox(width: AppSpacing.two),
-                    Expanded(
-                      child: ThemedText.body(
-                        _cwdController.text.isNotEmpty ? _cwdController.text : 'Agent home directory',
-                        color: _cwdController.text.isNotEmpty ? AppColors.text : AppColors.textSecondary,
-                      ),
-                    ),
-                    if (_cwdController.text.isNotEmpty)
-                      GestureDetector(
-                        onTap: () => _cwdController.clear(),
-                        child: const Icon(Icons.close, color: AppColors.textSecondary, size: 16),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            // ── WORKING DIRECTORY ────────────────────────────
+            _sectionHeader('Working directory'),
+            _buildDirectoryPicker(),
             const SizedBox(height: AppSpacing.two),
-            ThemedText.small(
+            ThemedText.mono(
               'Terminal size auto-matches after session starts',
-              color: AppColors.textSecondary,
+              color: AppColors.textSecondary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.six),
 
-            // ── Submit ──────────────────────────────────────────
+            // ── SUBMIT ─────────────────────────────────────────
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => context.pop(),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.text,
-                      side: const BorderSide(color: AppColors.backgroundElement),
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.three),
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: AppColors.border.withAlpha(60)),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.four,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppSpacing.two),
+                      ),
                     ),
-                    child: ThemedText.body('Cancel'),
+                    child: ThemedText.mono('CANCEL'),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.three),
@@ -735,7 +741,29 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   flex: 2,
                   child: ElevatedButton(
                     onPressed: _busy || _cmd.trim().isEmpty ? null : _submit,
-                    child: _busy ? const NeonLoading(size: 20) : Text('Create session'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.surfaceAlt,
+                      foregroundColor: AppColors.primary,
+                      disabledBackgroundColor: AppColors.border.withAlpha(60),
+                      disabledForegroundColor: AppColors.textSecondary,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.four,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppSpacing.two),
+                        side: BorderSide(
+                          color: AppColors.primary.withAlpha(
+                            _busy || _cmd.trim().isEmpty ? 20 : 100,
+                          ),
+                          width: 1,
+                        ),
+                      ),
+                      elevation: 4,
+                      shadowColor: AppColors.primary.withAlpha(30),
+                    ),
+                    child: _busy
+                        ? const NeonLoading(size: 20)
+                        : ThemedText.mono('LAUNCH', color: AppColors.primary),
                   ),
                 ),
               ],
@@ -746,7 +774,124 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
   }
 
-  // ─── Sub-widgets ──────────────────────────────────────────────────────────
+  // ─── Build sub-widgets ──────────────────────────────────────────────────
+
+  Widget _buildSavePresetButton() {
+    return GestureDetector(
+      onTap: _showAddCustomPresetDialog,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.two,
+          vertical: AppSpacing.two,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(
+            color: AppColors.primary.withAlpha(50),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.save_outlined,
+              size: 14,
+              color: AppColors.primary.withAlpha(180),
+            ),
+            const SizedBox(width: 4),
+            ThemedText.mono('SAVE', color: AppColors.primary.withAlpha(180)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Terminal-style command preview window with title bar.
+  Widget _buildTerminalPreview() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        border: Border.all(color: AppColors.primary.withAlpha(50)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withAlpha(12),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title bar — traffic-light dots + prompt label
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.three,
+              vertical: AppSpacing.one,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt.withAlpha(120),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSpacing.two - 1),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.primary.withAlpha(30),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Traffic-light dots
+                ...[0xFF003C, 0xFF6600, 0x00FF41].map((hex) {
+                  final c = Color(hex | 0xFF000000);
+                  return Container(
+                    width: 8, height: 8,
+                    margin: const EdgeInsets.only(right: 5),
+                    decoration: BoxDecoration(
+                      color: c.withAlpha(120),
+                      shape: BoxShape.circle,
+                    ),
+                  );
+                }),
+                const SizedBox(width: AppSpacing.two),
+                ThemedText.mono(
+                  _cmd,
+                  color: AppColors.primary.withAlpha(140),
+                ),
+                const Spacer(),
+                ThemedText.mono(
+                  '---',
+                  color: AppColors.textSecondary.withAlpha(60),
+                ),
+              ],
+            ),
+          ),
+          // Command content
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.three),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ThemedText.mono(
+                  r'$ ',
+                  color: AppColors.success.withAlpha(180),
+                ),
+                Expanded(
+                  child: ThemedText.code(_previewCommand),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildPresetDropdown() {
     final items = _dropdownItems;
@@ -759,14 +904,32 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       currentLabel = _cmd;
     }
 
+    final hasSelection = _selectedBuiltinId != null;
+
     return GestureDetector(
       onTap: () => _showPresetPicker(items),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.three, vertical: AppSpacing.two),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.three,
+          vertical: AppSpacing.two,
+        ),
         decoration: BoxDecoration(
-          color: AppColors.backgroundElement,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: Border.all(color: AppColors.border.withAlpha(60), width: 0.5),
+          border: Border.all(
+            color: hasSelection
+                ? AppColors.primary.withAlpha(80)
+                : AppColors.border.withAlpha(60),
+            width: hasSelection ? 1 : 0.5,
+          ),
+          boxShadow: hasSelection
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(15),
+                    blurRadius: 6,
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -775,9 +938,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               const SizedBox(width: AppSpacing.one),
             ],
             Expanded(
-              child: ThemedText.body(currentLabel, color: AppColors.text),
+              child: ThemedText.mono(
+                currentLabel,
+                color: hasSelection ? AppColors.primary : AppColors.text,
+              ),
             ),
-            const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary, size: 20),
+            Icon(
+              Icons.unfold_more,
+              color: AppColors.primary.withAlpha(140),
+              size: 18,
+            ),
           ],
         ),
       ),
@@ -796,7 +966,17 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(AppSpacing.four),
-            child: ThemedText.body('Select preset', color: AppColors.textSecondary),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.terminal,
+                  color: AppColors.primary.withAlpha(180),
+                  size: 20,
+                ),
+                const SizedBox(width: AppSpacing.two),
+                ThemedText.mono('SELECT PRESET', color: AppColors.primary),
+              ],
+            ),
           ),
           const Divider(height: 1, color: AppColors.border),
           Flexible(
@@ -807,29 +987,56 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 final item = items[i];
                 if (item.isSeparator) {
                   return Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                    child: ThemedText.small(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.four, AppSpacing.two,
+                      AppSpacing.four, AppSpacing.one,
+                    ),
+                    child: ThemedText.mono(
                       item.separatorLabel ?? '',
-                      color: AppColors.textSecondary,
+                      color: AppColors.primary.withAlpha(120),
                     ),
                   );
                 }
-                final isActive = item.builtin != null && item.builtin!.id == _selectedBuiltinId;
-                return ListTile(
-                  dense: true,
-                  leading: Text(item.emoji, style: const TextStyle(fontSize: 18)),
-                  title: ThemedText.body(item.label),
-                  selected: isActive,
-                  selectedTileColor: AppColors.accent.withAlpha(20),
-                  trailing: isActive ? const Icon(Icons.check, color: AppColors.primary, size: 18) : null,
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    if (item.builtin != null) {
-                      _applyBuiltin(item.builtin!);
-                    } else if (item.user != null) {
-                      _applyUserPreset(item.user!);
-                    }
-                  },
+                final isActive = item.builtin != null &&
+                    item.builtin!.id == _selectedBuiltinId;
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.two, vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? AppColors.primary.withAlpha(10)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppSpacing.two),
+                    border: isActive
+                        ? Border.all(
+                            color: AppColors.primary.withAlpha(40),
+                            width: 0.5,
+                          )
+                        : null,
+                  ),
+                  child: ListTile(
+                    dense: true,
+                    leading: Text(item.emoji, style: const TextStyle(fontSize: 18)),
+                    title: ThemedText.mono(
+                      item.label,
+                      color: isActive ? AppColors.primary : AppColors.text,
+                    ),
+                    subtitle: item.builtin != null
+                        ? ThemedText.small(item.builtin!.hint)
+                        : null,
+                    trailing: isActive
+                        ? Icon(Icons.check, color: AppColors.primary, size: 18)
+                        : null,
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      if (item.builtin != null) {
+                        _applyBuiltin(item.builtin!);
+                      } else if (item.user != null) {
+                        _applyUserPreset(item.user!);
+                      }
+                    },
+                  ),
                 );
               },
             ),
@@ -839,11 +1046,78 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
   }
 
+  Widget _buildDirectoryPicker() {
+    final hasPath = _cwdController.text.isNotEmpty;
+    return GestureDetector(
+      onTap: _busy ? null : _pickDirectory,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.three),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(
+            color: hasPath
+                ? AppColors.primary.withAlpha(60)
+                : AppColors.border.withAlpha(60),
+            width: hasPath ? 1 : 0.5,
+          ),
+          boxShadow: hasPath
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(10),
+                    blurRadius: 6,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.folder_outlined,
+              color: hasPath ? AppColors.primary : AppColors.textSecondary,
+              size: 18,
+            ),
+            const SizedBox(width: AppSpacing.two),
+            Expanded(
+              child: ThemedText.mono(
+                hasPath ? _cwdController.text : 'Agent home directory',
+                color: hasPath ? AppColors.textCode : AppColors.textSecondary,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (hasPath)
+              GestureDetector(
+                onTap: () => _cwdController.clear(),
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: AppColors.textSecondary.withAlpha(30),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: const Icon(Icons.close, size: 14, color: AppColors.textSecondary),
+                ),
+              ),
+            const SizedBox(width: AppSpacing.two),
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.primary.withAlpha(120),
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildOptionChips() {
     final preset = _selectedPreset!;
     final options = preset.options;
     final inline = options.take(inlineOptionLimit).toList();
-    final overflow = options.length > inlineOptionLimit ? options.skip(inlineOptionLimit).toList() : <PresetOption>[];
+    final overflow = options.length > inlineOptionLimit
+        ? options.skip(inlineOptionLimit).toList()
+        : <PresetOption>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -853,27 +1127,45 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           runSpacing: AppSpacing.one,
           children: [
             ...inline.map(_buildOptionChip),
-            if (overflow.isNotEmpty)
-              GestureDetector(
-                onTap: _showAllOptions,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: AppSpacing.one),
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundElement,
-                    borderRadius: BorderRadius.circular(AppSpacing.three),
-                    border: Border.all(color: AppColors.border.withAlpha(40), width: 0.5),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ThemedText.small('+${overflow.length} more', color: AppColors.textSecondary),
-                    ],
-                  ),
-                ),
-              ),
+            if (overflow.isNotEmpty) _buildMoreButton(overflow.length),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildMoreButton(int count) {
+    return GestureDetector(
+      onTap: _showAllOptions,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.two,
+          vertical: AppSpacing.one,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.three),
+          border: Border.all(
+            color: AppColors.primary.withAlpha(50),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ThemedText.mono(
+              '+$count',
+              color: AppColors.primary.withAlpha(180),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.expand_more,
+              size: 14,
+              color: AppColors.primary.withAlpha(180),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -885,25 +1177,46 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return GestureDetector(
       onTap: () => _toggleOption(opt),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: AppSpacing.one),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.two,
+          vertical: AppSpacing.one,
+        ),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.surfaceAlt : AppColors.backgroundElement,
+          color: isActive
+              ? AppColors.primary.withAlpha(8)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.three),
           border: Border.all(
-            color: isActive ? AppColors.primary.withAlpha(80) : Colors.transparent,
-            width: 0.5,
+            color: isActive
+                ? AppColors.primary.withAlpha(100)
+                : AppColors.border.withAlpha(40),
+            width: isActive ? 1 : 0.5,
           ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(15),
+                    blurRadius: 4,
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ThemedText.small(
+            ThemedText.mono(
               displayLabel,
               color: isActive ? AppColors.primary : AppColors.textSecondary,
             ),
             if (!opt.isToggle) ...[
               const SizedBox(width: 2),
-              const Icon(Icons.arrow_drop_down, size: 14, color: AppColors.textSecondary),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 14,
+                color: isActive
+                    ? AppColors.primary.withAlpha(180)
+                    : AppColors.textSecondary,
+              ),
             ],
           ],
         ),
