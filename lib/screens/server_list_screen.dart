@@ -215,9 +215,21 @@ class ServerListScreen extends StatelessWidget {
     AuthProvider auth,
     ManagerConnection conn,
   ) async {
-    // Silent retry with stored credentials (handles transient network errors).
-    await conn.connect();
+    // Already connected → caller navigates directly (no-op here).
     if (conn.status == ConnectionStatus.connected) return;
+
+    // Silent retry with stored credentials.
+    // - If a boot/background connect() is already in progress, the guard
+    //   in ManagerConnection.connect() waits for it rather than racing.
+    // - If no auth is available, connect() throws → we show the dialog.
+    await conn.connect();
+
+    if (conn.status == ConnectionStatus.connected && context.mounted) {
+      // Connection succeeded (e.g. we waited for a concurrent boot to
+      // finish) → navigate now instead of making the user tap again.
+      context.push('/profile/${conn.profile.id}');
+      return;
+    }
 
     // Any failure → show reconnect dialog (token expired or cleared).
     if (context.mounted) {
