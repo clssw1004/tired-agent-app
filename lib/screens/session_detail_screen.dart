@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,10 +34,29 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   String? _error;
   bool _loading = true;
 
+  final GlobalKey<PtySessionViewState> _ptyKey = GlobalKey();
+  Timer? _statusPoller;
+
+  /// Cached from PtySessionView for AppBar display.
+  PtyConnectionStatus _ptyStatus = PtyConnectionStatus.disconnected;
+
   @override
   void initState() {
     super.initState();
     _load();
+    // Poll PTY status for AppBar indicator (every second).
+    _statusPoller = Timer.periodic(const Duration(seconds: 1), (_) {
+      final status = _ptyKey.currentState?.connectionStatus;
+      if (status != null && status != _ptyStatus) {
+        setState(() => _ptyStatus = status);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _statusPoller?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -78,12 +99,67 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
     }
   }
 
+  /// Manually trigger reconnection.
+  void _reconnect() {
+    _ptyKey.currentState?.reconnect();
+  }
+
+  // ── Status dot for AppBar ────────────────────────────────────────
+
+  Widget _appBarStatusDot() {
+    final Color color;
+    switch (_ptyStatus) {
+      case PtyConnectionStatus.connected:
+        color = AppColors.success;
+      case PtyConnectionStatus.reconnecting:
+        color = AppColors.warning;
+      case PtyConnectionStatus.disconnected:
+        color = AppColors.textSecondary;
+    }
+
+    return Container(
+      width: 10,
+      height: 10,
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: color.withAlpha(100), blurRadius: 6),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final title = _session?.label ?? _session?.cmd ?? 'Session';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: ThemedText.title(_session?.label ?? _session?.cmd ?? 'Session'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _appBarStatusDot(),
+            Flexible(
+              child: ThemedText(
+                title,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          if (_ptyStatus != PtyConnectionStatus.connected)
+            IconButton(
+              icon: const Icon(Icons.refresh, color: AppColors.primary),
+              tooltip: 'Reconnect',
+              onPressed: _reconnect,
+            ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: AppColors.primary),
@@ -92,20 +168,23 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       body: _loading
           ? const Center(child: NeonLoading())
           : _error != null
-          ? Center(child: ThemedText.small(_error!, color: AppColors.danger))
-          : _session != null && _conn != null
-          ? _session!.mode == SessionMode.persistent
-                ? ClaudeChatView(
-                    serverRef: _conn!.managerRef,
-                    agentId: widget.agentId,
-                    session: _session!,
-                  )
-                : PtySessionView(
-                    serverRef: _conn!.managerRef,
-                    agentId: widget.agentId,
-                    session: _session!,
-                  )
-          : Center(child: ThemedText.small('Session not found')),
+              ? Center(
+                  child: ThemedText.small(_error!, color: AppColors.danger),
+                )
+              : _session != null && _conn != null
+                  ? _session!.mode == SessionMode.persistent
+                      ? ClaudeChatView(
+                          serverRef: _conn!.managerRef,
+                          agentId: widget.agentId,
+                          session: _session!,
+                        )
+                      : PtySessionView(
+                          key: _ptyKey,
+                          serverRef: _conn!.managerRef,
+                          agentId: widget.agentId,
+                          session: _session!,
+                        )
+                  : Center(child: ThemedText.small('Session not found')),
     );
   }
 }

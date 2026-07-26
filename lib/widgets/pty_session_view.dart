@@ -9,6 +9,10 @@ import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/widgets/pty_keyboard_panel.dart';
+import 'package:tired_agent_app/widgets/themed_text.dart';
+
+/// SSE connection state for the PTY session view.
+enum PtyConnectionStatus { connected, reconnecting, disconnected }
 
 /// PTY session view using xterm2 for terminal emulation.
 class PtySessionView extends StatefulWidget {
@@ -24,16 +28,25 @@ class PtySessionView extends StatefulWidget {
   });
 
   @override
-  State<PtySessionView> createState() => _PtySessionViewState();
+  PtySessionViewState createState() => PtySessionViewState();
 }
 
-class _PtySessionViewState extends State<PtySessionView> {
+class PtySessionViewState extends State<PtySessionView> {
   final Terminal _terminal = Terminal(maxLines: 10000);
   final HttpSseTransport _transport = HttpSseTransport();
   final PtyModifierState _modifierState = PtyModifierState();
   Subscription? _subscription;
   int _currentOffset = 0;
   bool _keyboardExpanded = false;
+
+  /// Current SSE connection status.
+  PtyConnectionStatus _connectionStatus = PtyConnectionStatus.disconnected;
+
+  /// Whether the session has exited — stops automatic reconnection.
+  bool _sessionExited = false;
+
+  /// Public getter so [SessionDetailScreen] can read the status.
+  PtyConnectionStatus get connectionStatus => _connectionStatus;
 
   /// Resolve keyboard layout from the session command.
   PtyKeyboardConfig get _keyboardConfig =>
@@ -47,19 +60,12 @@ class _PtySessionViewState extends State<PtySessionView> {
   }
 
   /// Buffer for deduplicating Enter sequences from mobile IME.
-  /// On mobile, pressing Enter fires both textInput("\n") and
-  /// keyInput(Enter → "\r") separately, resulting in duplicate Enter
-  /// signals to the PTY. This buffer coalesces them within one
-  /// microtask and normalizes "\n\r" → "\r".
   String _pendingOutput = '';
   bool _outputScheduled = false;
 
   void _flushOutput() {
     _outputScheduled = false;
     if (_pendingOutput.isEmpty) return;
-    // Normalize: mobile IME may send "\n" (textInput) + "\r" (keyInput)
-    // for a single Enter press. Keep only the "\r" which is the standard
-    // terminal enter sequence.
     final normalized = _pendingOutput.replaceAll('\n\r', '\r');
     _pendingOutput = '';
     if (normalized.isEmpty) return;
@@ -79,9 +85,6 @@ class _PtySessionViewState extends State<PtySessionView> {
   }
 
   void _setupTerminal() {
-    // Inject modifier handler into the xterm2 input pipeline so that
-    // toggling Ctrl/Alt/Meta from the virtual keyboard affects physical
-    // keystrokes coming from the system keyboard.
     _terminal.inputHandler = PtyModifierHandler(
       state: _modifierState,
       next: defaultInputHandler,
@@ -127,6 +130,18 @@ class _PtySessionViewState extends State<PtySessionView> {
       // no existing output
     }
     _subscribe();
+    _connectionStatus = PtyConnectionStatus.connected;
+    if (mounted) setState(() {});
+  }
+
+  /// Public — called from [SessionDetailScreen] via GlobalKey to force a
+  /// full re-initialization (fetch output + subscribe).
+  void reconnect() {
+    if (_sessionExited) return;
+    _subscription?.close();
+    _subscription = null;
+    setState(() => _connectionStatus = PtyConnectionStatus.reconnecting);
+    _initialize();
   }
 
   void _subscribe() {
@@ -135,21 +150,43 @@ class _PtySessionViewState extends State<PtySessionView> {
       widget.session.id,
       SubscribeHandlers(
         onChunk: (OutputChunk chunk) {
+          // Reconnected after a disconnect — update status.
+          if (_connectionStatus == PtyConnectionStatus.reconnecting && mounted) {
+            setState(() => _connectionStatus = PtyConnectionStatus.connected);
+          }
           final text = utf8.decode(chunk.data, allowMalformed: true);
           _terminal.write(text);
         },
         onState: (Session session) {
+          // Reconnected after a disconnect — update status.
+          if (_connectionStatus == PtyConnectionStatus.reconnecting && mounted) {
+            setState(() => _connectionStatus = PtyConnectionStatus.connected);
+          }
           if (session.status == SessionStatus.exited) {
             _terminal.write('\r\n\x1b[33m[Session exited]\x1b[0m\r\n');
+            _sessionExited = true;
+            _subscription?.close();
+            _subscription = null;
+            if (mounted) {
+              setState(
+                () => _connectionStatus = PtyConnectionStatus.disconnected,
+              );
+            }
           }
         },
         onError: (Object error) {
           debugPrint('[PtySessionView] SSE error: $error');
+          if (!_sessionExited && mounted) {
+            setState(
+              () => _connectionStatus = PtyConnectionStatus.reconnecting,
+            );
+          }
         },
       ),
       agentId: widget.agentId,
       fromOffset: _currentOffset,
     );
+    // Caller (_initialize or reconnect) manages setState for initial connected.
   }
 
   @override
@@ -159,6 +196,59 @@ class _PtySessionViewState extends State<PtySessionView> {
     super.dispose();
   }
 
+  // ── Status banner ─────────────────────────────────────────────────
+
+  /// Thin colored bar shown below the AppBar.
+  Widget _statusBanner() {
+    final bool visible;
+    final Color color;
+    final String label;
+
+    switch (_connectionStatus) {
+      case PtyConnectionStatus.connected:
+        visible = false;
+        color = AppColors.success;
+        label = '';
+      case PtyConnectionStatus.reconnecting:
+        visible = true;
+        color = AppColors.warning;
+        label = 'Reconnecting…';
+      case PtyConnectionStatus.disconnected:
+        visible = true;
+        color = AppColors.textSecondary;
+        label = _sessionExited ? 'Session exited' : 'Disconnected';
+    }
+
+    if (!visible) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.three,
+        vertical: AppSpacing.one,
+      ),
+      color: color.withAlpha(25),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: color.withAlpha(120), blurRadius: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.two),
+          ThemedText.mono(label, color: color),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,6 +256,8 @@ class _PtySessionViewState extends State<PtySessionView> {
       body: SafeArea(
         child: Column(
           children: [
+            // Status banner
+            _statusBanner(),
             Expanded(
               child: TerminalView(
                 _terminal,
