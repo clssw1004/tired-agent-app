@@ -370,7 +370,7 @@ class _ManagerAgentCard extends StatelessWidget {
         return AppColors.success;
       case AgentState.offline:
         return AppColors.danger;
-      case AgentState.unknown:
+      case AgentState.pending:
         return AppColors.textSecondary;
     }
   }
