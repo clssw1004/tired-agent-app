@@ -164,10 +164,12 @@ class NeonDialog {
                 showRobot: showRobot,
               ),
 
-              // ── Content body ─────────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: content,
+              // ── Content body (scrollable) ────────────────────────────
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                  child: content,
+                ),
               ),
 
               // ── Action buttons ───────────────────────────────────────
