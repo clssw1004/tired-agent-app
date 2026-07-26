@@ -234,7 +234,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         ),
         actions: [
           // Persistent session: kill / delete
-          if (isPersistent && sessionStatus == SessionStatus.running)
+          if (isPersistent && sessionStatus != SessionStatus.exited)
             IconButton(
               icon: const Icon(Icons.stop_circle_outlined,
                   color: AppColors.danger),
