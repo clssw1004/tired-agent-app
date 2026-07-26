@@ -57,6 +57,23 @@ class PtySessionViewState extends State<PtySessionView> {
     super.initState();
     _setupTerminal();
     _initialize();
+    // Send initial resize after first frame so TerminalView has actual dimensions.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _sendInitialResize());
+  }
+
+  /// Send current terminal dimensions to the server.
+  void _sendInitialResize() {
+    final cols = _terminal.viewWidth;
+    final rows = _terminal.viewHeight;
+    if (cols > 0 && rows > 0) {
+      _transport.resizeSession(
+        widget.serverRef,
+        widget.session.id,
+        cols,
+        rows,
+        agentId: widget.agentId,
+      );
+    }
   }
 
   /// Buffer for deduplicating Enter sequences from mobile IME.
