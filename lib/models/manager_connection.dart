@@ -44,6 +44,10 @@ class ManagerConnection extends ChangeNotifier {
   /// Last error message, if [status] is [ConnectionStatus.error].
   String? error;
 
+  /// Guards against concurrent [connect] calls — keeps the in-flight
+  /// future so a second caller waits instead of racing.
+  Future<void>? _connectFuture;
+
   /// Lazily-created transport.  The first call to [transportFor] or
   /// [connect] triggers the actual HTTP client construction.
   HttpSseTransport? _transport;
@@ -84,7 +88,29 @@ class ManagerConnection extends ChangeNotifier {
   ///
   /// On success, fetches the agent list and sets [status] to [connected].
   /// On failure, sets [status] to [error] with a descriptive message.
+  ///
+  /// **Guards against concurrent calls:** if a connection is already in
+  /// progress, subsequent calls wait for it to complete rather than
+  /// starting a duplicate (which could race on the single-use refresh
+  /// token).
   Future<void> connect({String? apiToken}) async {
+    // Prevent concurrent connections — the single-use sliding refresh
+    // token would fail if two refreshSession calls race.
+    if (_connectFuture != null) {
+      debugPrint('[ManagerConnection] connect already in progress, waiting…');
+      await _connectFuture;
+      return;
+    }
+
+    _connectFuture = _doConnect(apiToken: apiToken);
+    try {
+      await _connectFuture!;
+    } finally {
+      _connectFuture = null;
+    }
+  }
+
+  Future<void> _doConnect({String? apiToken}) async {
     status = ConnectionStatus.connecting;
     error = null;
     notifyListeners();
