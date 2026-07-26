@@ -214,9 +214,11 @@ class HttpSseTransport implements Transport {
 
   @override
   Future<void> killSession(ServerRef ref, String id, {String? agentId}) async {
+    // Same endpoint as deleteSession — server distinguishes exited vs running
+    // and routes to hard-delete vs SIGKILL respectively.
     await _request(
-      'POST',
-      '${_sessionUrl(ref.baseUrl, id, agentId: agentId)}/kill',
+      'DELETE',
+      _sessionUrl(ref.baseUrl, id, agentId: agentId),
       token: ref.token,
       agentId: agentId,
     );
