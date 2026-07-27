@@ -5,7 +5,7 @@ import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
-import 'package:tired_agent_app/generated/l10n/app_localizations.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -13,12 +13,11 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    final loc = AppLocalizations.of(context)!;
     final settings = context.watch<AppSettingsProvider>();
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title(loc.settingsTitle),
+        title: ThemedText.title(AppStrings.of.settingsTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: c.primary),
@@ -28,43 +27,43 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── Theme ─────────────────────────────────────────────────
-          SectionHeader(label: loc.settingsTheme),
+          SectionHeader(label: AppStrings.of.settingsTheme),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
-            label: loc.settingsThemeDark,
+            label: AppStrings.of.settingsThemeDark,
             selected: settings.themeMode == ThemeMode.dark,
             onTap: () => settings.setThemeMode(ThemeMode.dark),
           ),
           const SizedBox(height: AppSpacing.one),
           _ThemeTile(
-            label: loc.settingsThemeLight,
+            label: AppStrings.of.settingsThemeLight,
             selected: settings.themeMode == ThemeMode.light,
             onTap: () => settings.setThemeMode(ThemeMode.light),
           ),
           const SizedBox(height: AppSpacing.four),
 
           // ── Language ─────────────────────────────────────────────
-          SectionHeader(label: loc.settingsLanguage),
+          SectionHeader(label: AppStrings.of.settingsLanguage),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
-            label: loc.settingsLanguageZh,
+            label: AppStrings.of.settingsLanguageZh,
             selected: settings.locale.languageCode == 'zh',
             onTap: () => settings.setLocale(const Locale('zh')),
           ),
           const SizedBox(height: AppSpacing.one),
           _ThemeTile(
-            label: loc.settingsLanguageEn,
+            label: AppStrings.of.settingsLanguageEn,
             selected: settings.locale.languageCode == 'en',
             onTap: () => settings.setLocale(const Locale('en')),
           ),
           const SizedBox(height: AppSpacing.four),
 
           // ── About ────────────────────────────────────────────────
-          SectionHeader(label: loc.settingsAbout),
+          SectionHeader(label: AppStrings.of.settingsAbout),
           const SizedBox(height: AppSpacing.two),
-          _InfoTile(label: loc.settingsApp, value: 'TiredAgent'),
+          _InfoTile(label: AppStrings.of.settingsApp, value: 'TiredAgent'),
           const SizedBox(height: AppSpacing.one),
-          _InfoTile(label: loc.settingsVersion, value: '1.0.0'),
+          _InfoTile(label: AppStrings.of.settingsVersion, value: '1.0.0'),
           const SizedBox(height: AppSpacing.four),
         ],
       ),

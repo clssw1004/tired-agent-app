@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/neon_divider.dart';
@@ -148,7 +149,7 @@ class _MessageBubble extends StatelessWidget {
       ContentUsage(:final inputTokens, :final outputTokens) => Align(
         alignment: Alignment.centerRight,
         child: ThemedText.small(
-          'tokens in: $inputTokens · out: $outputTokens',
+          AppStrings.of.chatTokenUsage(inputTokens, outputTokens),
           color: c.textSecondary,
         ),
       ),
@@ -157,12 +158,12 @@ class _MessageBubble extends StatelessWidget {
   }
 
   String _statusLabel(StatusKind kind) => switch (kind) {
-    StatusKind.thinking => 'Thinking…',
-    StatusKind.working => 'Working…',
-    StatusKind.done => 'Done',
-    StatusKind.error => 'Error',
-    StatusKind.idle => 'Idle',
-    StatusKind.starting => 'Starting',
+    StatusKind.thinking => AppStrings.of.chatStatusThinking,
+    StatusKind.working => AppStrings.of.chatStatusWorking,
+    StatusKind.done => AppStrings.of.chatStatusDone,
+    StatusKind.error => AppStrings.of.statusError,
+    StatusKind.idle => AppStrings.of.chatStatusIdle,
+    StatusKind.starting => AppStrings.of.statusStarting,
   };
 
   Widget _statusIcon(StatusKind kind, AppColors colors) => switch (kind) {

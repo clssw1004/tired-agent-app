@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/theme.dart';
 
 /// Form data returned by [AddAgentForm].
@@ -54,9 +55,9 @@ class AddAgentFormState extends State<AddAgentForm> {
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Agent Name',
-              hintText: 'web-01',
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelAgentName,
+              hintText: AppStrings.of.agentNameHint,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
@@ -67,10 +68,10 @@ class AddAgentFormState extends State<AddAgentForm> {
           const SizedBox(height: AppSpacing.three),
           TextField(
             controller: _urlController,
-            decoration: const InputDecoration(
-              labelText: 'Agent URL',
-              hintText: 'http://192.168.1.10:3100',
-              contentPadding: EdgeInsets.symmetric(
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelAgentUrl,
+              hintText: AppStrings.of.agentUrlHint,
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
               ),
@@ -81,9 +82,9 @@ class AddAgentFormState extends State<AddAgentForm> {
           const SizedBox(height: AppSpacing.three),
           TextField(
             controller: _tokenController,
-            decoration: const InputDecoration(
-              labelText: 'Agent Token',
-              contentPadding: EdgeInsets.symmetric(
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelAgentToken,
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
               ),

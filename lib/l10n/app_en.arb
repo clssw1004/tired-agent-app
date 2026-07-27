@@ -222,5 +222,88 @@
   "labelToken": "Token",
   "labelAgentName": "Agent Name",
   "labelAgentUrl": "Agent URL",
-  "labelAgentToken": "Agent Token"
+  "labelAgentToken": "Agent Token",
+  "labelManagerUrl": "Manager URL",
+  "managerUrlHint": "http://192.168.1.10:3099",
+  "managerAgentCounts": "{total} agents · {online} online · {offline} offline",
+  "@managerAgentCounts": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "online": {
+        "type": "int"
+      },
+      "offline": {
+        "type": "int"
+      }
+    }
+  },
+  "managerAgentCountsWithPending": "{total} agents · {online} online · {offline} offline · {pending} pending",
+  "@managerAgentCountsWithPending": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "online": {
+        "type": "int"
+      },
+      "offline": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "managersDefaultName": "Manager {count}",
+  "@managersDefaultName": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agentNameHint": "web-01",
+  "agentUrlHint": "http://192.168.1.10:3100",
+  "statusRunning": "Running",
+  "statusStarting": "Starting",
+  "statusExited": "Exited",
+  "send": "Send",
+  "timeJustNow": "just now",
+  "dirPickerTitle": "Select working directory",
+  "dirPickerUpLevel": "Up one level",
+  "dirPickerFavorites": "Favorites",
+  "dirPickerRecent": "Recent",
+  "dirPickerBrowse": "Browse",
+  "dirPickerNoFavorites": "No favorites yet",
+  "dirPickerNoRecent": "No recent directories",
+  "dirPickerEmpty": "Empty directory",
+  "dirPickerFavorite": "Favorite",
+  "dirPickerUnfavorite": "Unfavorite",
+  "dirPickerSelect": "Select",
+  "dirPickerLoading": "(loading…)",
+  "ptyKeyboardClose": "Close keyboard",
+  "ptyKeyboardKeys": "Keys",
+  "ptyKeyboardConfirmSend": "Are you sure you want to send this key sequence?",
+  "ptyReconnecting": "Reconnecting…",
+  "ptySessionExited": "Session exited",
+  "ptySessionEnded": "Session ended",
+  "ptyDisconnected": "Disconnected",
+  "chatInputHint": "Type a message…",
+  "chatStatusThinking": "Thinking…",
+  "chatStatusWorking": "Working…",
+  "chatStatusDone": "Done",
+  "chatStatusIdle": "Idle",
+  "chatTokenUsage": "tokens in: {inputTokens} · out: {outputTokens}",
+  "@chatTokenUsage": {
+    "placeholders": {
+      "inputTokens": {
+        "type": "int"
+      },
+      "outputTokens": {
+        "type": "int"
+      }
+    }
+  }
 }

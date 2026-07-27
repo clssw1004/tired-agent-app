@@ -7,6 +7,7 @@ import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 
 /// Shows all pinned sessions grouped by manager.
 class PinnedSessionsScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class PinnedSessionsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title('Sessions'),
+        title: ThemedText.title(AppStrings.of.pinnedTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: c.primary),
@@ -45,10 +46,10 @@ class PinnedSessionsScreen extends StatelessWidget {
               color: c.primary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.four),
-            ThemedText.title('No pinned sessions'),
+            ThemedText.title(AppStrings.of.pinnedEmpty),
             const SizedBox(height: AppSpacing.two),
             ThemedText(
-              '在 Agent 的会话列表里点击 📌\n将常用会话固定到此处',
+              AppStrings.of.pinnedEmptyDesc,
               color: c.textSecondary,
               fontSize: 12,
               textAlign: TextAlign.center,
@@ -113,12 +114,12 @@ class PinnedSessionsScreen extends StatelessWidget {
   ) async {
     final ok = await NeonDialog.showConfirm(
       context: context,
-      title: 'Unpin session?',
+      title: AppStrings.of.pinnedUnpinTitle,
       showRobot: true,
       content: ThemedText.small(
-        'Remove "${pinned.sessionLabel}" from pinned sessions?',
+        AppStrings.of.pinnedUnpinDesc(pinned.sessionLabel),
       ),
-      confirmText: 'Unpin',
+      confirmText: AppStrings.of.pinnedUnpin,
     );
     if (ok == true) {
       await pinService.unpin(pinned.id);

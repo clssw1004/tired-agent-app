@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:xterm2/xterm.dart';
 
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
@@ -161,7 +162,7 @@ class PtyKeyboardPanel extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              expanded ? 'Close keyboard' : 'Keys',
+              expanded ? AppStrings.of.ptyKeyboardClose : AppStrings.of.ptyKeyboardKeys,
               style: TextStyle(
                 fontSize: 11,
                 color: colors.primary.withAlpha(140),
@@ -369,16 +370,16 @@ class _KeyButton extends StatelessWidget {
         maxWidth: 340,
         showRobot: true,
         content: ThemedText.body(
-          'Are you sure you want to send this key sequence?',
+          AppStrings.of.ptyKeyboardConfirmSend,
           color: c.textSecondary,
         ),
         actions: [
           NeonDialogAction(
-            label: 'Cancel',
+            label: AppStrings.of.cancel,
             onPressed: (ctx) => Navigator.of(ctx).pop(false),
           ),
           NeonDialogAction(
-            label: 'Send',
+            label: AppStrings.of.send,
             isDanger: true,
             onPressed: (ctx) => Navigator.of(ctx).pop(true),
           ),

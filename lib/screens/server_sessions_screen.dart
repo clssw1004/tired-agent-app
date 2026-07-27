@@ -12,6 +12,7 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 
 typedef _StatusFilter = SessionStatus?;
 
@@ -78,7 +79,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       final auth = context.read<AuthProvider>();
       final conn = auth.connectionFor(widget.profileId);
       if (conn == null || conn.profile.sessionToken == null) {
-        if (mounted) setState(() => _error = 'Not connected');
+        if (mounted) setState(() => _error = AppStrings.of.sessionsNotConnected);
         return;
       }
       await conn.ensureFreshSession();
@@ -108,8 +109,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   void _requestKill(String sessionId) {
     _showConfirm(
-      title: 'Kill this session?',
-      desc: 'The running process will be terminated and removed from the list.',
+      title: AppStrings.of.sessionsKillTitle,
+      desc: AppStrings.of.sessionsKillDesc,
       onConfirm: () async {
         final auth = context.read<AuthProvider>();
         final conn = auth.connectionFor(widget.profileId);
@@ -133,9 +134,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   void _requestDelete(String sessionId) {
     _showConfirm(
-      title: 'Delete session log?',
-      desc:
-          'Removes the database row and the on-disk output log. Cannot be undone.',
+      title: AppStrings.of.sessionsDeleteTitle,
+      desc: AppStrings.of.sessionsDeleteDesc,
       onConfirm: () async {
         final auth = context.read<AuthProvider>();
         final conn = auth.connectionFor(widget.profileId);
@@ -159,9 +159,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   void _requestPrune() {
     _showConfirm(
-      title: 'Clean stale sessions?',
-      desc:
-          'Drops all sessions that have been inactive for more than 24 hours.',
+      title: AppStrings.of.sessionsPruneTitle,
+      desc: AppStrings.of.sessionsPruneDesc,
       onConfirm: () async {
         final auth = context.read<AuthProvider>();
         final conn = auth.connectionFor(widget.profileId);
@@ -194,7 +193,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       title: title,
       showRobot: true,
       content: ThemedText.small(desc),
-      confirmText: 'Confirm',
+      confirmText: AppStrings.of.confirm,
       confirmIsDanger: true,
     );
     if (confirmed == true && mounted) {
@@ -241,7 +240,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: ThemedText.small('Session unpinned'),
+            content: ThemedText.small(AppStrings.of.sessionsUnpinned),
             backgroundColor: c.backgroundElement,
           ),
         );
@@ -251,7 +250,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       final formKey = GlobalKey<_PinLabelFormState>();
       final result = await NeonDialog.show<String?>(
         context: context,
-        title: 'Pin Session',
+        title: AppStrings.of.sessionsPinTitle,
         showRobot: true,
         maxWidth: 400,
         content: _PinLabelForm(
@@ -260,11 +259,11 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ),
         actions: [
           NeonDialogAction(
-            label: 'Cancel',
+            label: AppStrings.of.cancel,
             onPressed: (ctx) => Navigator.of(ctx).pop(null),
           ),
           NeonDialogAction(
-            label: 'Pin',
+            label: AppStrings.of.pinLabel,
             isPrimary: true,
             onPressed: (ctx) {
               final label = formKey.currentState?.label;
@@ -287,7 +286,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: ThemedText.small('Session pinned'),
+            content: ThemedText.small(AppStrings.of.sessionsPinned),
             backgroundColor: c.backgroundElement,
           ),
         );
@@ -327,20 +326,20 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             icon: Icon(Icons.filter_list, color: c.textSecondary),
             onSelected: (f) => setState(() => _statusFilter = f),
             itemBuilder: (_) => [
-              const PopupMenuItem(value: null, child: Text('All')),
-              const PopupMenuItem(
+              PopupMenuItem(value: null, child: Text(AppStrings.of.sessionsFilterAll)),
+              PopupMenuItem(
                 value: SessionStatus.running,
-                child: Text('Running'),
+                child: Text(AppStrings.of.sessionsFilterRunning),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: SessionStatus.exited,
-                child: Text('Exited'),
+                child: Text(AppStrings.of.sessionsFilterExited),
               ),
             ],
           ),
           IconButton(
             icon: Icon(Icons.add, color: c.primary),
-            tooltip: 'New Session',
+            tooltip: AppStrings.of.sessionsNewTooltip,
             onPressed: () => context.push(
               '/profile/${widget.profileId}/agent/${widget.agentId}/create',
             ),
@@ -353,7 +352,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   Widget _buildContent(ManagerConnection? conn) {
     if (conn == null) {
-      return Center(child: ThemedText.small('Manager not found'));
+      return Center(child: ThemedText.small(AppStrings.of.sessionsManagerNotFound));
     }
 
     if (_loading && _sessions.isEmpty) {
@@ -381,7 +380,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                 ),
                 const SizedBox(width: AppSpacing.one),
                 ThemedText.small(
-                  'Pruned $_pruneInfo session(s)',
+                  AppStrings.of.sessionsPruned(_pruneInfo!),
                   color: c.primary,
                 ),
                 const Spacer(),
@@ -415,7 +414,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                 Expanded(
                   child: ThemedText.small(_error!, color: c.danger),
                 ),
-                TextButton(onPressed: _load, child: const Text('Retry')),
+                TextButton(onPressed: _load, child: Text(AppStrings.of.agentRetry)),
               ],
             ),
           ),
@@ -431,7 +430,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
           child: Row(
             children: [
               ThemedText.label(
-                '${_visible.length} session(s)',
+                AppStrings.of.sessionsCount(_visible.length),
                 color: c.textSecondary,
               ),
               const Spacer(),
@@ -443,7 +442,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                     ? _requestPrune
                     : null,
                 child: ThemedText.small(
-                  'Prune',
+                  AppStrings.of.sessionsPruneBtn,
                   color:
                       (_sessions
                           .where((s) => s.status != SessionStatus.exited)
@@ -466,7 +465,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
           child: _visible.isEmpty
               ? Center(
                   child: ThemedText.small(
-                    _loading ? 'Loading…' : 'No sessions',
+                    _loading ? AppStrings.of.sessionsLoading : AppStrings.of.sessionsEmpty,
                     color: c.textSecondary,
                   ),
                 )
@@ -540,7 +539,7 @@ class _PinLabelFormState extends State<_PinLabelForm> {
       padding: const EdgeInsets.only(top: 4),
       child: TextField(
         controller: _controller,
-        decoration: const InputDecoration(labelText: 'Display label'),
+        decoration: InputDecoration(labelText: AppStrings.of.sessionsPinLabel),
         autofocus: true,
       ),
     );

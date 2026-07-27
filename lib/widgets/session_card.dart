@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/glow_badge.dart';
@@ -25,10 +26,10 @@ class SessionCard extends StatelessWidget {
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s < 60000) return '${s ~/ 1000}s ago';
-    if (s < 3600000) return '${s ~/ 60000}m ago';
-    if (s < 86400000) return '${s ~/ 3600000}h ago';
-    return '${s ~/ 86400000}d ago';
+    if (s < 60000) return '${s ~/ 1000}${AppStrings.of.timeSecondsAgo}';
+    if (s < 3600000) return '${s ~/ 60000}${AppStrings.of.timeMinutesAgo}';
+    if (s < 86400000) return '${s ~/ 3600000}${AppStrings.of.timeHoursAgo}';
+    return '${s ~/ 86400000}${AppStrings.of.timeDaysAgo}';
   }
 
   @override
@@ -117,14 +118,14 @@ class SessionCard extends StatelessWidget {
                 if (onKill != null)
                   _ActionButton(
                     icon: '⏹',
-                    label: 'Kill',
+                    label: AppStrings.of.sessionsKillBtn,
                     color: c.danger,
                     onTap: onKill!,
                   ),
                 if (session.status == SessionStatus.exited && onDelete != null)
                   _ActionButton(
                     icon: '🗑',
-                    label: 'Delete',
+                    label: AppStrings.of.sessionsDeleteBtn,
                     color: c.textSecondary,
                     onTap: onDelete!,
                   ),
@@ -140,7 +141,7 @@ class SessionCard extends StatelessWidget {
                   if (session.status != SessionStatus.exited && onKill != null)
                     _ActionButton(
                       icon: '⏹',
-                      label: 'Kill',
+                      label: AppStrings.of.sessionsKillBtn,
                       color: c.danger,
                       onTap: onKill!,
                     ),
@@ -148,7 +149,7 @@ class SessionCard extends StatelessWidget {
                       onDelete != null)
                     _ActionButton(
                       icon: '🗑',
-                      label: 'Delete',
+                      label: AppStrings.of.sessionsDeleteBtn,
                       color: c.textSecondary,
                       onTap: onDelete!,
                     ),

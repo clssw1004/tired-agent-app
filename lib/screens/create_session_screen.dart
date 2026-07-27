@@ -15,6 +15,8 @@ import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/neon_loading.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
+
 const _labelChars = 'abcdefghijkmnpqrstuvwxyz23456789';
 
 String _generateDefaultLabel() {
@@ -149,13 +151,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       items.add(_DropdownItem.builtin(p));
     }
     if (_recentPresets.isNotEmpty) {
-      items.add(_DropdownItem.separator('Recent'));
+      items.add(_DropdownItem.separator(AppStrings.of.createSectionRecent));
       for (final p in _recentPresets) {
         items.add(_DropdownItem.user(p));
       }
     }
     if (_customPresets.isNotEmpty) {
-      items.add(_DropdownItem.separator('Custom'));
+      items.add(_DropdownItem.separator(AppStrings.of.createSectionCustom));
       for (final p in _customPresets) {
         items.add(_DropdownItem.user(p));
       }
@@ -222,7 +224,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       ),
       actions: [
         NeonDialogAction<String>(
-          label: 'Cancel',
+          label: AppStrings.of.cancel,
           onPressed: (c) => Navigator.of(c).pop(),
         ),
       ],
@@ -326,12 +328,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(),
-                        child: ThemedText.body('Cancel'),
+                        child: ThemedText.body(AppStrings.of.cancel),
                       ),
                       const SizedBox(width: 8),
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(temp),
-                        child: ThemedText.body('Apply'),
+                        child: ThemedText.body(AppStrings.of.createOptionsApply),
                       ),
                     ],
                   ),
@@ -448,7 +450,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       if (conn == null || conn.profile.sessionToken == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Not connected'), backgroundColor: c.danger),
+            SnackBar(content: Text(AppStrings.of.createNotConnected), backgroundColor: c.danger),
           );
         }
         return;
@@ -520,22 +522,22 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final labelCtrl = TextEditingController(text: _cmd);
     final result = await NeonDialog.show<_UserPreset>(
       context: context,
-      title: 'Save as preset',
+      title: AppStrings.of.createSaveAsPreset,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ThemedText.small('Preset name'),
+          ThemedText.small(AppStrings.of.createPresetName),
           TextField(controller: labelCtrl, autofocus: true, decoration: const InputDecoration(isDense: true)),
         ],
       ),
       actions: [
         NeonDialogAction<_UserPreset>(
-          label: 'Cancel',
+          label: AppStrings.of.cancel,
           onPressed: (ctx) => Navigator.of(ctx).pop(),
         ),
         NeonDialogAction<_UserPreset>(
-          label: 'Save',
+          label: AppStrings.of.createSave,
           isPrimary: true,
           onPressed: (ctx) {
             final label = labelCtrl.text.trim();
@@ -655,7 +657,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.mono('NEW SESSION', color: c.primary),
+        title: ThemedText.mono(AppStrings.of.createTitle, color: c.primary),
         centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -668,7 +670,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── PRESET ─────────────────────────────────────────
-            _sectionHeader('Preset'),
+            _sectionHeader(AppStrings.of.createPreset),
             Row(
               children: [
                 Expanded(child: _buildPresetDropdown()),
@@ -680,13 +682,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
             // ── TERMINAL PREVIEW ──────────────────────────────
             if (_previewCommand.isNotEmpty) ...[
-              _sectionHeader('Preview'),
+              _sectionHeader(AppStrings.of.createPreview),
               _buildTerminalPreview(),
               const SizedBox(height: AppSpacing.four),
             ],
 
             // ── COMMAND ───────────────────────────────────────
-            _sectionHeader('Command'),
+            _sectionHeader(AppStrings.of.createCommand),
             TextField(
               controller: TextEditingController.fromValue(
                 TextEditingValue(text: _cmd),
@@ -702,7 +704,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             const SizedBox(height: AppSpacing.four),
 
             // ── ARGUMENTS ─────────────────────────────────────
-            _sectionHeader('Arguments'),
+            _sectionHeader(AppStrings.of.createArguments),
             TextField(
               controller: _argsController,
               style: TextStyle(
@@ -710,7 +712,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 color: c.textCode,
                 fontSize: 14,
               ),
-              decoration: _neonInput(hint: '--no-input  --verbose'),
+              decoration: _neonInput(hint: AppStrings.of.createArgsHint),
               onChanged: (_) => setState(() {}),
               enabled: !_busy,
             ),
@@ -719,28 +721,28 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             if (_selectedPreset != null &&
                 _selectedPreset!.options.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.four),
-              _sectionHeader('Options'),
+              _sectionHeader(AppStrings.of.createOptions),
               _buildOptionChips(),
             ],
 
             const SizedBox(height: AppSpacing.four),
 
             // ── LABEL ─────────────────────────────────────────
-            _sectionHeader('Session label'),
+            _sectionHeader(AppStrings.of.createSessionLabel),
             TextField(
               controller: _labelController,
               style: TextStyle(color: c.text, fontSize: 14),
-              decoration: _neonInput(hint: 'Auto-generated if empty'),
+              decoration: _neonInput(hint: AppStrings.of.createAutoLabel),
               enabled: !_busy,
             ),
             const SizedBox(height: AppSpacing.four),
 
             // ── WORKING DIRECTORY ────────────────────────────
-            _sectionHeader('Working directory'),
+            _sectionHeader(AppStrings.of.createWorkingDir),
             _buildDirectoryPicker(),
             const SizedBox(height: AppSpacing.two),
             ThemedText.mono(
-              'Terminal size auto-matches after session starts',
+              AppStrings.of.createTerminalSizeHint,
               color: c.textSecondary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.six),
@@ -761,7 +763,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                         borderRadius: BorderRadius.circular(AppSpacing.two),
                       ),
                     ),
-                    child: ThemedText.mono('CANCEL'),
+                    child: ThemedText.mono(AppStrings.of.createCancel),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.three),
@@ -791,7 +793,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                     ),
                     child: _busy
                         ? NeonLoading(size: 20)
-                        : ThemedText.mono('LAUNCH', color: c.primary),
+                        : ThemedText.mono(AppStrings.of.createLaunch, color: c.primary),
                   ),
                 ),
               ],
@@ -830,7 +832,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               color: c.primary.withAlpha(180),
             ),
             const SizedBox(width: 4),
-            ThemedText.mono('SAVE', color: c.primary.withAlpha(180)),
+            ThemedText.mono(AppStrings.of.createSave, color: c.primary.withAlpha(180)),
           ],
         ),
       ),
@@ -1006,7 +1008,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: AppSpacing.two),
-                ThemedText.mono('SELECT PRESET', color: c.primary),
+                ThemedText.mono(AppStrings.of.createSelectPreset, color: c.primary),
               ],
             ),
           ),
@@ -1114,7 +1116,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             const SizedBox(width: AppSpacing.two),
             Expanded(
               child: ThemedText.mono(
-                hasPath ? _cwdController.text : 'Agent home directory',
+                hasPath ? _cwdController.text : AppStrings.of.createHomeDir,
                 color: hasPath ? c.textCode : c.textSecondary,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

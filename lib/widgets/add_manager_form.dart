@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/theme.dart';
 
 /// Form data returned by [AddManagerForm].
@@ -56,9 +57,9 @@ class AddManagerFormState extends State<AddManagerForm> {
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Label',
-              contentPadding: EdgeInsets.symmetric(
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelName,
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
               ),
@@ -68,9 +69,9 @@ class AddManagerFormState extends State<AddManagerForm> {
           const SizedBox(height: AppSpacing.three),
           TextField(
             controller: _urlController,
-            decoration: const InputDecoration(
-              labelText: 'Manager URL',
-              hintText: 'http://192.168.1.10:3099',
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelManagerUrl,
+              hintText: AppStrings.of.managerUrlHint,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
@@ -82,8 +83,8 @@ class AddManagerFormState extends State<AddManagerForm> {
           const SizedBox(height: AppSpacing.three),
           TextField(
             controller: _tokenController,
-            decoration: const InputDecoration(
-              labelText: 'Access Token',
+            decoration: InputDecoration(
+              labelText: AppStrings.of.managersAccessToken,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
