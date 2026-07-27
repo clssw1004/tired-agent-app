@@ -316,5 +316,7 @@
   },
   "settingsBufferSizeCustom": "自定义…",
   "settingsBufferSizeHint": "输入缓冲区行数（200-50000）",
-  "settingsBufferSizeInvalid": "请输入 200-50000 之间的整数"
+  "settingsBufferSizeInvalid": "请输入 200-50000 之间的整数",
+
+  "settingsTerminalTheme": "终端配色"
 }
