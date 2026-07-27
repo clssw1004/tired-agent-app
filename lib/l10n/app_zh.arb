@@ -222,5 +222,85 @@
   "labelToken": "令牌",
   "labelAgentName": "Agent 名称",
   "labelAgentUrl": "Agent URL",
-  "labelAgentToken": "Agent 令牌"
+  "labelAgentToken": "Agent 令牌",
+  "labelManagerUrl": "Manager URL",
+  "managerUrlHint": "http://192.168.1.10:3099",
+  "managerAgentCounts": "{total} 个 Agent · {online} 在线 · {offline} 离线",
+  "@managerAgentCounts": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "online": {
+        "type": "int"
+      },
+      "offline": {
+        "type": "int"
+      }
+    }
+  },
+  "managerAgentCountsWithPending": "{total} 个 Agent · {online} 在线 · {offline} 离线 · {pending} 待处理",
+  "@managerAgentCountsWithPending": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "online": {
+        "type": "int"
+      },
+      "offline": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "managersDefaultName": "管理器 {count}",
+  "@managersDefaultName": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agentNameHint": "web-01",
+  "agentUrlHint": "http://192.168.1.10:3100",
+  "send": "发送",
+  "timeJustNow": "刚刚",
+  "dirPickerTitle": "选择工作目录",
+  "dirPickerUpLevel": "上一级",
+  "dirPickerFavorites": "收藏夹",
+  "dirPickerRecent": "最近",
+  "dirPickerBrowse": "浏览",
+  "dirPickerNoFavorites": "暂无收藏",
+  "dirPickerNoRecent": "暂无最近目录",
+  "dirPickerEmpty": "空目录",
+  "dirPickerFavorite": "收藏",
+  "dirPickerUnfavorite": "取消收藏",
+  "dirPickerSelect": "选择",
+  "dirPickerLoading": "(加载中…)",
+  "ptyKeyboardClose": "收起键盘",
+  "ptyKeyboardKeys": "按键",
+  "ptyKeyboardConfirmSend": "确认发送此按键序列？",
+  "ptyReconnecting": "重连中…",
+  "ptySessionExited": "会话已退出",
+  "ptySessionEnded": "会话已结束",
+  "ptyDisconnected": "已断开",
+  "chatInputHint": "输入消息…",
+  "chatStatusThinking": "思考中…",
+  "chatStatusWorking": "工作中…",
+  "chatStatusDone": "完成",
+  "chatStatusIdle": "空闲",
+  "chatTokenUsage": "输入: {inputTokens} · 输出: {outputTokens}",
+  "@chatTokenUsage": {
+    "placeholders": {
+      "inputTokens": {
+        "type": "int"
+      },
+      "outputTokens": {
+        "type": "int"
+      }
+    }
+  }
 }

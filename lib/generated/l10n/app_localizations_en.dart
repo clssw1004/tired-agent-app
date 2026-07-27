@@ -432,6 +432,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelAgentToken => 'Agent Token';
 
   @override
+  String get labelManagerUrl => 'Manager URL';
+
+  @override
+  String get managerUrlHint => 'http://192.168.1.10:3099';
+
+  @override
+  String managerAgentCounts(int total, int online, int offline) {
+    return '$total agents · $online online · $offline offline';
+  }
+
+  @override
+  String managerAgentCountsWithPending(
+    int total,
+    int online,
+    int offline,
+    int pending,
+  ) {
+    return '$total agents · $online online · $offline offline · $pending pending';
+  }
+
+  @override
+  String managersDefaultName(int count) {
+    return 'Manager $count';
+  }
+
+  @override
+  String get agentNameHint => 'web-01';
+
+  @override
+  String get agentUrlHint => 'http://192.168.1.10:3100';
+
+  @override
   String get statusRunning => 'Running';
 
   @override
@@ -439,4 +471,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statusExited => 'Exited';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get timeJustNow => 'just now';
+
+  @override
+  String get dirPickerTitle => 'Select working directory';
+
+  @override
+  String get dirPickerUpLevel => 'Up one level';
+
+  @override
+  String get dirPickerFavorites => 'Favorites';
+
+  @override
+  String get dirPickerRecent => 'Recent';
+
+  @override
+  String get dirPickerBrowse => 'Browse';
+
+  @override
+  String get dirPickerNoFavorites => 'No favorites yet';
+
+  @override
+  String get dirPickerNoRecent => 'No recent directories';
+
+  @override
+  String get dirPickerEmpty => 'Empty directory';
+
+  @override
+  String get dirPickerFavorite => 'Favorite';
+
+  @override
+  String get dirPickerUnfavorite => 'Unfavorite';
+
+  @override
+  String get dirPickerSelect => 'Select';
+
+  @override
+  String get dirPickerLoading => '(loading…)';
+
+  @override
+  String get ptyKeyboardClose => 'Close keyboard';
+
+  @override
+  String get ptyKeyboardKeys => 'Keys';
+
+  @override
+  String get ptyKeyboardConfirmSend =>
+      'Are you sure you want to send this key sequence?';
+
+  @override
+  String get ptyReconnecting => 'Reconnecting…';
+
+  @override
+  String get ptySessionExited => 'Session exited';
+
+  @override
+  String get ptySessionEnded => 'Session ended';
+
+  @override
+  String get ptyDisconnected => 'Disconnected';
+
+  @override
+  String get chatInputHint => 'Type a message…';
+
+  @override
+  String get chatStatusThinking => 'Thinking…';
+
+  @override
+  String get chatStatusWorking => 'Working…';
+
+  @override
+  String get chatStatusDone => 'Done';
+
+  @override
+  String get chatStatusIdle => 'Idle';
+
+  @override
+  String chatTokenUsage(int inputTokens, int outputTokens) {
+    return 'tokens in: $inputTokens · out: $outputTokens';
+  }
 }

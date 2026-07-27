@@ -225,7 +225,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
             ),
             child: Row(
               children: [
-                ThemedText.title('Select working directory'),
+                ThemedText.title(AppStrings.of.dirPickerTitle),
                 const Spacer(),
                 IconButton(
                   icon: Icon(
@@ -251,12 +251,12 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                       size: 20,
                     ),
                     onPressed: _loading ? null : () => _navigateTo(_parent!),
-                    tooltip: 'Up one level',
+                    tooltip: AppStrings.of.dirPickerUpLevel,
                   ),
                 const SizedBox(width: AppSpacing.two),
                 Expanded(
                   child: ThemedText.small(
-                    _currentPath.isNotEmpty ? _currentPath : '(loading…)',
+                    _currentPath.isNotEmpty ? _currentPath : AppStrings.of.dirPickerLoading,
                     color: c.textSecondary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -302,10 +302,10 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
             labelColor: c.accent,
             unselectedLabelColor: c.textSecondary,
             indicatorColor: c.accent,
-            tabs: const [
-              Tab(text: 'Favorites'),
-              Tab(text: 'Recent'),
-              Tab(text: 'Browse'),
+            tabs: [
+              Tab(text: AppStrings.of.dirPickerFavorites),
+              Tab(text: AppStrings.of.dirPickerRecent),
+              Tab(text: AppStrings.of.dirPickerBrowse),
             ],
           ),
           // Tab content
@@ -344,7 +344,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                     child: ThemedText.small(
                       _savingFavorite
                           ? '…'
-                          : (_isFavorited ? 'Unfavorite' : 'Favorite'),
+                          : (_isFavorited ? AppStrings.of.dirPickerUnfavorite : AppStrings.of.dirPickerFavorite),
                       color: c.textSecondary,
                     ),
                   ),
@@ -358,7 +358,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                     onPressed: _currentPath.isEmpty || _loading
                         ? null
                         : () => widget.onSelect(_currentPath),
-                    child: ThemedText.body('Select'),
+                    child: ThemedText.body(AppStrings.of.dirPickerSelect),
                   ),
                 ],
               ),
@@ -372,7 +372,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   Widget _buildFavoritesTab() {
     final c = context.appColors;
     if (_favorites.isEmpty) {
-      return Center(child: ThemedText.small('No favorites yet'));
+      return Center(child: ThemedText.small(AppStrings.of.dirPickerNoFavorites));
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
@@ -398,7 +398,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   Widget _buildRecentTab() {
     final c = context.appColors;
     if (_recent.isEmpty) {
-      return Center(child: ThemedText.small('No recent directories'));
+      return Center(child: ThemedText.small(AppStrings.of.dirPickerNoRecent));
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
@@ -431,7 +431,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
       return const Center(child: CircularProgressIndicator());
     }
     if (_entries.isEmpty) {
-      return Center(child: ThemedText.small('Empty directory'));
+      return Center(child: ThemedText.small(AppStrings.of.dirPickerEmpty));
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
@@ -455,7 +455,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
 
   String _relativeTime(int epochMs) {
     final delta = DateTime.now().millisecondsSinceEpoch - epochMs;
-    if (delta < 60000) return 'just now';
+    if (delta < 60000) return AppStrings.of.timeJustNow;
     if (delta < 3600000) return '${delta ~/ 60000}${AppStrings.of.timeMinutesAgo}';
     if (delta < 86400000) return '${delta ~/ 3600000}${AppStrings.of.timeHoursAgo}';
     return '${delta ~/ 86400000}${AppStrings.of.timeDaysAgo}';

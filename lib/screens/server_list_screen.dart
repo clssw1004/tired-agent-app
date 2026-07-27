@@ -111,7 +111,7 @@ class ServerListScreen extends StatelessWidget {
       maxWidth: 480,
       content: AddManagerForm(
         key: formKey,
-        initialName: 'Manager ${auth.connections.length + 1}',
+        initialName: AppStrings.of.managersDefaultName(auth.connections.length + 1),
       ),
       actions: [
         NeonDialogAction(
@@ -275,10 +275,10 @@ class _ManagerCard extends StatelessWidget {
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s < 60000) return '${s ~/ 1000}s ago';
-    if (s < 3600000) return '${s ~/ 60000}m ago';
-    if (s < 86400000) return '${s ~/ 3600000}h ago';
-    return '${s ~/ 86400000}d ago';
+    if (s < 60000) return '${s ~/ 1000}${AppStrings.of.timeSecondsAgo}';
+    if (s < 3600000) return '${s ~/ 60000}${AppStrings.of.timeMinutesAgo}';
+    if (s < 86400000) return '${s ~/ 3600000}${AppStrings.of.timeHoursAgo}';
+    return '${s ~/ 86400000}${AppStrings.of.timeDaysAgo}';
   }
 
   @override
@@ -437,10 +437,13 @@ class _ManagerCard extends StatelessWidget {
                       if (hasAgentInfo)
                         Expanded(
                           child: ThemedText.mono(
-                            '$totalAgents agents · '
-                            '$onlineAgents online · '
-                            '$offlineAgents offline'
-                            '${pendingAgents > 0 ? ' · $pendingAgents pending' : ''}',
+                            pendingAgents > 0
+                                ? AppStrings.of.managerAgentCountsWithPending(
+                                    totalAgents, onlineAgents, offlineAgents, pendingAgents,
+                                  )
+                                : AppStrings.of.managerAgentCounts(
+                                    totalAgents, onlineAgents, offlineAgents,
+                                  ),
                             color: c.textSecondary,
                           ),
                         ),

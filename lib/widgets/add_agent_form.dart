@@ -57,7 +57,7 @@ class AddAgentFormState extends State<AddAgentForm> {
             controller: _nameController,
             decoration: InputDecoration(
               labelText: AppStrings.of.labelAgentName,
-              hintText: 'web-01',
+              hintText: AppStrings.of.agentNameHint,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
@@ -70,7 +70,7 @@ class AddAgentFormState extends State<AddAgentForm> {
             controller: _urlController,
             decoration: InputDecoration(
               labelText: AppStrings.of.labelAgentUrl,
-              hintText: 'http://192.168.1.10:3100',
+              hintText: AppStrings.of.agentUrlHint,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,

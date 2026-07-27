@@ -180,7 +180,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title(conn?.profile.name ?? 'Manager'),
+        title: ThemedText.title(conn?.profile.name ?? AppStrings.of.agentManagerNotFound),
         actions: [
           if (conn?.status == ConnectionStatus.connected)
             IconButton(

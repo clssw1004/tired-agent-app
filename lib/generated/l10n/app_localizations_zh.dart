@@ -421,6 +421,38 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelAgentToken => 'Agent 令牌';
 
   @override
+  String get labelManagerUrl => 'Manager URL';
+
+  @override
+  String get managerUrlHint => 'http://192.168.1.10:3099';
+
+  @override
+  String managerAgentCounts(int total, int online, int offline) {
+    return '$total 个 Agent · $online 在线 · $offline 离线';
+  }
+
+  @override
+  String managerAgentCountsWithPending(
+    int total,
+    int online,
+    int offline,
+    int pending,
+  ) {
+    return '$total 个 Agent · $online 在线 · $offline 离线 · $pending 待处理';
+  }
+
+  @override
+  String managersDefaultName(int count) {
+    return '管理器 $count';
+  }
+
+  @override
+  String get agentNameHint => 'web-01';
+
+  @override
+  String get agentUrlHint => 'http://192.168.1.10:3100';
+
+  @override
   String get statusRunning => '运行中';
 
   @override
@@ -428,4 +460,87 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get statusExited => '已退出';
+
+  @override
+  String get send => '发送';
+
+  @override
+  String get timeJustNow => '刚刚';
+
+  @override
+  String get dirPickerTitle => '选择工作目录';
+
+  @override
+  String get dirPickerUpLevel => '上一级';
+
+  @override
+  String get dirPickerFavorites => '收藏夹';
+
+  @override
+  String get dirPickerRecent => '最近';
+
+  @override
+  String get dirPickerBrowse => '浏览';
+
+  @override
+  String get dirPickerNoFavorites => '暂无收藏';
+
+  @override
+  String get dirPickerNoRecent => '暂无最近目录';
+
+  @override
+  String get dirPickerEmpty => '空目录';
+
+  @override
+  String get dirPickerFavorite => '收藏';
+
+  @override
+  String get dirPickerUnfavorite => '取消收藏';
+
+  @override
+  String get dirPickerSelect => '选择';
+
+  @override
+  String get dirPickerLoading => '(加载中…)';
+
+  @override
+  String get ptyKeyboardClose => '收起键盘';
+
+  @override
+  String get ptyKeyboardKeys => '按键';
+
+  @override
+  String get ptyKeyboardConfirmSend => '确认发送此按键序列？';
+
+  @override
+  String get ptyReconnecting => '重连中…';
+
+  @override
+  String get ptySessionExited => '会话已退出';
+
+  @override
+  String get ptySessionEnded => '会话已结束';
+
+  @override
+  String get ptyDisconnected => '已断开';
+
+  @override
+  String get chatInputHint => '输入消息…';
+
+  @override
+  String get chatStatusThinking => '思考中…';
+
+  @override
+  String get chatStatusWorking => '工作中…';
+
+  @override
+  String get chatStatusDone => '完成';
+
+  @override
+  String get chatStatusIdle => '空闲';
+
+  @override
+  String chatTokenUsage(int inputTokens, int outputTokens) {
+    return '输入: $inputTokens · 输出: $outputTokens';
+  }
 }

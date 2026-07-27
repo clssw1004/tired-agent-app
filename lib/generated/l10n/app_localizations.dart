@@ -878,6 +878,53 @@ abstract class AppLocalizations {
   /// **'Agent Token'**
   String get labelAgentToken;
 
+  /// No description provided for @labelManagerUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager URL'**
+  String get labelManagerUrl;
+
+  /// No description provided for @managerUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'http://192.168.1.10:3099'**
+  String get managerUrlHint;
+
+  /// No description provided for @managerAgentCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{total} agents · {online} online · {offline} offline'**
+  String managerAgentCounts(int total, int online, int offline);
+
+  /// No description provided for @managerAgentCountsWithPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{total} agents · {online} online · {offline} offline · {pending} pending'**
+  String managerAgentCountsWithPending(
+    int total,
+    int online,
+    int offline,
+    int pending,
+  );
+
+  /// No description provided for @managersDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager {count}'**
+  String managersDefaultName(int count);
+
+  /// No description provided for @agentNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'web-01'**
+  String get agentNameHint;
+
+  /// No description provided for @agentUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'http://192.168.1.10:3100'**
+  String get agentUrlHint;
+
   /// No description provided for @statusRunning.
   ///
   /// In en, this message translates to:
@@ -895,6 +942,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exited'**
   String get statusExited;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get timeJustNow;
+
+  /// No description provided for @dirPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select working directory'**
+  String get dirPickerTitle;
+
+  /// No description provided for @dirPickerUpLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Up one level'**
+  String get dirPickerUpLevel;
+
+  /// No description provided for @dirPickerFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get dirPickerFavorites;
+
+  /// No description provided for @dirPickerRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get dirPickerRecent;
+
+  /// No description provided for @dirPickerBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse'**
+  String get dirPickerBrowse;
+
+  /// No description provided for @dirPickerNoFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorites yet'**
+  String get dirPickerNoFavorites;
+
+  /// No description provided for @dirPickerNoRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent directories'**
+  String get dirPickerNoRecent;
+
+  /// No description provided for @dirPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty directory'**
+  String get dirPickerEmpty;
+
+  /// No description provided for @dirPickerFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get dirPickerFavorite;
+
+  /// No description provided for @dirPickerUnfavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfavorite'**
+  String get dirPickerUnfavorite;
+
+  /// No description provided for @dirPickerSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get dirPickerSelect;
+
+  /// No description provided for @dirPickerLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'(loading…)'**
+  String get dirPickerLoading;
+
+  /// No description provided for @ptyKeyboardClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close keyboard'**
+  String get ptyKeyboardClose;
+
+  /// No description provided for @ptyKeyboardKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'Keys'**
+  String get ptyKeyboardKeys;
+
+  /// No description provided for @ptyKeyboardConfirmSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to send this key sequence?'**
+  String get ptyKeyboardConfirmSend;
+
+  /// No description provided for @ptyReconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting…'**
+  String get ptyReconnecting;
+
+  /// No description provided for @ptySessionExited.
+  ///
+  /// In en, this message translates to:
+  /// **'Session exited'**
+  String get ptySessionExited;
+
+  /// No description provided for @ptySessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended'**
+  String get ptySessionEnded;
+
+  /// No description provided for @ptyDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get ptyDisconnected;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message…'**
+  String get chatInputHint;
+
+  /// No description provided for @chatStatusThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get chatStatusThinking;
+
+  /// No description provided for @chatStatusWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Working…'**
+  String get chatStatusWorking;
+
+  /// No description provided for @chatStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get chatStatusDone;
+
+  /// No description provided for @chatStatusIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Idle'**
+  String get chatStatusIdle;
+
+  /// No description provided for @chatTokenUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'tokens in: {inputTokens} · out: {outputTokens}'**
+  String chatTokenUsage(int inputTokens, int outputTokens);
 }
 
 class _AppLocalizationsDelegate

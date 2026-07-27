@@ -69,9 +69,9 @@ class AddManagerFormState extends State<AddManagerForm> {
           const SizedBox(height: AppSpacing.three),
           TextField(
             controller: _urlController,
-            decoration: const InputDecoration(
-              labelText: 'Manager URL',
-              hintText: 'http://192.168.1.10:3099',
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelManagerUrl,
+              hintText: AppStrings.of.managerUrlHint,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
@@ -83,8 +83,8 @@ class AddManagerFormState extends State<AddManagerForm> {
           const SizedBox(height: AppSpacing.three),
           TextField(
             controller: _tokenController,
-            decoration: const InputDecoration(
-              labelText: 'Access Token',
+            decoration: InputDecoration(
+              labelText: AppStrings.of.managersAccessToken,
               contentPadding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,

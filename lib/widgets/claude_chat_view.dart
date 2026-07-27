@@ -7,6 +7,7 @@ import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/renderer/claude_renderer.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/chat_timeline.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -108,9 +109,9 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
             setState(() {
               _contents = [
                 ..._contents,
-                const ContentStatus(
+                ContentStatus(
                   kind: StatusKind.idle,
-                  text: 'Session ended',
+                  text: AppStrings.of.ptySessionEnded,
                 ),
               ];
             });
@@ -186,8 +187,8 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
                     maxLines: 4,
                     minLines: 1,
                     enabled: !_sending,
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message…',
+                    decoration: InputDecoration(
+                      hintText: AppStrings.of.chatInputHint,
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppSpacing.three,
@@ -207,7 +208,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
                       vertical: AppSpacing.two,
                     ),
                   ),
-                  child: ThemedText.mono('Send', color: c.primary),
+                  child: ThemedText.mono(AppStrings.of.send, color: c.primary),
                 ),
               ],
             ),

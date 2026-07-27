@@ -7,6 +7,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/widgets/pty_keyboard_panel.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -178,7 +179,7 @@ class PtySessionViewState extends State<PtySessionView> {
         },
         onState: (Session session) {
           if (session.status == SessionStatus.exited) {
-            _terminal.write('\r\n\x1b[33m[Session exited]\x1b[0m\r\n');
+            _terminal.write('\r\n\x1b[33m[${AppStrings.of.ptySessionExited}]\x1b[0m\r\n');
             _sessionExited = true;
             _subscription?.close();
             _subscription = null;
@@ -228,11 +229,11 @@ class PtySessionViewState extends State<PtySessionView> {
       case PtyConnectionStatus.reconnecting:
         visible = true;
         color = c.warning;
-        label = 'Reconnecting…';
+        label = AppStrings.of.ptyReconnecting;
       case PtyConnectionStatus.disconnected:
         visible = true;
         color = c.textSecondary;
-        label = _sessionExited ? 'Session exited' : 'Disconnected';
+        label = _sessionExited ? AppStrings.of.ptySessionExited : AppStrings.of.ptyDisconnected;
     }
 
     if (!visible) return const SizedBox.shrink();

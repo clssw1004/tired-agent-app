@@ -149,7 +149,7 @@ class _MessageBubble extends StatelessWidget {
       ContentUsage(:final inputTokens, :final outputTokens) => Align(
         alignment: Alignment.centerRight,
         child: ThemedText.small(
-          'tokens in: $inputTokens · out: $outputTokens',
+          AppStrings.of.chatTokenUsage(inputTokens, outputTokens),
           color: c.textSecondary,
         ),
       ),
@@ -158,11 +158,11 @@ class _MessageBubble extends StatelessWidget {
   }
 
   String _statusLabel(StatusKind kind) => switch (kind) {
-    StatusKind.thinking => 'Thinking…',
-    StatusKind.working => 'Working…',
-    StatusKind.done => 'Done',
+    StatusKind.thinking => AppStrings.of.chatStatusThinking,
+    StatusKind.working => AppStrings.of.chatStatusWorking,
+    StatusKind.done => AppStrings.of.chatStatusDone,
     StatusKind.error => AppStrings.of.statusError,
-    StatusKind.idle => 'Idle',
+    StatusKind.idle => AppStrings.of.chatStatusIdle,
     StatusKind.starting => AppStrings.of.statusStarting,
   };
 
