@@ -129,7 +129,13 @@ class PtyKeyboardPanel extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHandle(c),
+        _ExpandHandle(
+          expanded: expanded,
+          onToggle: onToggle,
+          onDismissKeyboard: onDismissKeyboard,
+          colors: c,
+          modifierState: modifierState,
+        ),
         if (expanded) ...[
           for (final row in config.rows) ...[
             const SizedBox(height: 4),
@@ -138,78 +144,6 @@ class PtyKeyboardPanel extends StatelessWidget {
           const SizedBox(height: 2),
         ],
       ],
-    );
-  }
-
-  Widget _buildHandle(AppColors colors) {
-    return GestureDetector(
-      onTap: expanded ? onToggle : () {},
-      onDoubleTap: onToggle,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: 28,
-        color: colors.surfaceAlt,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          children: [
-            AnimatedRotation(
-              duration: _animDuration,
-              turns: expanded ? 0.5 : 0,
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 16,
-                color: colors.primary.withAlpha(160),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              expanded ? AppStrings.of.ptyKeyboardClose : AppStrings.of.ptyKeyboardKeys,
-              style: TextStyle(
-                fontSize: 11,
-                color: colors.primary.withAlpha(140),
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Active modifier indicator
-            ListenableBuilder(
-              listenable: modifierState,
-              builder: (context, _) {
-                final active = <String>[];
-                if (modifierState.ctrl) active.add('Ctrl');
-                if (modifierState.alt) active.add('Alt');
-                if (modifierState.shift) active.add('Shift');
-                if (active.isEmpty) return const SizedBox.shrink();
-                return Text(
-                  active.join('+'),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: colors.warning,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              },
-            ),
-            const Spacer(),
-            // Dismiss system keyboard button
-            GestureDetector(
-              onTap: () {
-                onDismissKeyboard?.call();
-                onToggle();
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Icon(
-                  Icons.keyboard_hide_outlined,
-                  size: 15,
-                  color: colors.textSecondary.withAlpha(160),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -238,7 +172,131 @@ class PtyKeyboardPanel extends StatelessWidget {
   }
 }
 
-// --- Internal button widgets --------------------------------------------
+// ═══════════════════════════════════════════════════════════════════════════
+// Toggle handle — double-tap to expand, single tap to collapse
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Handle bar that toggles the keyboard panel.
+///
+/// - **Collapsed**: double-tap to expand, single tap ignored
+/// - **Expanded**: single-tap to collapse, double-tap also works
+class _ExpandHandle extends StatefulWidget {
+  final bool expanded;
+  final VoidCallback onToggle;
+  final VoidCallback? onDismissKeyboard;
+  final AppColors colors;
+  final PtyModifierState modifierState;
+
+  const _ExpandHandle({
+    required this.expanded,
+    required this.onToggle,
+    required this.onDismissKeyboard,
+    required this.colors,
+    required this.modifierState,
+  });
+
+  @override
+  State<_ExpandHandle> createState() => _ExpandHandleState();
+}
+
+class _ExpandHandleState extends State<_ExpandHandle> {
+  DateTime? _lastTap;
+
+  void _handleTap() {
+    final now = DateTime.now();
+    final gap = _lastTap != null ? now.difference(_lastTap!).inMilliseconds : null;
+    _lastTap = now;
+
+    // Double-tap within 400ms → toggle.
+    if (gap != null && gap < 400) {
+      _lastTap = null; // reset to avoid triple-tap triggering another toggle
+      widget.onToggle();
+    }
+    // Otherwise: single tap does nothing when collapsed,
+    // collapses when expanded.
+    else if (widget.expanded) {
+      widget.onToggle();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = widget.colors;
+    final expanded = widget.expanded;
+    return GestureDetector(
+      onTap: _handleTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 28,
+        color: colors.surfaceAlt,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: [
+            AnimatedRotation(
+              duration: _animDuration,
+              turns: expanded ? 0.5 : 0,
+              child: Icon(
+                Icons.keyboard_arrow_down,
+                size: 16,
+                color: colors.primary.withAlpha(160),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              expanded ? AppStrings.of.ptyKeyboardClose : AppStrings.of.ptyKeyboardKeys,
+              style: TextStyle(
+                fontSize: 11,
+                color: colors.primary.withAlpha(140),
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Active modifier indicator
+            ListenableBuilder(
+              listenable: widget.modifierState,
+              builder: (context, _) {
+                final active = <String>[];
+                if (widget.modifierState.ctrl) active.add('Ctrl');
+                if (widget.modifierState.alt) active.add('Alt');
+                if (widget.modifierState.shift) active.add('Shift');
+                if (active.isEmpty) return const SizedBox.shrink();
+                return Text(
+                  active.join('+'),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: colors.warning,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
+            ),
+            const Spacer(),
+            // Dismiss system keyboard button
+            GestureDetector(
+              onTap: () {
+                widget.onDismissKeyboard?.call();
+                widget.onToggle();
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(
+                  Icons.keyboard_hide_outlined,
+                  size: 15,
+                  color: colors.textSecondary.withAlpha(160),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Internal button widgets
+// ═══════════════════════════════════════════════════════════════════════════
 
 const _animDuration = Duration(milliseconds: 200);
 
