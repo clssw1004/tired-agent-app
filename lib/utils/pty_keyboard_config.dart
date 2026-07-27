@@ -51,8 +51,8 @@ class PtyKeyboardConfig {
           confirm: true,
         ),
         TerminalKeys.commandShowIcon(
-          icon: Icons.extension,
-          command: '/plugin',
+          icon: Icons.play_arrow,
+          command: '/resume',
           withEnter: true,
           confirm: true,
         ),

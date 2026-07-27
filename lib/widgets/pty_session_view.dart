@@ -39,6 +39,7 @@ class PtySessionViewState extends State<PtySessionView> {
   late final Terminal _terminal;
   final HttpSseTransport _transport = HttpSseTransport();
   final PtyModifierState _modifierState = PtyModifierState();
+  /// Toggle the system keyboard (IME) on/off.
   late final FocusNode _terminalFocusNode;
   Subscription? _subscription;
   int _currentOffset = 0;
@@ -164,6 +165,22 @@ class PtySessionViewState extends State<PtySessionView> {
     _subscribe();
     _connectionStatus = PtyConnectionStatus.connected;
     if (mounted) setState(() {});
+  }
+
+  /// Toggle the system keyboard (IME) on/off.
+  /// [extraState] is called inside the same [setState] for any additional changes.
+  void _toggleIme({VoidCallback? extraState}) {
+    setState(() {
+      _hardwareKeyboardOnly = !_hardwareKeyboardOnly;
+      extraState?.call();
+    });
+    if (_hardwareKeyboardOnly) {
+      _terminalFocusNode.unfocus();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _terminalFocusNode.requestFocus();
+      });
+    }
   }
 
   /// Public — called from [SessionDetailScreen] via GlobalKey to force a
@@ -302,17 +319,7 @@ class PtySessionViewState extends State<PtySessionView> {
 
                   // Double-tap within 400ms → toggle system keyboard.
                   if (gap != null && gap < 400) {
-                    setState(() {
-                      _hardwareKeyboardOnly = !_hardwareKeyboardOnly;
-                    });
-                    if (!_hardwareKeyboardOnly) {
-                      // Focus after rebuild to make IME appear.
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        _terminalFocusNode.requestFocus();
-                      });
-                    } else {
-                      _terminalFocusNode.unfocus();
-                    }
+                    _toggleIme();
                   }
                 },
                 child: ScrollConfiguration(
@@ -340,7 +347,9 @@ class PtySessionViewState extends State<PtySessionView> {
                 bytes,
                 agentId: widget.agentId,
               ),
-              onDismissKeyboard: () => FocusScope.of(context).unfocus(),
+              onDismissKeyboard: () => _toggleIme(
+                extraState: () => _keyboardExpanded = false,
+              ),
             ),
           ],
         ),
