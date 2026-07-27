@@ -26,11 +26,12 @@ class NeonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     final hasBorder = borderColor != null;
     return Padding(
       padding: margin ?? EdgeInsets.zero,
       child: Material(
-        color: AppColors.surface,
+        color: c.surface,
         borderRadius: BorderRadius.circular(borderRadius),
         child: InkWell(
           onTap: onTap,
@@ -38,12 +39,12 @@ class NeonCard extends StatelessWidget {
           child: Container(
             padding: padding ?? const EdgeInsets.all(AppSpacing.three),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: c.surface,
               borderRadius: BorderRadius.circular(borderRadius),
               border: hasBorder
                   ? Border.all(color: borderColor!, width: 1)
                   : Border.all(
-                      color: AppColors.border.withAlpha(60),
+                      color: c.border.withAlpha(60),
                       width: 0.5,
                     ),
               boxShadow: glow && hasBorder

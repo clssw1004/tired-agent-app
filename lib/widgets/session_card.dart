@@ -33,6 +33,7 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return NeonCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.four,
@@ -55,8 +56,8 @@ class SessionCard extends StatelessWidget {
                       isPinned ? Icons.push_pin : Icons.push_pin_outlined,
                       size: 16,
                       color: isPinned
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
+                          ? c.primary
+                          : c.textSecondary,
                     ),
                   ),
                 ),
@@ -83,7 +84,7 @@ class SessionCard extends StatelessWidget {
               }
               return '$cmd · pid ${session.pid ?? '?'}';
             }(),
-            color: AppColors.textSecondary,
+            color: c.textSecondary,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -93,12 +94,12 @@ class SessionCard extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.folder_outlined, size: 12, color: AppColors.primary.withAlpha(120)),
+                Icon(Icons.folder_outlined, size: 12, color: c.primary.withAlpha(120)),
                 const SizedBox(width: 4),
                 Flexible(
                   child: ThemedText.mono(
                     session.cwd!,
-                    color: AppColors.primary.withAlpha(140),
+                    color: c.primary.withAlpha(140),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -117,14 +118,14 @@ class SessionCard extends StatelessWidget {
                   _ActionButton(
                     icon: '⏹',
                     label: 'Kill',
-                    color: AppColors.danger,
+                    color: c.danger,
                     onTap: onKill!,
                   ),
                 if (session.status == SessionStatus.exited && onDelete != null)
                   _ActionButton(
                     icon: '🗑',
                     label: 'Delete',
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     onTap: onDelete!,
                   ),
               ],
@@ -140,7 +141,7 @@ class SessionCard extends StatelessWidget {
                     _ActionButton(
                       icon: '⏹',
                       label: 'Kill',
-                      color: AppColors.danger,
+                      color: c.danger,
                       onTap: onKill!,
                     ),
                   if (session.status == SessionStatus.exited &&
@@ -148,7 +149,7 @@ class SessionCard extends StatelessWidget {
                     _ActionButton(
                       icon: '🗑',
                       label: 'Delete',
-                      color: AppColors.textSecondary,
+                      color: c.textSecondary,
                       onTap: onDelete!,
                     ),
                 ],
@@ -166,17 +167,18 @@ class _ModeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.two,
         vertical: 1,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(15),
+        color: c.primary.withAlpha(15),
         borderRadius: BorderRadius.circular(AppSpacing.one),
-        border: Border.all(color: AppColors.primary.withAlpha(50)),
+        border: Border.all(color: c.primary.withAlpha(50)),
       ),
-      child: ThemedText.mono(mode.name, color: AppColors.primary),
+      child: ThemedText.mono(mode.name, color: c.primary),
     );
   }
 }

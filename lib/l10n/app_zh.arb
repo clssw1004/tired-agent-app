@@ -1,0 +1,223 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "TiredAgent",
+
+  "navManagers": "管理器",
+  "navSessions": "固定会话",
+  "navSettings": "设置",
+
+  "managersTitle": "管理器",
+  "managersWelcome": "欢迎使用 tiredAgent",
+  "managersWelcomeDesc": "添加 Manager 服务器来管理你的代理和会话",
+  "managersAdd": "添加 Manager",
+  "managersConnect": "连接",
+  "managersAdded": "Manager 已添加",
+  "managersReconnect": "重连",
+  "managersReconnected": "已重连",
+  "managersReconnectFailed": "重连失败",
+  "managersRemove": "移除",
+  "managersRemoveTitle": "移除 \"{name}\"？",
+  "@managersRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "managersRemoveDesc": "将删除 Manager 配置文件和已保存的令牌，之后可重新添加。",
+  "managersSessionExpired": "会话已过期，输入 API 令牌重连。",
+  "managersAccessToken": "访问令牌",
+
+  "statusConnected": "已连接",
+  "statusConnecting": "连接中…",
+  "statusError": "错误",
+  "statusDisconnected": "未连接",
+
+  "timeSecondsAgo": "秒前",
+  "timeMinutesAgo": "分钟前",
+  "timeHoursAgo": "小时前",
+  "timeDaysAgo": "天前",
+
+  "agentAddTitle": "添加 Agent",
+  "agentRegister": "注册",
+  "agentAdded": "Agent {name} 已添加",
+  "@agentAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentAddFailed": "添加 Agent 失败：{error}",
+  "@agentAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "agentRemoveTitle": "移除 Agent \"{name}\"？",
+  "@agentRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentRemoveDesc": "将注销该 Agent 并删除其会话，之后可重新添加。",
+  "agentRemoved": "Agent {name} 已移除",
+  "@agentRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentRemoveFailed": "移除 Agent 失败：{error}",
+  "@agentRemoveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "agentNoAgents": "暂无 Agent",
+  "agentNoAgentsDesc": "注册 Agent 以开始创建会话",
+  "agentManagerNotFound": "未找到 Manager",
+  "agentRetry": "重试",
+  "agentRemoveTooltip": "移除 Agent",
+  "agentAddTooltip": "添加 Agent",
+
+  "sessionsFilterAll": "全部",
+  "sessionsFilterRunning": "运行中",
+  "sessionsFilterExited": "已退出",
+  "sessionsNewTooltip": "新建会话",
+  "sessionsKillTitle": "终止此会话？",
+  "sessionsKillDesc": "将终止正在运行的进程并从列表中移除。",
+  "sessionsKillBtn": "终止",
+  "sessionsDeleteTitle": "删除会话日志？",
+  "sessionsDeleteDesc": "将删除数据库记录和磁盘上的输出日志，此操作不可恢复。",
+  "sessionsDeleteBtn": "删除",
+  "sessionsConfirm": "确认",
+  "sessionsPruneTitle": "清理过期会话？",
+  "sessionsPruneDesc": "将删除所有超过 24 小时未活动的会话。",
+  "sessionsPruneBtn": "清理",
+  "sessionsPruned": "已清理 {count} 个会话",
+  "@sessionsPruned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionsEmpty": "暂无会话",
+  "sessionsLoading": "加载中…",
+  "sessionsPinTitle": "固定会话",
+  "sessionsPinLabel": "显示名称",
+  "sessionsPinned": "已固定",
+  "sessionsUnpinned": "已取消固定",
+  "sessionsNotConnected": "未连接",
+  "sessionsManagerNotFound": "未找到 Manager",
+  "sessionsCount": "{count} 个会话",
+  "@sessionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "sessionTitle": "会话",
+  "sessionKillTitle": "终止此会话？",
+  "sessionKillDesc": "将终止正在运行的进程。",
+  "sessionKillBtn": "终止",
+  "sessionKillFailed": "终止失败：{error}",
+  "@sessionKillFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionDeleteTitle": "删除会话日志？",
+  "sessionDeleteDesc": "将删除数据库记录和磁盘上的输出日志，此操作不可恢复。",
+  "sessionDeleteBtn": "删除",
+  "sessionDeleteFailed": "删除失败：{error}",
+  "@sessionDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionKillTooltip": "终止会话",
+  "sessionDeleteTooltip": "删除会话",
+  "sessionReconnectTooltip": "重连",
+  "sessionNotConnected": "Manager 未连接",
+  "sessionNotFound": "未找到会话",
+
+  "createTitle": "新建会话",
+  "createPreset": "预设",
+  "createPreview": "预览",
+  "createCommand": "命令",
+  "createArguments": "参数",
+  "createOptions": "选项",
+  "createSessionLabel": "会话标签",
+  "createWorkingDir": "工作目录",
+  "createCancel": "取消",
+  "createLaunch": "启动",
+  "createSave": "保存",
+  "createSaveAsPreset": "另存为预设",
+  "createPresetName": "预设名称",
+  "createSelectPreset": "选择预设",
+  "createHomeDir": "Agent 主目录",
+  "createAutoLabel": "留空自动生成",
+  "createTerminalSizeHint": "会话启动后终端大小自动匹配",
+  "createNotConnected": "未连接",
+  "createSectionRecent": "最近使用",
+  "createSectionCustom": "自定义",
+  "createArgsHint": "--no-input  --verbose",
+  "createOptionsCancel": "取消",
+  "createOptionsApply": "应用",
+
+  "pinnedTitle": "固定会话",
+  "pinnedEmpty": "暂无固定会话",
+  "pinnedEmptyDesc": "在 Agent 的会话列表中点击 📌\n可将常用会话固定到此处",
+  "pinnedUnpinTitle": "取消固定？",
+  "pinnedUnpinDesc": "从固定会话中移除 \"{label}\"？",
+  "@pinnedUnpinDesc": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "pinnedUnpin": "取消固定",
+
+  "settingsTitle": "设置",
+  "settingsAbout": "关于",
+  "settingsApp": "应用",
+  "settingsVersion": "版本",
+  "settingsTheme": "主题",
+  "settingsThemeDark": "深色",
+  "settingsThemeLight": "浅色",
+  "settingsThemeSystem": "跟随系统",
+  "settingsLanguage": "语言",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+
+  "cancel": "取消",
+  "confirm": "确认",
+  "pinLabel": "固定",
+  "unpinLabel": "取消固定",
+  "reconnectLabel": "重连",
+  "removeLabel": "移除",
+
+  "labelName": "名称",
+  "labelUrl": "URL",
+  "labelToken": "令牌",
+  "labelAgentName": "Agent 名称",
+  "labelAgentUrl": "Agent URL",
+  "labelAgentToken": "Agent 令牌"
+}

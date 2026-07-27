@@ -34,9 +34,10 @@ class DirectoryPickerModal extends StatefulWidget {
     required String agentId,
     String? initialPath,
   }) {
+    final c = context.appColors;
     return showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
@@ -197,6 +198,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     final mediaQuery = MediaQuery.of(context);
     return SizedBox(
       height: min(mediaQuery.size.height * 0.85, 560),
@@ -209,7 +211,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textSecondary.withAlpha(80),
+                color: c.textSecondary.withAlpha(80),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -225,9 +227,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                 ThemedText.title('Select working directory'),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.close,
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     size: 20,
                   ),
                   onPressed: widget.onClose,
@@ -242,9 +244,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
               children: [
                 if (_parent != null)
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_upward,
-                      color: AppColors.accent,
+                      color: c.accent,
                       size: 20,
                     ),
                     onPressed: _loading ? null : () => _navigateTo(_parent!),
@@ -254,7 +256,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                 Expanded(
                   child: ThemedText.small(
                     _currentPath.isNotEmpty ? _currentPath : '(loading…)',
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -274,19 +276,19 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                 vertical: AppSpacing.two,
               ),
               decoration: BoxDecoration(
-                color: AppColors.danger.withAlpha(30),
+                color: c.danger.withAlpha(30),
                 borderRadius: BorderRadius.circular(AppSpacing.two),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: ThemedText.small(_error!, color: AppColors.danger),
+                    child: ThemedText.small(_error!, color: c.danger),
                   ),
                   GestureDetector(
                     onTap: () => setState(() => _error = null),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close,
-                      color: AppColors.danger,
+                      color: c.danger,
                       size: 16,
                     ),
                   ),
@@ -296,9 +298,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
           // Tab bar
           TabBar(
             controller: _tabController,
-            labelColor: AppColors.accent,
-            unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.accent,
+            labelColor: c.accent,
+            unselectedLabelColor: c.textSecondary,
+            indicatorColor: c.accent,
             tabs: const [
               Tab(text: 'Favorites'),
               Tab(text: 'Recent'),
@@ -325,9 +327,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
               AppSpacing.three,
             ),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: c.background,
               border: Border(
-                top: BorderSide(color: AppColors.backgroundElement),
+                top: BorderSide(color: c.backgroundElement),
               ),
             ),
             child: SafeArea(
@@ -342,7 +344,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                       _savingFavorite
                           ? '…'
                           : (_isFavorited ? 'Unfavorite' : 'Favorite'),
-                      color: AppColors.textSecondary,
+                      color: c.textSecondary,
                     ),
                   ),
                   const Spacer(),
@@ -367,6 +369,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   }
 
   Widget _buildFavoritesTab() {
+    final c = context.appColors;
     if (_favorites.isEmpty) {
       return Center(child: ThemedText.small('No favorites yet'));
     }
@@ -374,11 +377,11 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _favorites.length,
       separatorBuilder: (_, _) =>
-          const Divider(color: AppColors.backgroundElement, height: 1),
+          Divider(color: c.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final fav = _favorites[index];
         return ListTile(
-          leading: const Icon(Icons.star, color: AppColors.warning, size: 20),
+          leading: Icon(Icons.star, color: c.warning, size: 20),
           title: ThemedText.body(fav.name),
           subtitle: ThemedText.small(
             fav.path,
@@ -392,6 +395,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   }
 
   Widget _buildRecentTab() {
+    final c = context.appColors;
     if (_recent.isEmpty) {
       return Center(child: ThemedText.small('No recent directories'));
     }
@@ -399,13 +403,13 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _recent.length,
       separatorBuilder: (_, _) =>
-          const Divider(color: AppColors.backgroundElement, height: 1),
+          Divider(color: c.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final recent = _recent[index];
         return ListTile(
-          leading: const Icon(
+          leading: Icon(
             Icons.history,
-            color: AppColors.textSecondary,
+            color: c.textSecondary,
             size: 20,
           ),
           title: ThemedText.small(
@@ -421,6 +425,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   }
 
   Widget _buildBrowseTab() {
+    final c = context.appColors;
     if (_loading && _entries.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -431,13 +436,13 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
       itemCount: _entries.length,
       separatorBuilder: (_, _) =>
-          const Divider(color: AppColors.backgroundElement, height: 1),
+          Divider(color: c.backgroundElement, height: 1),
       itemBuilder: (context, index) {
         final entry = _entries[index];
         return ListTile(
-          leading: const Icon(
+          leading: Icon(
             Icons.folder_outlined,
-            color: AppColors.accent,
+            color: c.accent,
             size: 20,
           ),
           title: ThemedText.body(entry.name),

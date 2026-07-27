@@ -1,0 +1,226 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "TiredAgent",
+  "@appTitle": {
+    "description": "Application title"
+  },
+
+  "navManagers": "Managers",
+  "navSessions": "Sessions",
+  "navSettings": "Settings",
+
+  "managersTitle": "Managers",
+  "managersWelcome": "Welcome to tiredAgent",
+  "managersWelcomeDesc": "Add a Manager server to manage your agents and sessions.",
+  "managersAdd": "Add Manager",
+  "managersConnect": "Connect",
+  "managersAdded": "Manager added",
+  "managersReconnect": "Reconnect",
+  "managersReconnected": "reconnected",
+  "managersReconnectFailed": "Reconnect failed",
+  "managersRemove": "Remove",
+  "managersRemoveTitle": "Remove \"{name}\"?",
+  "@managersRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "managersRemoveDesc": "This will delete the manager profile and its saved token. You can re-add it later.",
+  "managersSessionExpired": "Session expired. Enter the API token to reconnect.",
+  "managersAccessToken": "Access Token",
+
+  "statusConnected": "Connected",
+  "statusConnecting": "Connecting…",
+  "statusError": "Error",
+  "statusDisconnected": "Disconnected",
+
+  "timeSecondsAgo": "s ago",
+  "timeMinutesAgo": "m ago",
+  "timeHoursAgo": "h ago",
+  "timeDaysAgo": "d ago",
+
+  "agentAddTitle": "Add Agent",
+  "agentRegister": "Register",
+  "agentAdded": "Agent {name} added",
+  "@agentAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentAddFailed": "Failed to add agent: {error}",
+  "@agentAddFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "agentRemoveTitle": "Remove agent \"{name}\"?",
+  "@agentRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentRemoveDesc": "Unregisters the agent and removes its sessions. You can re-add it later.",
+  "agentRemoved": "Agent {name} removed",
+  "@agentRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "agentRemoveFailed": "Failed to remove agent: {error}",
+  "@agentRemoveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "agentNoAgents": "No Agents",
+  "agentNoAgentsDesc": "Register an agent to start creating sessions",
+  "agentManagerNotFound": "Manager not found",
+  "agentRetry": "Retry",
+  "agentRemoveTooltip": "Remove agent",
+  "agentAddTooltip": "Add Agent",
+
+  "sessionsFilterAll": "All",
+  "sessionsFilterRunning": "Running",
+  "sessionsFilterExited": "Exited",
+  "sessionsNewTooltip": "New Session",
+  "sessionsKillTitle": "Kill this session?",
+  "sessionsKillDesc": "The running process will be terminated and removed from the list.",
+  "sessionsKillBtn": "Kill",
+  "sessionsDeleteTitle": "Delete session log?",
+  "sessionsDeleteDesc": "Removes the database row and the on-disk output log. Cannot be undone.",
+  "sessionsDeleteBtn": "Delete",
+  "sessionsConfirm": "Confirm",
+  "sessionsPruneTitle": "Clean stale sessions?",
+  "sessionsPruneDesc": "Drops all sessions that have been inactive for more than 24 hours.",
+  "sessionsPruneBtn": "Prune",
+  "sessionsPruned": "Pruned {count} session(s)",
+  "@sessionsPruned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionsEmpty": "No sessions",
+  "sessionsLoading": "Loading…",
+  "sessionsPinTitle": "Pin Session",
+  "sessionsPinLabel": "Display label",
+  "sessionsPinned": "Session pinned",
+  "sessionsUnpinned": "Session unpinned",
+  "sessionsNotConnected": "Not connected",
+  "sessionsManagerNotFound": "Manager not found",
+  "sessionsCount": "{count} session(s)",
+  "@sessionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "sessionTitle": "Session",
+  "sessionKillTitle": "Kill this session?",
+  "sessionKillDesc": "The running process will be terminated.",
+  "sessionKillBtn": "Kill",
+  "sessionKillFailed": "Kill failed: {error}",
+  "@sessionKillFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionDeleteTitle": "Delete session log?",
+  "sessionDeleteDesc": "Removes the database row and the on-disk output log. Cannot be undone.",
+  "sessionDeleteBtn": "Delete",
+  "sessionDeleteFailed": "Delete failed: {error}",
+  "@sessionDeleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionKillTooltip": "Kill session",
+  "sessionDeleteTooltip": "Delete session",
+  "sessionReconnectTooltip": "Reconnect",
+  "sessionNotConnected": "Manager not connected",
+  "sessionNotFound": "Session not found",
+
+  "createTitle": "NEW SESSION",
+  "createPreset": "Preset",
+  "createPreview": "Preview",
+  "createCommand": "Command",
+  "createArguments": "Arguments",
+  "createOptions": "Options",
+  "createSessionLabel": "Session label",
+  "createWorkingDir": "Working directory",
+  "createCancel": "CANCEL",
+  "createLaunch": "LAUNCH",
+  "createSave": "SAVE",
+  "createSaveAsPreset": "Save as preset",
+  "createPresetName": "Preset name",
+  "createSelectPreset": "SELECT PRESET",
+  "createHomeDir": "Agent home directory",
+  "createAutoLabel": "Auto-generated if empty",
+  "createTerminalSizeHint": "Terminal size auto-matches after session starts",
+  "createNotConnected": "Not connected",
+  "createSectionRecent": "Recent",
+  "createSectionCustom": "Custom",
+  "createArgsHint": "--no-input  --verbose",
+  "createOptionsCancel": "Cancel",
+  "createOptionsApply": "Apply",
+
+  "pinnedTitle": "Sessions",
+  "pinnedEmpty": "No pinned sessions",
+  "pinnedEmptyDesc": "Click 📌 in agent''s session list\nto pin frequently used sessions here",
+  "pinnedUnpinTitle": "Unpin session?",
+  "pinnedUnpinDesc": "Remove \"{label}\" from pinned sessions?",
+  "@pinnedUnpinDesc": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "pinnedUnpin": "Unpin",
+
+  "settingsTitle": "Settings",
+  "settingsAbout": "About",
+  "settingsApp": "App",
+  "settingsVersion": "Version",
+  "settingsTheme": "Theme",
+  "settingsThemeDark": "Dark",
+  "settingsThemeLight": "Light",
+  "settingsThemeSystem": "System",
+  "settingsLanguage": "Language",
+  "settingsLanguageZh": "中文",
+  "settingsLanguageEn": "English",
+
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "pinLabel": "Pin",
+  "unpinLabel": "Unpin",
+  "reconnectLabel": "Reconnect",
+  "removeLabel": "Remove",
+
+  "labelName": "Label",
+  "labelUrl": "URL",
+  "labelToken": "Token",
+  "labelAgentName": "Agent Name",
+  "labelAgentUrl": "Agent URL",
+  "labelAgentToken": "Agent Token"
+}

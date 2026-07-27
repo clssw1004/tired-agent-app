@@ -1,34 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/section_header.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/generated/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
+    final loc = AppLocalizations.of(context)!;
+    final settings = context.watch<AppSettingsProvider>();
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title('Settings'),
+        title: ThemedText.title(loc.settingsTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: AppColors.primary),
+          child: Container(color: c.primary),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
-          // ── About ──────────────────────────────────────────────────
-          SectionHeader(label: 'About'),
+          // ── Theme ─────────────────────────────────────────────────
+          SectionHeader(label: loc.settingsTheme),
           const SizedBox(height: AppSpacing.two),
-          _InfoTile(label: 'App', value: 'TiredAgent'),
+          _ThemeTile(
+            label: loc.settingsThemeDark,
+            selected: settings.themeMode == ThemeMode.dark,
+            onTap: () => settings.setThemeMode(ThemeMode.dark),
+          ),
           const SizedBox(height: AppSpacing.one),
-          _InfoTile(label: 'Version', value: '1.0.0'),
+          _ThemeTile(
+            label: loc.settingsThemeLight,
+            selected: settings.themeMode == ThemeMode.light,
+            onTap: () => settings.setThemeMode(ThemeMode.light),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
+          // ── Language ─────────────────────────────────────────────
+          SectionHeader(label: loc.settingsLanguage),
+          const SizedBox(height: AppSpacing.two),
+          _ThemeTile(
+            label: loc.settingsLanguageZh,
+            selected: settings.locale.languageCode == 'zh',
+            onTap: () => settings.setLocale(const Locale('zh')),
+          ),
+          const SizedBox(height: AppSpacing.one),
+          _ThemeTile(
+            label: loc.settingsLanguageEn,
+            selected: settings.locale.languageCode == 'en',
+            onTap: () => settings.setLocale(const Locale('en')),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
+          // ── About ────────────────────────────────────────────────
+          SectionHeader(label: loc.settingsAbout),
+          const SizedBox(height: AppSpacing.two),
+          _InfoTile(label: loc.settingsApp, value: 'TiredAgent'),
+          const SizedBox(height: AppSpacing.one),
+          _InfoTile(label: loc.settingsVersion, value: '1.0.0'),
           const SizedBox(height: AppSpacing.four),
         ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Theme/Language tile
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _ThemeTile extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ThemeTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.three,
+          vertical: AppSpacing.two,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? c.primary.withAlpha(10) : c.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(
+            color: selected ? c.primary.withAlpha(60) : c.border.withAlpha(40),
+            width: selected ? 1 : 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            ThemedText.body(label, color: selected ? c.primary : c.text),
+            const Spacer(),
+            if (selected)
+              Icon(Icons.check, size: 18, color: c.primary),
+          ],
+        ),
       ),
     );
   }
@@ -46,23 +130,24 @@ class _InfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.three,
         vertical: AppSpacing.two,
       ),
       decoration: BoxDecoration(
-        color: AppColors.backgroundElement,
+        color: c.backgroundElement,
         borderRadius: BorderRadius.circular(AppSpacing.two),
       ),
       child: Row(
         children: [
-          ThemedText.small(label, color: AppColors.textSecondary),
+          ThemedText.small(label, color: c.textSecondary),
           const Spacer(),
           Flexible(
             child: ThemedText(
               value,
-              color: AppColors.text,
+              color: c.text,
               fontSize: 12,
               textAlign: TextAlign.end,
             ),

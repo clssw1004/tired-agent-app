@@ -188,6 +188,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     required String desc,
     required Future<void> Function() onConfirm,
   }) async {
+    final c = context.appColors;
     final confirmed = await NeonDialog.showConfirm(
       context: context,
       title: title,
@@ -204,7 +205,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(e.toString()),
-              backgroundColor: AppColors.danger,
+              backgroundColor: c.danger,
             ),
           );
         }
@@ -219,6 +220,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     final auth = context.read<AuthProvider>();
     final conn = auth.connectionFor(widget.profileId);
     if (conn == null) return;
+    final c = context.appColors;
 
     final agentName = conn.agents
         .where((a) => a.id == widget.agentId)
@@ -240,7 +242,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: ThemedText.small('Session unpinned'),
-            backgroundColor: AppColors.backgroundElement,
+            backgroundColor: c.backgroundElement,
           ),
         );
       }
@@ -286,7 +288,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: ThemedText.small('Session pinned'),
-            backgroundColor: AppColors.backgroundElement,
+            backgroundColor: c.backgroundElement,
           ),
         );
       }
@@ -313,15 +315,16 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     final auth = context.watch<AuthProvider>();
     final conn = auth.connectionFor(widget.profileId);
     final agentName = _agentName;
+    final c = context.appColors;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: ThemedText.title(agentName ?? widget.agentId),
         actions: [
           // Status filter
           PopupMenuButton<_StatusFilter>(
-            icon: const Icon(Icons.filter_list, color: AppColors.textSecondary),
+            icon: Icon(Icons.filter_list, color: c.textSecondary),
             onSelected: (f) => setState(() => _statusFilter = f),
             itemBuilder: (_) => [
               const PopupMenuItem(value: null, child: Text('All')),
@@ -336,7 +339,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.primary),
+            icon: Icon(Icons.add, color: c.primary),
             tooltip: 'New Session',
             onPressed: () => context.push(
               '/profile/${widget.profileId}/agent/${widget.agentId}/create',
@@ -356,6 +359,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     if (_loading && _sessions.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
+    final c = context.appColors;
 
     return Column(
       children: [
@@ -367,26 +371,26 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
               horizontal: AppSpacing.four,
               vertical: AppSpacing.two,
             ),
-            color: AppColors.primary.withAlpha(15),
+            color: c.primary.withAlpha(15),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.cleaning_services,
                   size: 14,
-                  color: AppColors.primary,
+                  color: c.primary,
                 ),
                 const SizedBox(width: AppSpacing.one),
                 ThemedText.small(
                   'Pruned $_pruneInfo session(s)',
-                  color: AppColors.primary,
+                  color: c.primary,
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => setState(() => _pruneInfo = null),
-                  child: const Icon(
+                  child: Icon(
                     Icons.close,
                     size: 14,
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                   ),
                 ),
               ],
@@ -403,13 +407,13 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             ),
             padding: const EdgeInsets.all(AppSpacing.three),
             decoration: BoxDecoration(
-              color: AppColors.danger.withAlpha(20),
+              color: c.danger.withAlpha(20),
               borderRadius: BorderRadius.circular(AppSpacing.two),
             ),
             child: Row(
               children: [
                 Expanded(
-                  child: ThemedText.small(_error!, color: AppColors.danger),
+                  child: ThemedText.small(_error!, color: c.danger),
                 ),
                 TextButton(onPressed: _load, child: const Text('Retry')),
               ],
@@ -428,7 +432,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             children: [
               ThemedText.label(
                 '${_visible.length} session(s)',
-                color: AppColors.textSecondary,
+                color: c.textSecondary,
               ),
               const Spacer(),
               GestureDetector(
@@ -444,14 +448,14 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                       (_sessions
                           .where((s) => s.status != SessionStatus.exited)
                           .isNotEmpty)
-                      ? AppColors.textSecondary
-                      : AppColors.textSecondary.withAlpha(60),
+                      ? c.textSecondary
+                      : c.textSecondary.withAlpha(60),
                 ),
               ),
               const SizedBox(width: AppSpacing.two),
               ThemedText.small(
                 _loading ? '⟳' : '⟳ ${_timeSince(_lastLoaded)}',
-                color: AppColors.textSecondary,
+                color: c.textSecondary,
               ),
             ],
           ),
@@ -463,7 +467,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
               ? Center(
                   child: ThemedText.small(
                     _loading ? 'Loading…' : 'No sessions',
-                    color: AppColors.textSecondary,
+                    color: c.textSecondary,
                   ),
                 )
               : ListView.builder(

@@ -16,14 +16,15 @@ class PinnedSessionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pinService = context.watch<PinnedSessionProvider>();
     final all = pinService.getAll();
+    final c = context.appColors;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: ThemedText.title('Sessions'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: AppColors.primary),
+          child: Container(color: c.primary),
         ),
       ),
       body: all.isEmpty ? _buildEmpty(context) : _buildList(context, pinService, all),
@@ -31,6 +32,7 @@ class PinnedSessionsScreen extends StatelessWidget {
   }
 
   Widget _buildEmpty(BuildContext context) {
+    final c = context.appColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
@@ -40,14 +42,14 @@ class PinnedSessionsScreen extends StatelessWidget {
             Icon(
               Icons.push_pin_outlined,
               size: 64,
-              color: AppColors.primary.withAlpha(120),
+              color: c.primary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.four),
             ThemedText.title('No pinned sessions'),
             const SizedBox(height: AppSpacing.two),
             ThemedText(
               '在 Agent 的会话列表里点击 📌\n将常用会话固定到此处',
-              color: AppColors.textSecondary,
+              color: c.textSecondary,
               fontSize: 12,
               textAlign: TextAlign.center,
             ),
@@ -63,6 +65,7 @@ class PinnedSessionsScreen extends StatelessWidget {
     List<PinnedSession> all,
   ) {
     final grouped = pinService.getGroupedByProfile();
+    final c = context.appColors;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -85,7 +88,7 @@ class PinnedSessionsScreen extends StatelessWidget {
               ),
               child: ThemedText.title(
                 profileName,
-                color: AppColors.primary,
+                color: c.primary,
               ),
             ),
             // Session cards
@@ -145,6 +148,7 @@ class _PinnedSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.two),
       child: GestureDetector(
@@ -152,10 +156,10 @@ class _PinnedSessionCard extends StatelessWidget {
         onLongPress: onUnpin,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.two),
             border: Border.all(
-              color: AppColors.primary.withAlpha(40),
+              color: c.primary.withAlpha(40),
               width: 0.5,
             ),
           ),
@@ -167,7 +171,7 @@ class _PinnedSessionCard extends StatelessWidget {
                 Icon(
                   Icons.push_pin,
                   size: 16,
-                  color: AppColors.primary,
+                  color: c.primary,
                 ),
                 const SizedBox(width: AppSpacing.two),
                 // Label + meta
@@ -177,12 +181,12 @@ class _PinnedSessionCard extends StatelessWidget {
                     children: [
                       ThemedText.body(
                         pinned.sessionLabel,
-                        color: AppColors.text,
+                        color: c.text,
                       ),
                       const SizedBox(height: 2),
                       ThemedText(
                         '${pinned.agentName} · ${pinned.sessionType.toUpperCase()} · pinned ${_timeSince(pinned.pinnedAtMs)}',
-                        color: AppColors.textSecondary,
+                        color: c.textSecondary,
                         fontSize: 11,
                       ),
                     ],
@@ -192,7 +196,7 @@ class _PinnedSessionCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right,
                   size: 18,
-                  color: AppColors.textSecondary,
+                  color: c.textSecondary,
                 ),
               ],
             ),

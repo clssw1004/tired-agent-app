@@ -138,10 +138,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
+        final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Kill failed: $e'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: c.danger,
           ),
         );
       }
@@ -171,10 +172,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
+        final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Delete failed: $e'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: c.danger,
           ),
         );
       }
@@ -184,14 +186,15 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   // ── AppBar helpers ───────────────────────────────────────────────
 
   Widget _appBarStatusDot() {
+    final c = context.appColors;
     final Color color;
     switch (_ptyStatus) {
       case PtyConnectionStatus.connected:
-        color = AppColors.success;
+        color = c.success;
       case PtyConnectionStatus.reconnecting:
-        color = AppColors.warning;
+        color = c.warning;
       case PtyConnectionStatus.disconnected:
-        color = AppColors.textSecondary;
+        color = c.textSecondary;
     }
 
     return Container(
@@ -213,9 +216,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
     final isPersistent = _session?.mode == SessionMode.persistent;
     final sessionStatus = _session?.status;
     final title = _session?.label ?? _session?.cmd ?? 'Session';
+    final c = context.appColors;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -236,36 +240,34 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
           // Persistent session: kill / delete
           if (isPersistent && sessionStatus != SessionStatus.exited)
             IconButton(
-              icon: const Icon(Icons.stop_circle_outlined,
-                  color: AppColors.danger),
+              icon: Icon(Icons.stop_circle_outlined, color: c.danger),
               tooltip: 'Kill session',
               onPressed: _requestKill,
             ),
           if (isPersistent && sessionStatus == SessionStatus.exited)
             IconButton(
-              icon: const Icon(Icons.delete_outline,
-                  color: AppColors.textSecondary),
+              icon: Icon(Icons.delete_outline, color: c.textSecondary),
               tooltip: 'Delete session',
               onPressed: _requestDelete,
             ),
           // PTY: reconnect
           if (!isPersistent && _ptyStatus != PtyConnectionStatus.connected)
             IconButton(
-              icon: const Icon(Icons.refresh, color: AppColors.primary),
+              icon: Icon(Icons.refresh, color: c.primary),
               tooltip: 'Reconnect',
               onPressed: _reconnect,
             ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: AppColors.primary),
+          child: Container(color: c.primary),
         ),
       ),
       body: _loading
-          ? const Center(child: NeonLoading())
+          ? Center(child: NeonLoading())
           : _error != null
               ? Center(
-                  child: ThemedText.small(_error!, color: AppColors.danger),
+                  child: ThemedText.small(_error!, color: c.danger),
                 )
               : _session != null && _conn != null
                   ? isPersistent
