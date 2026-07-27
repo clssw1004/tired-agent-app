@@ -284,7 +284,7 @@
   "dirPickerSelect": "Select",
   "dirPickerLoading": "(loading…)",
   "ptyKeyboardClose": "Close keyboard",
-  "ptyKeyboardKeys": "Keys",
+  "ptyKeyboardKeys": "Extended Keys",
   "ptyKeyboardConfirmSend": "Are you sure you want to send this key sequence?",
   "ptyReconnecting": "Reconnecting…",
   "ptySessionExited": "Session exited",
