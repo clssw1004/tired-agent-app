@@ -339,16 +339,17 @@ class PtySessionViewState extends State<PtySessionView> {
               config: _keyboardConfig,
               modifierState: _modifierState,
               expanded: _keyboardExpanded,
+              imeActive: !_hardwareKeyboardOnly,
               onToggle: () =>
                   setState(() => _keyboardExpanded = !_keyboardExpanded),
+              onToggleIme: () => _toggleIme(
+                extraState: () => _keyboardExpanded = false,
+              ),
               onSendBytes: (bytes) => _transport.sendInput(
                 widget.serverRef,
                 widget.session.id,
                 bytes,
                 agentId: widget.agentId,
-              ),
-              onDismissKeyboard: () => _toggleIme(
-                extraState: () => _keyboardExpanded = false,
               ),
             ),
           ],
