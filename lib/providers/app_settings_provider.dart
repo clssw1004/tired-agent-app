@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xterm2/xterm.dart' show TerminalTheme;
+
+import 'package:tired_agent_app/utils/terminal_themes.dart';
 
 /// 终端缓冲区大小预设选项（行数）
 const List<int> kTerminalBufferPresets = [
@@ -18,12 +21,15 @@ class AppSettingsProvider extends ChangeNotifier {
   AppSettingsProvider()
       : _themeMode = ThemeMode.dark,
         _locale = const Locale('zh'),
-        _terminalBufferSize = kDefaultBufferSize;
+        _terminalBufferSize = kDefaultBufferSize,
+        _terminalThemePreset = TerminalThemePreset.classic;
 
   // ── 持久化 Key ──────────────────────────────────────────────────
   static const _kThemeMode = 'app_theme_mode';
   static const _kLocale = 'app_locale';
   static const _kTerminalBufferSize = 'terminal_buffer_size';
+
+  static const _kTerminalTheme = 'terminal_theme';
 
   /// 默认终端缓冲区大小。
   static const int kDefaultBufferSize = 5000;
@@ -31,10 +37,13 @@ class AppSettingsProvider extends ChangeNotifier {
   ThemeMode _themeMode;
   Locale _locale;
   int _terminalBufferSize;
+  TerminalThemePreset _terminalThemePreset;
 
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
   int get terminalBufferSize => _terminalBufferSize;
+  TerminalThemePreset get terminalThemePreset => _terminalThemePreset;
+  TerminalTheme get terminalTheme => TerminalThemes.of(_terminalThemePreset);
 
   // 是否为暗色（供 callers 便捷判断）
   bool get isDark => _themeMode == ThemeMode.dark;
@@ -63,6 +72,15 @@ class AppSettingsProvider extends ChangeNotifier {
 
     // 终端缓冲区大小
     _terminalBufferSize = prefs.getInt(_kTerminalBufferSize) ?? kDefaultBufferSize;
+
+    // 终端主题
+    final terminalThemeStr = prefs.getString(_kTerminalTheme);
+    if (terminalThemeStr != null) {
+      _terminalThemePreset = TerminalThemePreset.values.firstWhere(
+        (e) => e.name == terminalThemeStr,
+        orElse: () => TerminalThemePreset.classic,
+      );
+    }
   }
 
   // ── 主题切换 ─────────────────────────────────────────────────────
@@ -98,5 +116,15 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_kTerminalBufferSize, size);
+  }
+
+  // ── 终端主题 ───────────────────────────────────────────────────────
+
+  Future<void> setTerminalThemePreset(TerminalThemePreset preset) async {
+    if (_terminalThemePreset == preset) return;
+    _terminalThemePreset = preset;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kTerminalTheme, preset.name);
   }
 }

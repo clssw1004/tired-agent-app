@@ -319,5 +319,7 @@
   },
   "settingsBufferSizeCustom": "Custom…",
   "settingsBufferSizeHint": "Enter buffer size (200-50000)",
-  "settingsBufferSizeInvalid": "Enter a number between 200-50000"
+  "settingsBufferSizeInvalid": "Enter a number between 200-50000",
+
+  "settingsTerminalTheme": "Terminal Theme"
 }

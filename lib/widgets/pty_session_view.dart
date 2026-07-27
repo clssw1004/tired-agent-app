@@ -305,6 +305,7 @@ class PtySessionViewState extends State<PtySessionView> {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
+    final terminalTheme = context.watch<AppSettingsProvider>().terminalTheme;
     return Scaffold(
       backgroundColor: c.background,
       body: SafeArea(
@@ -330,6 +331,7 @@ class PtySessionViewState extends State<PtySessionView> {
                   behavior: const _PtyScrollBehavior(),
                   child: TerminalView(
                     _terminal,
+                    theme: terminalTheme,
                     autofocus: false,
                     hardwareKeyboardOnly: _hardwareKeyboardOnly,
                     focusNode: _terminalFocusNode,
