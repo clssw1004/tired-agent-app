@@ -143,7 +143,7 @@ class PtyKeyboardPanel extends StatelessWidget {
 
   Widget _buildHandle(AppColors colors) {
     return GestureDetector(
-      onTap: expanded ? onToggle : null,
+      onTap: expanded ? onToggle : () {},
       onDoubleTap: onToggle,
       behavior: HitTestBehavior.opaque,
       child: Container(
