@@ -115,6 +115,26 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  //  Session health
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// 刷新所有 manager 的 session（静默，不阻塞 UI）。
+  ///
+  /// 由 [AppLifecycleState.resumed] 触发，确保切回前台时 session 状态最新。
+  /// Confirmed Rotation 服务端机制保证即使 refresh 响应丢失也能恢复。
+  Future<void> refreshAllSessions() async {
+    debugPrint('[AuthProvider] refreshAllSessions — checking ${_authService.connections.length} connections');
+    for (final conn in _authService.connections) {
+      try {
+        await conn.ensureFreshSession();
+      } catch (e) {
+        // 静默失败。下次实际请求触发 connect() 时再处理。
+        debugPrint('[AuthProvider] refreshAllSessions — ${conn.profile.name}: $e');
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   //  Internal helpers
   // ═══════════════════════════════════════════════════════════════════
 

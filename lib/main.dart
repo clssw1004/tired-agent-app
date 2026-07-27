@@ -32,7 +32,7 @@ class TiredAgentApp extends StatefulWidget {
   State<TiredAgentApp> createState() => _TiredAgentAppState();
 }
 
-class _TiredAgentAppState extends State<TiredAgentApp> {
+class _TiredAgentAppState extends State<TiredAgentApp> with WidgetsBindingObserver {
   late final AuthService _authService;
   late final AuthProvider _authProvider;
   late final PinnedSessionProvider _pinnedSessionProvider;
@@ -44,6 +44,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final storage = StorageService();
     _authService = AuthService(storage: storage);
     _authProvider = AuthProvider(authService: _authService);
@@ -132,6 +133,21 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     _authProvider.boot();
     _pinnedSessionProvider.load();
     _settingsProvider.load();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 切回前台时，刷新所有 manager 的 session 状态。
+      // Confirmed Rotation 确保 refreshToken 在丢响应后仍可用，此处静默恢复即可。
+      _authProvider.refreshAllSessions();
+    }
   }
 
   @override
