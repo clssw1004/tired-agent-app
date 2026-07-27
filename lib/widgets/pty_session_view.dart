@@ -170,16 +170,20 @@ class PtySessionViewState extends State<PtySessionView> {
   /// Toggle the system keyboard (IME) on/off.
   /// [extraState] is called inside the same [setState] for any additional changes.
   void _toggleIme({VoidCallback? extraState}) {
+    final wasHidden = _hardwareKeyboardOnly;
     setState(() {
       _hardwareKeyboardOnly = !_hardwareKeyboardOnly;
       extraState?.call();
     });
-    if (_hardwareKeyboardOnly) {
+    if (wasHidden) {
+      // Showing IME: unfocus now to consume any stale keyboard token,
+      // then generate a fresh one after the frame rebuild.
       _terminalFocusNode.unfocus();
-    } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _terminalFocusNode.requestFocus();
       });
+    } else {
+      _terminalFocusNode.unfocus();
     }
   }
 
