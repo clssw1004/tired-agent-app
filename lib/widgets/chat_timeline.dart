@@ -62,13 +62,14 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return switch (content) {
       ContentUserMessage(:final text) => Align(
         alignment: Alignment.centerRight,
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.three),
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: c.primary,
             borderRadius: BorderRadius.circular(AppSpacing.three),
           ),
           constraints: BoxConstraints(
@@ -82,10 +83,10 @@ class _MessageBubble extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.three),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.three),
             border: Border.all(
-              color: AppColors.border.withAlpha(60),
+              color: c.border.withAlpha(60),
               width: 0.5,
             ),
           ),
@@ -99,14 +100,14 @@ class _MessageBubble extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.three),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: c.surfaceAlt,
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: Border.all(color: AppColors.primary.withAlpha(25)),
+          border: Border.all(color: c.primary.withAlpha(25)),
         ),
         child: SelectableText(
           code,
-          style: const TextStyle(
-            color: AppColors.textCode,
+          style: TextStyle(
+            color: c.textCode,
             fontSize: 12,
             fontFamily: 'monospace',
           ),
@@ -116,7 +117,7 @@ class _MessageBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.one),
         child: Row(
           children: [
-            _statusIcon(kind),
+            _statusIcon(kind, c),
             const SizedBox(width: AppSpacing.two),
             ThemedText.small(_statusLabel(kind)),
             if (text.isNotEmpty) ...[
@@ -130,7 +131,7 @@ class _MessageBubble extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.three),
         decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
+          color: c.surfaceAlt,
           borderRadius: BorderRadius.circular(AppSpacing.two),
         ),
         child: Column(
@@ -138,7 +139,7 @@ class _MessageBubble extends StatelessWidget {
           children: [
             ThemedText.small(
               '${completed ? "✓" : "⏳"} $name',
-              color: AppColors.textSecondary,
+              color: c.textSecondary,
             ),
           ],
         ),
@@ -148,7 +149,7 @@ class _MessageBubble extends StatelessWidget {
         alignment: Alignment.centerRight,
         child: ThemedText.small(
           'tokens in: $inputTokens · out: $outputTokens',
-          color: AppColors.textSecondary,
+          color: c.textSecondary,
         ),
       ),
       _ => const SizedBox.shrink(),
@@ -164,24 +165,24 @@ class _MessageBubble extends StatelessWidget {
     StatusKind.starting => 'Starting',
   };
 
-  Widget _statusIcon(StatusKind kind) => switch (kind) {
+  Widget _statusIcon(StatusKind kind, AppColors colors) => switch (kind) {
     StatusKind.thinking => SizedBox(
       width: 12,
       height: 12,
-      child: const CircularProgressIndicator(
+      child: CircularProgressIndicator(
         strokeWidth: 2,
-        color: AppColors.textSecondary,
+        color: colors.textSecondary,
       ),
     ),
-    StatusKind.done => const Icon(
+    StatusKind.done => Icon(
       Icons.check_circle,
       size: 14,
-      color: AppColors.success,
+      color: colors.success,
     ),
-    StatusKind.error => const Icon(
+    StatusKind.error => Icon(
       Icons.error,
       size: 14,
-      color: AppColors.danger,
+      color: colors.danger,
     ),
     _ => const SizedBox(width: 12),
   };

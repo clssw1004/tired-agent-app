@@ -10,17 +10,18 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       body: navigationShell,
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.primary, width: 0.5)),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: c.primary, width: 0.5)),
         ),
         child: BottomNavigationBar(
-          backgroundColor: AppColors.background,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textSecondary,
+          backgroundColor: c.background,
+          selectedItemColor: c.primary,
+          unselectedItemColor: c.textSecondary,
           type: BottomNavigationBarType.fixed,
           currentIndex: navigationShell.currentIndex,
           onTap: (index) {

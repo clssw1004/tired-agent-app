@@ -16,13 +16,14 @@ class ServerListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final c = context.appColors;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: ThemedText.title('Managers'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
-          child: Container(color: AppColors.primary),
+          child: Container(color: c.primary),
         ),
       ),
       body: Column(
@@ -40,6 +41,7 @@ class ServerListScreen extends StatelessWidget {
   // ── Welcome state (no profiles) ─────────────────────────────────────
 
   Widget _buildWelcomeEmpty(BuildContext context, AuthProvider auth) {
+    final c = context.appColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
@@ -49,14 +51,14 @@ class ServerListScreen extends StatelessWidget {
             Icon(
               Icons.smart_toy,
               size: 80,
-              color: AppColors.primary.withAlpha(180),
+              color: c.primary.withAlpha(180),
             ),
             const SizedBox(height: AppSpacing.four),
             ThemedText.title('Welcome to tiredAgent'),
             const SizedBox(height: AppSpacing.two),
             ThemedText(
               '添加一个 Manager 服务器来管理你的\n代理服务器和会话',
-              color: AppColors.textSecondary,
+              color: c.textSecondary,
               fontSize: 12,
               textAlign: TextAlign.center,
             ),
@@ -135,19 +137,21 @@ class ServerListScreen extends StatelessWidget {
           name: formData.name.isNotEmpty ? formData.name : null,
         );
         if (context.mounted) {
+          final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: ThemedText.small('Manager added'),
-              backgroundColor: AppColors.backgroundElement,
+              backgroundColor: c.backgroundElement,
             ),
           );
         }
       } catch (e) {
         if (context.mounted) {
+          final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(e.toString()),
-              backgroundColor: AppColors.danger,
+              backgroundColor: c.danger,
             ),
           );
         }
@@ -191,18 +195,19 @@ class ServerListScreen extends StatelessWidget {
       final ok = await auth.reconnect(conn.profile.id, result);
       debugPrint('[Reconnect] ok=$ok');
       if (context.mounted) {
+        final c = context.appColors;
         if (ok) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: ThemedText.small('${conn.profile.name} reconnected'),
-              backgroundColor: AppColors.backgroundElement,
+              backgroundColor: c.backgroundElement,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(conn.error ?? 'Reconnect failed'),
-              backgroundColor: AppColors.danger,
+              backgroundColor: c.danger,
             ),
           );
         }
@@ -282,22 +287,23 @@ class _ManagerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final profile = connection.profile;
     final connStatus = connection.status;
+    final c = context.appColors;
 
     // Status color + label
     Color statusColor;
     String statusLabel;
     switch (connStatus) {
       case ConnectionStatus.connected:
-        statusColor = AppColors.success;
+        statusColor = c.success;
         statusLabel = 'Connected';
       case ConnectionStatus.connecting:
-        statusColor = AppColors.warning;
+        statusColor = c.warning;
         statusLabel = 'Connecting…';
       case ConnectionStatus.error:
-        statusColor = AppColors.danger;
+        statusColor = c.danger;
         statusLabel = 'Error';
       case ConnectionStatus.idle:
-        statusColor = AppColors.textSecondary;
+        statusColor = c.textSecondary;
         statusLabel = 'Disconnected';
     }
 
@@ -322,12 +328,12 @@ class _ManagerCard extends StatelessWidget {
         onLongPress: onDelete,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.two),
             border: Border.all(
               color: connStatus == ConnectionStatus.connected
-                  ? AppColors.primary.withAlpha(60)
-                  : AppColors.border.withAlpha(80),
+                  ? c.primary.withAlpha(60)
+                  : c.border.withAlpha(80),
               width: 0.5,
             ),
           ),
@@ -370,11 +376,11 @@ class _ManagerCard extends StatelessWidget {
                         children: [
                           ThemedText.body(
                             profile.name,
-                            color: AppColors.text,
+                            color: c.text,
                           ),
                           ThemedText.label(
                             profile.baseUrl,
-                            color: AppColors.textSecondary,
+                            color: c.textSecondary,
                           ),
                         ],
                       ),
@@ -387,10 +393,10 @@ class _ManagerCard extends StatelessWidget {
                     // Error info icon
                     if (connection.error != null)
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.info_outline,
                           size: 16,
-                          color: AppColors.danger,
+                          color: c.danger,
                         ),
                         onPressed: () => _showError(context),
                         padding: EdgeInsets.zero,
@@ -402,10 +408,10 @@ class _ManagerCard extends StatelessWidget {
                     // Delete button
                     if (onDelete != null)
                       IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.delete_outline,
                           size: 18,
-                          color: AppColors.textSecondary,
+                          color: c.textSecondary,
                         ),
                         onPressed: () => onDelete?.call(),
                         tooltip: 'Remove manager',
@@ -437,13 +443,13 @@ class _ManagerCard extends StatelessWidget {
                             '$onlineAgents online · '
                             '$offlineAgents offline'
                             '${pendingAgents > 0 ? ' · $pendingAgents pending' : ''}',
-                            color: AppColors.textSecondary,
+                            color: c.textSecondary,
                           ),
                         ),
                       if (profile.lastUsedMs > 0)
                         ThemedText.mono(
                           _timeSince(profile.lastUsedMs),
-                          color: AppColors.textSecondary,
+                          color: c.textSecondary,
                         ),
                     ],
                   ),
@@ -456,10 +462,11 @@ class _ManagerCard extends StatelessWidget {
   }
 
   void _showError(BuildContext context) {
+    final c = context.appColors;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(connection.error!),
-        backgroundColor: AppColors.danger,
+        backgroundColor: c.danger,
       ),
     );
   }
@@ -500,13 +507,14 @@ class _ReconnectFormState extends State<_ReconnectForm> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ThemedText.small(
           'Session expired. Enter the API token to reconnect.',
-          color: AppColors.textSecondary,
+          color: c.textSecondary,
         ),
         const SizedBox(height: AppSpacing.three),
         TextField(

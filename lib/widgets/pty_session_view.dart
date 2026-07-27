@@ -215,6 +215,7 @@ class PtySessionViewState extends State<PtySessionView> {
 
   /// Thin colored bar shown below the AppBar.
   Widget _statusBanner() {
+    final c = context.appColors;
     final bool visible;
     final Color color;
     final String label;
@@ -222,15 +223,15 @@ class PtySessionViewState extends State<PtySessionView> {
     switch (_connectionStatus) {
       case PtyConnectionStatus.connected:
         visible = false;
-        color = AppColors.success;
+        color = c.success;
         label = '';
       case PtyConnectionStatus.reconnecting:
         visible = true;
-        color = AppColors.warning;
+        color = c.warning;
         label = 'Reconnecting…';
       case PtyConnectionStatus.disconnected:
         visible = true;
-        color = AppColors.textSecondary;
+        color = c.textSecondary;
         label = _sessionExited ? 'Session exited' : 'Disconnected';
     }
 
@@ -266,8 +267,9 @@ class PtySessionViewState extends State<PtySessionView> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       body: SafeArea(
         child: Column(
           children: [

@@ -7,11 +7,11 @@ class SectionHeader extends StatelessWidget {
   final String label;
   final Color color;
 
-  const SectionHeader({
+  SectionHeader({
     super.key,
     required this.label,
-    this.color = AppColors.primary,
-  });
+    Color? color,
+  }) : color = color ?? AppColors.dark.primary;
 
   @override
   Widget build(BuildContext context) {

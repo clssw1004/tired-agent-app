@@ -161,13 +161,14 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Column(
       children: [
         Expanded(child: ChatTimeline(contents: _contents)),
         Container(
-          decoration: const BoxDecoration(
-            color: AppColors.background,
-            border: Border(top: BorderSide(color: AppColors.border)),
+          decoration: BoxDecoration(
+            color: c.background,
+            border: Border(top: BorderSide(color: c.border)),
           ),
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.three,
@@ -206,7 +207,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
                       vertical: AppSpacing.two,
                     ),
                   ),
-                  child: ThemedText.mono('Send', color: AppColors.primary),
+                  child: ThemedText.mono('Send', color: c.primary),
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:tired_agent_app/theme.dart';
 
 class ThemedView extends StatelessWidget {
@@ -19,11 +20,12 @@ class ThemedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Container(
       padding: padding,
       margin: margin,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.background,
+        color: backgroundColor ?? c.background,
         borderRadius: borderRadius != null
             ? BorderRadius.circular(borderRadius!)
             : null,

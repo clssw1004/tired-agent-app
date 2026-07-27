@@ -108,19 +108,21 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         );
         await _loadAgents();
         if (mounted) {
+          final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: ThemedText.small('Agent ${formData.name} added'),
-              backgroundColor: AppColors.backgroundElement,
+              backgroundColor: c.backgroundElement,
             ),
           );
         }
       } catch (e) {
         if (mounted) {
+          final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to add agent: $e'),
-              backgroundColor: AppColors.danger,
+              backgroundColor: c.danger,
             ),
           );
         }
@@ -150,19 +152,21 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
       await conn.transport.deleteAgent(conn.managerRef, agent.id);
       await _loadAgents();
       if (mounted) {
+        final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: ThemedText.small('Agent ${agent.name} removed'),
-            backgroundColor: AppColors.backgroundElement,
+            backgroundColor: c.backgroundElement,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to remove agent: $e'),
-            backgroundColor: AppColors.danger,
+            backgroundColor: c.danger,
           ),
         );
       }
@@ -173,15 +177,16 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final conn = auth.connectionFor(widget.profileId);
+    final c = context.appColors;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
         title: ThemedText.title(conn?.profile.name ?? 'Manager'),
         actions: [
           if (conn?.status == ConnectionStatus.connected)
             IconButton(
-              icon: const Icon(Icons.add, color: AppColors.primary),
+              icon: Icon(Icons.add, color: c.primary),
               tooltip: 'Add Agent',
               onPressed: _showAddAgent,
             ),
@@ -201,15 +206,16 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     }
 
     if (_error != null) {
+      final c = context.appColors;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.four),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline, size: 40, color: AppColors.danger),
+              Icon(Icons.error_outline, size: 40, color: c.danger),
               const SizedBox(height: AppSpacing.two),
-              ThemedText.small(_error!, color: AppColors.danger),
+              ThemedText.small(_error!, color: c.danger),
               const SizedBox(height: AppSpacing.three),
               ElevatedButton(
                 onPressed: _loadAgents,
@@ -222,19 +228,20 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     }
 
     if (_agents.isEmpty) {
+      final c = context.appColors;
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.four),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.dns_outlined, size: 64, color: AppColors.textSecondary),
+              Icon(Icons.dns_outlined, size: 64, color: c.textSecondary),
               const SizedBox(height: AppSpacing.three),
-              ThemedText.title('No Agents', color: AppColors.textSecondary),
+              ThemedText.title('No Agents', color: c.textSecondary),
               const SizedBox(height: AppSpacing.one),
               ThemedText.small(
                 'Register an agent to start creating sessions',
-                color: AppColors.textSecondary,
+                color: c.textSecondary,
               ),
               const SizedBox(height: AppSpacing.four),
               ElevatedButton.icon(
@@ -285,16 +292,17 @@ class _ManagerAgentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
       child: GestureDetector(
         onTap: () => context.push('/profile/$profileId/agent/${agent.id}'),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.two),
             border: Border.all(
-              color: AppColors.primary.withAlpha(40),
+              color: c.primary.withAlpha(40),
               width: 0.5,
             ),
           ),
@@ -307,12 +315,12 @@ class _ManagerAgentCard extends StatelessWidget {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: _agentColor(agent.state),
+                    color: _agentColor(agent.state, c),
                     shape: BoxShape.circle,
                     boxShadow: agent.state == AgentState.online
                         ? [
                             BoxShadow(
-                              color: AppColors.success.withAlpha(80),
+                              color: c.success.withAlpha(80),
                               blurRadius: 4,
                             ),
                           ]
@@ -325,22 +333,22 @@ class _ManagerAgentCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ThemedText.body(agent.name, color: AppColors.text),
+                      ThemedText.body(agent.name, color: c.text),
                       const SizedBox(height: 2),
                       ThemedText.label(
                         agent.baseUrl,
-                        color: AppColors.textSecondary,
+                        color: c.textSecondary,
                       ),
                       if (agent.platform != null) ...[
                         const SizedBox(height: 2),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _platformIcon(agent.platform!.os),
+                            _platformIcon(agent.platform!.os, c),
                             const SizedBox(width: 4),
                             ThemedText.mono(
                               '${agent.platform!.os} · ${agent.platform!.arch}',
-                              color: AppColors.primary.withAlpha(120),
+                              color: c.primary.withAlpha(120),
                             ),
                           ],
                         ),
@@ -351,10 +359,10 @@ class _ManagerAgentCard extends StatelessWidget {
                 // Delete button
                 if (onDelete != null)
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.delete_outline,
                       size: 18,
-                      color: AppColors.textSecondary,
+                      color: c.textSecondary,
                     ),
                     onPressed: () => onDelete?.call(),
                     tooltip: 'Remove agent',
@@ -368,7 +376,7 @@ class _ManagerAgentCard extends StatelessWidget {
                 Icon(
                   Icons.chevron_right,
                   size: 20,
-                  color: AppColors.textSecondary,
+                  color: c.textSecondary,
                 ),
               ],
             ),
@@ -378,33 +386,33 @@ class _ManagerAgentCard extends StatelessWidget {
     );
   }
 
-  Color _agentColor(AgentState s) {
+  Color _agentColor(AgentState s, AppColors c) {
     switch (s) {
       case AgentState.online:
-        return AppColors.success;
+        return c.success;
       case AgentState.offline:
-        return AppColors.danger;
+        return c.danger;
       case AgentState.pending:
-        return AppColors.textSecondary;
+        return c.textSecondary;
     }
   }
 
-  static Widget _platformIcon(String os) {
+  static Widget _platformIcon(String os, AppColors c) {
     IconData icon;
     Color color;
     switch (os) {
       case 'win32':
         icon = Icons.window;
-        color = AppColors.primary;
+        color = c.primary;
       case 'darwin':
         icon = Icons.laptop_mac;
-        color = AppColors.text;
+        color = c.text;
       case 'linux':
         icon = Icons.terminal;
-        color = AppColors.warning;
+        color = c.warning;
       default:
         icon = Icons.devices;
-        color = AppColors.textSecondary;
+        color = c.textSecondary;
     }
     return Icon(icon, size: 14, color: color.withAlpha(160));
   }

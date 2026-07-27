@@ -18,6 +18,7 @@ class ServerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return NeonCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.four,
@@ -32,15 +33,15 @@ class ServerCard extends StatelessWidget {
               children: [
                 ThemedText.mono(agent.name),
                 const SizedBox(height: 2),
-                ThemedText.mono(agent.baseUrl, color: AppColors.textSecondary),
+                ThemedText.mono(agent.baseUrl, color: c.textSecondary),
               ],
             ),
           ),
           if (onDelete != null)
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline,
-                color: AppColors.danger,
+                color: c.danger,
                 size: 20,
               ),
               onPressed: onDelete,

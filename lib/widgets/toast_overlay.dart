@@ -8,17 +8,18 @@ class ToastOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     final toasts = context.watch<ToastProvider>();
     return Stack(
       children: toasts.toasts.map((toast) {
         Color backgroundColor;
         switch (toast.type) {
           case ToastType.success:
-            backgroundColor = AppColors.success;
+            backgroundColor = c.success;
           case ToastType.error:
-            backgroundColor = AppColors.danger;
+            backgroundColor = c.danger;
           case ToastType.info:
-            backgroundColor = AppColors.backgroundElement;
+            backgroundColor = c.surface;
         }
         return Positioned(
           top: MediaQuery.of(context).padding.top + 8,
@@ -40,8 +41,8 @@ class ToastOverlay extends StatelessWidget {
                     Expanded(
                       child: Text(
                         toast.message,
-                        style: const TextStyle(
-                          color: AppColors.text,
+                        style: TextStyle(
+                          color: c.text,
                           fontSize: 14,
                         ),
                       ),
@@ -49,9 +50,9 @@ class ToastOverlay extends StatelessWidget {
                     GestureDetector(
                       onTap: () =>
                           context.read<ToastProvider>().dismiss(toast.id),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
-                        color: AppColors.text,
+                        color: c.text,
                         size: 18,
                       ),
                     ),

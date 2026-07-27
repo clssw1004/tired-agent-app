@@ -4,18 +4,17 @@ import 'package:tired_agent_app/widgets/themed_text.dart';
 
 enum NeonLoadingMode { spinner, pulse, dots }
 
-/// 霓虹风格加载指示器。
 class NeonLoading extends StatefulWidget {
   final NeonLoadingMode mode;
   final double size;
   final Color color;
 
-  const NeonLoading({
+  NeonLoading({
     super.key,
     this.mode = NeonLoadingMode.spinner,
     this.size = 24,
-    this.color = AppColors.primary,
-  });
+    Color? color,
+  }) : color = color ?? AppColors.dark.primary;
 
   @override
   State<NeonLoading> createState() => _NeonLoadingState();

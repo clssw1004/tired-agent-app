@@ -7,7 +7,7 @@ class NeonDivider extends StatelessWidget {
   final String? label;
   final Color color;
 
-  const NeonDivider({super.key, this.label, this.color = AppColors.primary});
+  NeonDivider({super.key, this.label, Color? color}) : color = color ?? AppColors.dark.primary;
 
   @override
   Widget build(BuildContext context) {

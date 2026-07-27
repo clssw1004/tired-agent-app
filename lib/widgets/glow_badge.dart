@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
-/// 状态发光指示器：圆点 + 文字。
-/// 自动匹配 running→绿色, starting→橙色, exited→灰色, connected→绿色, disconnected→灰色。
 enum BadgeStatus { running, starting, exited, error, connected, disconnected }
 
 class GlowBadge extends StatelessWidget {
@@ -18,15 +16,6 @@ class GlowBadge extends StatelessWidget {
     this.glow = true,
   });
 
-  Color get _color => switch (status) {
-    BadgeStatus.running => AppColors.success,
-    BadgeStatus.connected => AppColors.success,
-    BadgeStatus.starting => AppColors.warning,
-    BadgeStatus.error => AppColors.danger,
-    BadgeStatus.exited => AppColors.textSecondary,
-    BadgeStatus.disconnected => AppColors.textSecondary,
-  };
-
   String get _defaultLabel => switch (status) {
     BadgeStatus.running => 'Running',
     BadgeStatus.connected => 'Connected',
@@ -36,21 +25,34 @@ class GlowBadge extends StatelessWidget {
     BadgeStatus.disconnected => 'Disconnected',
   };
 
+  Color _color(BuildContext context) {
+    final c = context.appColors;
+    return switch (status) {
+      BadgeStatus.running => c.success,
+      BadgeStatus.connected => c.success,
+      BadgeStatus.starting => c.warning,
+      BadgeStatus.error => c.danger,
+      BadgeStatus.exited => c.textSecondary,
+      BadgeStatus.disconnected => c.textSecondary,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final color = _color(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.two,
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: _color.withAlpha(18),
+        color: color.withAlpha(18),
         borderRadius: BorderRadius.circular(AppSpacing.one),
-        border: Border.all(color: _color.withAlpha(60), width: 0.5),
+        border: Border.all(color: color.withAlpha(60), width: 0.5),
         boxShadow: glow
             ? [
                 BoxShadow(
-                  color: _color.withAlpha(30),
+                  color: color.withAlpha(30),
                   blurRadius: 6,
                   spreadRadius: 0,
                 ),
@@ -64,12 +66,12 @@ class GlowBadge extends StatelessWidget {
             width: 6,
             height: 6,
             decoration: BoxDecoration(
-              color: _color,
+              color: color,
               shape: BoxShape.circle,
               boxShadow: glow
                   ? [
                       BoxShadow(
-                        color: _color.withAlpha(80),
+                        color: color.withAlpha(80),
                         blurRadius: 4,
                         spreadRadius: 1,
                       ),
@@ -78,7 +80,7 @@ class GlowBadge extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.one + 2),
-          ThemedText.label(label ?? _defaultLabel, color: _color),
+          ThemedText.label(label ?? _defaultLabel, color: color),
         ],
       ),
     );

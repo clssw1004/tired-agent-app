@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
@@ -16,6 +17,7 @@ import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/main_shell.dart';
+import 'generated/l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
   late final AuthProvider _authProvider;
   late final PinnedSessionProvider _pinnedSessionProvider;
   late final ToastProvider _toastProvider;
+  late final AppSettingsProvider _settingsProvider;
   late final GoRouter _router;
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -45,6 +48,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
     _authProvider = AuthProvider(authService: _authService);
     _pinnedSessionProvider = PinnedSessionProvider();
     _toastProvider = ToastProvider();
+    _settingsProvider = AppSettingsProvider();
 
     _router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -126,6 +130,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
 
     _authProvider.boot();
     _pinnedSessionProvider.load();
+    _settingsProvider.load();
   }
 
   @override
@@ -135,12 +140,22 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
         ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProvider.value(value: _pinnedSessionProvider),
         ChangeNotifierProvider.value(value: _toastProvider),
+        ChangeNotifierProvider.value(value: _settingsProvider),
       ],
-      child: MaterialApp.router(
-        title: 'TiredAgent',
-        theme: buildDarkTheme(),
-        routerConfig: _router,
-        debugShowCheckedModeBanner: false,
+      child: Consumer<AppSettingsProvider>(
+        builder: (context, settings, _) {
+          return MaterialApp.router(
+            title: 'TiredAgent',
+            theme: buildLightTheme(),
+            darkTheme: buildDarkTheme(),
+            themeMode: settings.themeMode,
+            locale: settings.locale,
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            routerConfig: _router,
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
     );
   }

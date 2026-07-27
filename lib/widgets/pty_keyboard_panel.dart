@@ -124,14 +124,15 @@ class PtyKeyboardPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHandle(),
+        _buildHandle(c),
         if (expanded) ...[
           for (final row in config.rows) ...[
             const SizedBox(height: 4),
-            _buildRow(row),
+            _buildRow(row, c),
           ],
           const SizedBox(height: 2),
         ],
@@ -139,13 +140,13 @@ class PtyKeyboardPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(AppColors colors) {
     return GestureDetector(
       onTap: onToggle,
       behavior: HitTestBehavior.opaque,
       child: Container(
         height: 28,
-        color: AppColors.surfaceAlt,
+        color: colors.surfaceAlt,
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: Row(
           children: [
@@ -155,7 +156,7 @@ class PtyKeyboardPanel extends StatelessWidget {
               child: Icon(
                 Icons.keyboard_arrow_down,
                 size: 16,
-                color: AppColors.primary.withAlpha(160),
+                color: colors.primary.withAlpha(160),
               ),
             ),
             const SizedBox(width: 6),
@@ -163,7 +164,7 @@ class PtyKeyboardPanel extends StatelessWidget {
               expanded ? 'Close keyboard' : 'Keys',
               style: TextStyle(
                 fontSize: 11,
-                color: AppColors.primary.withAlpha(140),
+                color: colors.primary.withAlpha(140),
                 letterSpacing: 1.0,
               ),
             ),
@@ -179,9 +180,9 @@ class PtyKeyboardPanel extends StatelessWidget {
                 if (active.isEmpty) return const SizedBox.shrink();
                 return Text(
                   active.join('+'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
-                    color: AppColors.warning,
+                    color: colors.warning,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -200,7 +201,7 @@ class PtyKeyboardPanel extends StatelessWidget {
                 child: Icon(
                   Icons.keyboard_hide_outlined,
                   size: 15,
-                  color: AppColors.textSecondary.withAlpha(160),
+                  color: colors.textSecondary.withAlpha(160),
                 ),
               ),
             ),
@@ -210,16 +211,16 @@ class PtyKeyboardPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(List<TerminalKeyDef> keys) {
+  Widget _buildRow(List<TerminalKeyDef> keys, AppColors colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
-        children: keys.map((k) => Expanded(child: _buildKeyButton(k))).toList(),
+        children: keys.map((k) => Expanded(child: _buildKeyButton(k, colors))).toList(),
       ),
     );
   }
 
-  Widget _buildKeyButton(TerminalKeyDef key) {
+  Widget _buildKeyButton(TerminalKeyDef key, AppColors colors) {
     if (key.isMod) {
       return _ModifierButton(
         keyDef: key,
@@ -257,6 +258,7 @@ class _ModifierButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) {
@@ -267,14 +269,15 @@ class _ModifierButton extends StatelessWidget {
           _ => false,
         };
         final accent = switch (keyDef.id) {
-          'ctrl' => AppColors.primary,
-          'alt' => AppColors.secondary,
-          'shift' => AppColors.warning,
-          _ => AppColors.primary,
+          'ctrl' => c.primary,
+          'alt' => c.secondary,
+          'shift' => c.warning,
+          _ => c.primary,
         };
         return _build(
           active: active,
           accent: accent,
+          colors: c,
           label: keyDef.label,
           onTap: () {
             HapticFeedback.selectionClick();
@@ -294,6 +297,7 @@ class _ModifierButton extends StatelessWidget {
   Widget _build({
     required bool active,
     required Color accent,
+    required AppColors colors,
     required String label,
     required VoidCallback onTap,
   }) {
@@ -307,10 +311,10 @@ class _ModifierButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: active ? accent.withAlpha(25) : AppColors.surfaceAlt,
+            color: active ? accent.withAlpha(25) : colors.surfaceAlt,
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: active ? accent : AppColors.border.withAlpha(100),
+              color: active ? accent : colors.border.withAlpha(100),
               width: active ? 1.0 : 0.5,
             ),
             boxShadow: active
@@ -328,7 +332,7 @@ class _ModifierButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: active ? FontWeight.bold : FontWeight.w500,
-              color: active ? accent : AppColors.textCode,
+              color: active ? accent : colors.textCode,
               letterSpacing: 0.5,
             ),
           ),
@@ -354,6 +358,7 @@ class _KeyButton extends StatelessWidget {
   static const _backtab = [0x1B, 0x5B, 0x5A];
 
   void _onTap(BuildContext context) {
+    final c = context.appColors;
     HapticFeedback.lightImpact();
 
     if (keyDef.confirm) {
@@ -365,7 +370,7 @@ class _KeyButton extends StatelessWidget {
         showRobot: true,
         content: ThemedText.body(
           'Are you sure you want to send this key sequence?',
-          color: AppColors.textSecondary,
+          color: c.textSecondary,
         ),
         actions: [
           NeonDialogAction(
@@ -397,6 +402,7 @@ class _KeyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 1.5),
       child: GestureDetector(
@@ -408,15 +414,15 @@ class _KeyButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 2),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.surfaceAlt,
+            color: c.surfaceAlt,
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: AppColors.border.withAlpha(100),
+              color: c.border.withAlpha(100),
               width: 0.5,
             ),
           ),
           child: keyDef.icon != null
-              ? Icon(keyDef.icon, size: 16, color: AppColors.textCode)
+              ? Icon(keyDef.icon, size: 16, color: c.textCode)
               : Text(
                   keyDef.label,
                   style: TextStyle(
@@ -424,7 +430,7 @@ class _KeyButton extends StatelessWidget {
                     fontWeight: _isArrow(keyDef)
                         ? FontWeight.w300
                         : FontWeight.w500,
-                    color: AppColors.textCode,
+                    color: c.textCode,
                   ),
                   textAlign: TextAlign.center,
                 ),
