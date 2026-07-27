@@ -95,3 +95,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Flutter gen-l10n generated files
+lib/generated/
