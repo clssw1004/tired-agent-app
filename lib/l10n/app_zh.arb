@@ -302,5 +302,19 @@
         "type": "int"
       }
     }
-  }
+  },
+
+  "settingsTerminal": "终端设置",
+  "settingsBufferSize": "缓冲区大小",
+  "settingsBufferSizeLines": "{size} 行",
+  "@settingsBufferSizeLines": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsBufferSizeCustom": "自定义…",
+  "settingsBufferSizeHint": "输入缓冲区行数（200-50000）",
+  "settingsBufferSizeInvalid": "请输入 200-50000 之间的整数"
 }

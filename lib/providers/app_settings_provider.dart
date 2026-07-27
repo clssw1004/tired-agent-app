@@ -1,21 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 应用设置 Provider — 管理主题模式 + 语言偏好
+/// 终端缓冲区大小预设选项（行数）
+const List<int> kTerminalBufferPresets = [
+  1000,
+  2000,
+  3000,
+  5000,
+  8000,
+  10000,
+];
+
+/// 应用设置 Provider — 管理主题模式 + 语言偏好 + 终端配置
 ///
 /// 提供运行时切换和持久化能力，切换后立即生效无需重启。
 class AppSettingsProvider extends ChangeNotifier {
-  AppSettingsProvider() : _themeMode = ThemeMode.dark, _locale = const Locale('zh');
+  AppSettingsProvider()
+      : _themeMode = ThemeMode.dark,
+        _locale = const Locale('zh'),
+        _terminalBufferSize = kDefaultBufferSize;
 
   // ── 持久化 Key ──────────────────────────────────────────────────
   static const _kThemeMode = 'app_theme_mode';
   static const _kLocale = 'app_locale';
+  static const _kTerminalBufferSize = 'terminal_buffer_size';
+
+  /// 默认终端缓冲区大小。
+  static const int kDefaultBufferSize = 5000;
 
   ThemeMode _themeMode;
   Locale _locale;
+  int _terminalBufferSize;
 
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
+  int get terminalBufferSize => _terminalBufferSize;
 
   // 是否为暗色（供 callers 便捷判断）
   bool get isDark => _themeMode == ThemeMode.dark;
@@ -41,6 +60,9 @@ class AppSettingsProvider extends ChangeNotifier {
     if (localeStr != null) {
       _locale = Locale(localeStr);
     }
+
+    // 终端缓冲区大小
+    _terminalBufferSize = prefs.getInt(_kTerminalBufferSize) ?? kDefaultBufferSize;
   }
 
   // ── 主题切换 ─────────────────────────────────────────────────────
@@ -66,5 +88,15 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kLocale, locale.languageCode);
+  }
+
+  // ── 终端缓冲区大小 ───────────────────────────────────────────────
+
+  Future<void> setTerminalBufferSize(int size) async {
+    if (_terminalBufferSize == size) return;
+    _terminalBufferSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kTerminalBufferSize, size);
   }
 }
