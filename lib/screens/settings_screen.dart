@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
@@ -58,6 +59,15 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.four),
 
+          // ── Terminal (navigates to dedicated page) ───────────────
+          SectionHeader(label: AppStrings.of.settingsTerminal),
+          const SizedBox(height: AppSpacing.two),
+          _NavigationTile(
+            label: AppStrings.of.settingsTerminal,
+            onTap: () => context.push('/settings/terminal'),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
           // ── About ────────────────────────────────────────────────
           SectionHeader(label: AppStrings.of.settingsAbout),
           const SizedBox(height: AppSpacing.two),
@@ -110,6 +120,49 @@ class _ThemeTile extends StatelessWidget {
             const Spacer(),
             if (selected)
               Icon(Icons.check, size: 18, color: c.primary),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Navigation tile (tap → push route)
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _NavigationTile extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _NavigationTile({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.three,
+          vertical: AppSpacing.two,
+        ),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(
+            color: c.border.withAlpha(40),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            ThemedText.body(label, color: c.text),
+            const Spacer(),
+            Icon(Icons.chevron_right, size: 18, color: c.textSecondary),
           ],
         ),
       ),

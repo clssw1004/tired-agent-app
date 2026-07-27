@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:xterm2/xterm.dart';
 
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
@@ -33,7 +35,8 @@ class PtySessionView extends StatefulWidget {
 }
 
 class PtySessionViewState extends State<PtySessionView> {
-  final Terminal _terminal = Terminal(maxLines: 10000);
+  /// Must be initialized after [initState] when we can access [AppSettingsProvider].
+  late final Terminal _terminal;
   final HttpSseTransport _transport = HttpSseTransport();
   final PtyModifierState _modifierState = PtyModifierState();
   Subscription? _subscription;
@@ -56,6 +59,8 @@ class PtySessionViewState extends State<PtySessionView> {
   @override
   void initState() {
     super.initState();
+    final bufferSize = context.read<AppSettingsProvider>().terminalBufferSize;
+    _terminal = Terminal(maxLines: bufferSize);
     _setupTerminal();
     _initialize();
     // Send initial resize after first frame so TerminalView has actual dimensions.
@@ -277,11 +282,14 @@ class PtySessionViewState extends State<PtySessionView> {
             // Status banner
             _statusBanner(),
             Expanded(
-              child: TerminalView(
-                _terminal,
-                autofocus: false,
-                backgroundOpacity: 1.0,
-                deleteDetection: true,
+              child: ScrollConfiguration(
+                behavior: const _PtyScrollBehavior(),
+                child: TerminalView(
+                  _terminal,
+                  autofocus: false,
+                  backgroundOpacity: 1.0,
+                  deleteDetection: true,
+                ),
               ),
             ),
             PtyKeyboardPanel(
@@ -301,6 +309,22 @@ class PtySessionViewState extends State<PtySessionView> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Custom scroll behavior for the PTY terminal view.
+///
+/// Uses [BouncingScrollPhysics] for a more responsive touch-scroll feel that
+/// "follows the finger", and [RangeMaintainingScrollPhysics] to prevent
+/// position snapping when new terminal output is appended.
+class _PtyScrollBehavior extends ScrollBehavior {
+  const _PtyScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(
+      parent: RangeMaintainingScrollPhysics(),
     );
   }
 }

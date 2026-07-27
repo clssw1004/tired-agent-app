@@ -13,6 +13,7 @@ import 'package:tired_agent_app/screens/server_list_screen.dart';
 import 'package:tired_agent_app/screens/server_sessions_screen.dart';
 import 'package:tired_agent_app/screens/session_detail_screen.dart';
 import 'package:tired_agent_app/screens/settings_screen.dart';
+import 'package:tired_agent_app/screens/terminal_settings_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -125,6 +126,13 @@ class _TiredAgentAppState extends State<TiredAgentApp> with WidgetsBindingObserv
             agentId: state.pathParameters['agentId'] ?? '',
             sessionId: state.pathParameters['sessionId'] ?? '',
           ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+
+        // ── Terminal settings (full-screen) ──────────────────────
+        GoRoute(
+          path: '/settings/terminal',
+          builder: (_, _) => const TerminalSettingsScreen(),
           parentNavigatorKey: _rootNavigatorKey,
         ),
       ],
