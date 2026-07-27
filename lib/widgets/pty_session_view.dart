@@ -39,9 +39,18 @@ class PtySessionViewState extends State<PtySessionView> {
   late final Terminal _terminal;
   final HttpSseTransport _transport = HttpSseTransport();
   final PtyModifierState _modifierState = PtyModifierState();
+  /// Toggle the system keyboard (IME) on/off.
+  late final FocusNode _terminalFocusNode;
   Subscription? _subscription;
   int _currentOffset = 0;
   bool _keyboardExpanded = false;
+
+  /// When true, the system soft keyboard (IME) won't pop up on tap.
+  /// Toggled by double-tap on the terminal area.
+  bool _hardwareKeyboardOnly = true;
+
+  /// Timestamp of the last pointer-down event, for double-tap detection.
+  DateTime? _lastTapDown;
 
   /// Current SSE connection status.
   PtyConnectionStatus _connectionStatus = PtyConnectionStatus.disconnected;
@@ -61,6 +70,7 @@ class PtySessionViewState extends State<PtySessionView> {
     super.initState();
     final bufferSize = context.read<AppSettingsProvider>().terminalBufferSize;
     _terminal = Terminal(maxLines: bufferSize);
+    _terminalFocusNode = FocusNode();
     _setupTerminal();
     _initialize();
     // Send initial resize after first frame so TerminalView has actual dimensions.
@@ -157,6 +167,22 @@ class PtySessionViewState extends State<PtySessionView> {
     if (mounted) setState(() {});
   }
 
+  /// Toggle the system keyboard (IME) on/off.
+  /// [extraState] is called inside the same [setState] for any additional changes.
+  void _toggleIme({VoidCallback? extraState}) {
+    setState(() {
+      _hardwareKeyboardOnly = !_hardwareKeyboardOnly;
+      extraState?.call();
+    });
+    if (_hardwareKeyboardOnly) {
+      _terminalFocusNode.unfocus();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _terminalFocusNode.requestFocus();
+      });
+    }
+  }
+
   /// Public — called from [SessionDetailScreen] via GlobalKey to force a
   /// full re-initialization (fetch output + subscribe).
   void reconnect() {
@@ -213,6 +239,7 @@ class PtySessionViewState extends State<PtySessionView> {
   @override
   void dispose() {
     _subscription?.close();
+    _terminalFocusNode.dispose();
     _modifierState.dispose();
     super.dispose();
   }
@@ -282,13 +309,29 @@ class PtySessionViewState extends State<PtySessionView> {
             // Status banner
             _statusBanner(),
             Expanded(
-              child: ScrollConfiguration(
-                behavior: const _PtyScrollBehavior(),
-                child: TerminalView(
-                  _terminal,
-                  autofocus: false,
-                  backgroundOpacity: 1.0,
-                  deleteDetection: true,
+              child: Listener(
+                onPointerDown: (_) {
+                  final now = DateTime.now();
+                  final gap = _lastTapDown != null
+                      ? now.difference(_lastTapDown!).inMilliseconds
+                      : null;
+                  _lastTapDown = now;
+
+                  // Double-tap within 400ms → toggle system keyboard.
+                  if (gap != null && gap < 400) {
+                    _toggleIme();
+                  }
+                },
+                child: ScrollConfiguration(
+                  behavior: const _PtyScrollBehavior(),
+                  child: TerminalView(
+                    _terminal,
+                    autofocus: false,
+                    hardwareKeyboardOnly: _hardwareKeyboardOnly,
+                    focusNode: _terminalFocusNode,
+                    backgroundOpacity: 1.0,
+                    deleteDetection: true,
+                  ),
                 ),
               ),
             ),
@@ -296,15 +339,18 @@ class PtySessionViewState extends State<PtySessionView> {
               config: _keyboardConfig,
               modifierState: _modifierState,
               expanded: _keyboardExpanded,
+              imeActive: !_hardwareKeyboardOnly,
               onToggle: () =>
                   setState(() => _keyboardExpanded = !_keyboardExpanded),
+              onToggleIme: () => _toggleIme(
+                extraState: () => _keyboardExpanded = false,
+              ),
               onSendBytes: (bytes) => _transport.sendInput(
                 widget.serverRef,
                 widget.session.id,
                 bytes,
                 agentId: widget.agentId,
               ),
-              onDismissKeyboard: () => FocusScope.of(context).unfocus(),
             ),
           ],
         ),

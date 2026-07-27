@@ -39,6 +39,12 @@ class PtyKeyboardConfig {
           TerminalKeyCode.tab,
         ], label: 'Mode'),
         TerminalKeys.commandShowIcon(
+          icon: Icons.play_arrow,
+          command: '/resume',
+          withEnter: true,
+          confirm: true,
+        ),
+        TerminalKeys.commandShowIcon(
           icon: Icons.cleaning_services,
           command: '/clear',
           withEnter: true,
@@ -47,12 +53,6 @@ class PtyKeyboardConfig {
         TerminalKeys.commandShowIcon(
           icon: Icons.compress,
           command: '/compact',
-          withEnter: true,
-          confirm: true,
-        ),
-        TerminalKeys.commandShowIcon(
-          icon: Icons.extension,
-          command: '/plugin',
           withEnter: true,
           confirm: true,
         ),
@@ -69,7 +69,7 @@ class PtyKeyboardConfig {
       // Row 3 — ctrl + alt + arrows
       [
         TerminalKeys.ctrl,
-        TerminalKeys.alt,
+        TerminalKeys.commandShowText(label: '!', command: '!'),
         TerminalKeys.left,
         TerminalKeys.down,
         TerminalKeys.right,

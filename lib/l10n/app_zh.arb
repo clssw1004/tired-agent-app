@@ -281,7 +281,7 @@
   "dirPickerSelect": "选择",
   "dirPickerLoading": "(加载中…)",
   "ptyKeyboardClose": "收起键盘",
-  "ptyKeyboardKeys": "按键",
+  "ptyKeyboardKeys": "扩展键",
   "ptyKeyboardConfirmSend": "确认发送此按键序列？",
   "ptyReconnecting": "重连中…",
   "ptySessionExited": "会话已退出",

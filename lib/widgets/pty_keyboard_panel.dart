@@ -107,8 +107,9 @@ class PtyKeyboardPanel extends StatelessWidget {
     required this.modifierState,
     required this.expanded,
     required this.onToggle,
+    required this.imeActive,
+    required this.onToggleIme,
     required this.onSendBytes,
-    this.onDismissKeyboard,
   });
 
   /// The layout configuration (which rows and keys to show).
@@ -117,11 +118,14 @@ class PtyKeyboardPanel extends StatelessWidget {
   final PtyModifierState modifierState;
   final bool expanded;
   final VoidCallback onToggle;
-  final ValueChanged<List<int>> onSendBytes;
 
-  /// Called when the user taps the "dismiss keyboard" button.
-  /// The parent should call [FocusScope.of(context).unfocus()] or similar.
-  final VoidCallback? onDismissKeyboard;
+  /// Whether the system keyboard (IME) is currently active.
+  final bool imeActive;
+
+  /// Toggle the system keyboard (IME) on/off.
+  final VoidCallback onToggleIme;
+
+  final ValueChanged<List<int>> onSendBytes;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +136,8 @@ class PtyKeyboardPanel extends StatelessWidget {
         _ExpandHandle(
           expanded: expanded,
           onToggle: onToggle,
-          onDismissKeyboard: onDismissKeyboard,
+          imeActive: imeActive,
+          onToggleIme: onToggleIme,
           colors: c,
           modifierState: modifierState,
         ),
@@ -173,122 +178,143 @@ class PtyKeyboardPanel extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Toggle handle — double-tap to expand, single tap to collapse
+// Toggle handle — two halves: 扩展键 toggle | IME toggle
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Handle bar that toggles the keyboard panel.
+/// Handle bar split into two tap zones:
 ///
-/// - **Collapsed**: double-tap to expand, single tap ignored
-/// - **Expanded**: single-tap to collapse, double-tap also works
-class _ExpandHandle extends StatefulWidget {
+/// - **Left half**: toggle the extended keyboard panel. Grayed when collapsed,
+///   lit up when expanded.
+/// - **Right half**: toggle the system keyboard (IME). Grayed when hidden,
+///   lit up when visible.
+class _ExpandHandle extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
-  final VoidCallback? onDismissKeyboard;
+  final bool imeActive;
+  final VoidCallback onToggleIme;
   final AppColors colors;
   final PtyModifierState modifierState;
 
   const _ExpandHandle({
     required this.expanded,
     required this.onToggle,
-    required this.onDismissKeyboard,
+    required this.imeActive,
+    required this.onToggleIme,
     required this.colors,
     required this.modifierState,
   });
 
   @override
-  State<_ExpandHandle> createState() => _ExpandHandleState();
-}
-
-class _ExpandHandleState extends State<_ExpandHandle> {
-  DateTime? _lastTap;
-
-  void _handleTap() {
-    final now = DateTime.now();
-    final gap = _lastTap != null ? now.difference(_lastTap!).inMilliseconds : null;
-    _lastTap = now;
-
-    // Double-tap within 400ms → toggle.
-    if (gap != null && gap < 400) {
-      _lastTap = null; // reset to avoid triple-tap triggering another toggle
-      widget.onToggle();
-    }
-    // Otherwise: single tap does nothing when collapsed,
-    // collapses when expanded.
-    else if (widget.expanded) {
-      widget.onToggle();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final colors = widget.colors;
-    final expanded = widget.expanded;
-    return GestureDetector(
-      onTap: _handleTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: 28,
-        color: colors.surfaceAlt,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          children: [
-            AnimatedRotation(
-              duration: _animDuration,
-              turns: expanded ? 0.5 : 0,
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 16,
-                color: colors.primary.withAlpha(160),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              expanded ? AppStrings.of.ptyKeyboardClose : AppStrings.of.ptyKeyboardKeys,
-              style: TextStyle(
-                fontSize: 11,
-                color: colors.primary.withAlpha(140),
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Active modifier indicator
-            ListenableBuilder(
-              listenable: widget.modifierState,
-              builder: (context, _) {
-                final active = <String>[];
-                if (widget.modifierState.ctrl) active.add('Ctrl');
-                if (widget.modifierState.alt) active.add('Alt');
-                if (widget.modifierState.shift) active.add('Shift');
-                if (active.isEmpty) return const SizedBox.shrink();
-                return Text(
-                  active.join('+'),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: colors.warning,
-                    fontWeight: FontWeight.bold,
-                  ),
-                );
-              },
-            ),
-            const Spacer(),
-            // Dismiss system keyboard button
-            GestureDetector(
-              onTap: () {
-                widget.onDismissKeyboard?.call();
-                widget.onToggle();
-              },
+    return Container(
+      height: 28,
+      color: colors.surfaceAlt,
+      child: Row(
+        children: [
+          // ── Left half: Extended keyboard toggle ──────────────────
+          Expanded(
+            flex: 1,
+            child: GestureDetector(
+              onTap: onToggle,
               behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Icon(
-                  Icons.keyboard_hide_outlined,
-                  size: 15,
-                  color: colors.textSecondary.withAlpha(160),
+              child: Container(
+                height: 28,
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.extension,
+                      size: 16,
+                      color: expanded
+                          ? colors.primary
+                          : colors.textSecondary.withAlpha(120),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      AppStrings.of.ptyKeyboardKeys,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: expanded
+                            ? colors.primary
+                            : colors.textSecondary.withAlpha(140),
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    // Modifier indicator badge
+                    ListenableBuilder(
+                      listenable: modifierState,
+                      builder: (context, _) {
+                        final active = <String>[];
+                        if (modifierState.ctrl) active.add('Ctrl');
+                        if (modifierState.alt) active.add('Alt');
+                        if (modifierState.shift) active.add('Shift');
+                        if (active.isEmpty) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Text(
+                            active.join('+'),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: colors.warning,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Separator line
+          Container(
+            width: 0.5,
+            height: 16,
+            color: colors.border.withAlpha(60),
+          ),
+
+          // ── Right half: IME toggle ──────────────────────────────
+          Expanded(
+            flex: 1,
+            child: GestureDetector(
+              onTap: onToggleIme,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 28,
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'IME',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: imeActive
+                            ? colors.primary
+                            : colors.textSecondary.withAlpha(140),
+                        fontWeight: imeActive ? FontWeight.w600 : FontWeight.w400,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_outlined,
+                      size: 16,
+                      color: imeActive
+                          ? colors.primary
+                          : colors.textSecondary.withAlpha(120),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
