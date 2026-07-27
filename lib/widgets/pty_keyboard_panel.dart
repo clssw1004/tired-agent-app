@@ -271,18 +271,20 @@ class _ExpandHandleState extends State<_ExpandHandle> {
               },
             ),
             const Spacer(),
-            // Dismiss system keyboard button
+            // Dismiss system keyboard button — large hit area for mobile.
             GestureDetector(
               onTap: () {
                 widget.onDismissKeyboard?.call();
                 widget.onToggle();
               },
               behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 28),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Icon(
                   Icons.keyboard_hide_outlined,
-                  size: 15,
+                  size: 20,
                   color: colors.textSecondary.withAlpha(160),
                 ),
               ),
