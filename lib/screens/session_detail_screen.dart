@@ -13,6 +13,7 @@ import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/neon_loading.dart';
 import 'package:tired_agent_app/widgets/pty_session_view.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 
 class SessionDetailScreen extends StatefulWidget {
   final String profileId;
@@ -67,7 +68,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
       final conn = auth.connectionFor(widget.profileId);
       if (conn == null || conn.profile.sessionToken == null) {
         setState(() {
-          _error = 'Manager not connected';
+          _error = AppStrings.of.sessionNotConnected;
           _loading = false;
         });
         return;
@@ -119,12 +120,12 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Future<void> _requestKill() async {
     final confirmed = await NeonDialog.showConfirm(
       context: context,
-      title: 'Kill this session?',
+      title: AppStrings.of.sessionKillTitle,
       showRobot: true,
       content: ThemedText.small(
-        'The running process will be terminated.',
+        AppStrings.of.sessionKillDesc,
       ),
-      confirmText: 'Kill',
+      confirmText: AppStrings.of.sessionKillBtn,
       confirmIsDanger: true,
     );
     if (confirmed != true || !mounted) return;
@@ -141,7 +142,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Kill failed: $e'),
+            content: Text(AppStrings.of.sessionKillFailed(e.toString())),
             backgroundColor: c.danger,
           ),
         );
@@ -152,13 +153,12 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Future<void> _requestDelete() async {
     final confirmed = await NeonDialog.showConfirm(
       context: context,
-      title: 'Delete session log?',
+      title: AppStrings.of.sessionDeleteTitle,
       showRobot: true,
       content: ThemedText.small(
-        'Removes the database row and the on-disk output log. '
-        'Cannot be undone.',
+        AppStrings.of.sessionDeleteDesc,
       ),
-      confirmText: 'Delete',
+      confirmText: AppStrings.of.sessionDeleteBtn,
       confirmIsDanger: true,
     );
     if (confirmed != true || !mounted) return;
@@ -175,7 +175,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
         final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Delete failed: $e'),
+            content: Text(AppStrings.of.sessionDeleteFailed(e.toString())),
             backgroundColor: c.danger,
           ),
         );
@@ -215,7 +215,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   Widget build(BuildContext context) {
     final isPersistent = _session?.mode == SessionMode.persistent;
     final sessionStatus = _session?.status;
-    final title = _session?.label ?? _session?.cmd ?? 'Session';
+    final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
 
     return Scaffold(
@@ -241,20 +241,20 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
           if (isPersistent && sessionStatus != SessionStatus.exited)
             IconButton(
               icon: Icon(Icons.stop_circle_outlined, color: c.danger),
-              tooltip: 'Kill session',
+              tooltip: AppStrings.of.sessionKillTooltip,
               onPressed: _requestKill,
             ),
           if (isPersistent && sessionStatus == SessionStatus.exited)
             IconButton(
               icon: Icon(Icons.delete_outline, color: c.textSecondary),
-              tooltip: 'Delete session',
+              tooltip: AppStrings.of.sessionDeleteTooltip,
               onPressed: _requestDelete,
             ),
           // PTY: reconnect
           if (!isPersistent && _ptyStatus != PtyConnectionStatus.connected)
             IconButton(
               icon: Icon(Icons.refresh, color: c.primary),
-              tooltip: 'Reconnect',
+              tooltip: AppStrings.of.sessionReconnectTooltip,
               onPressed: _reconnect,
             ),
         ],
@@ -282,7 +282,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
                           agentId: widget.agentId,
                           session: _session!,
                         )
-                  : Center(child: ThemedText.small('Session not found')),
+                  : Center(child: ThemedText.small(AppStrings.of.sessionNotFound)),
     );
   }
 }

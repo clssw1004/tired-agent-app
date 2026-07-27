@@ -33,6 +33,9 @@
   "statusConnecting": "连接中…",
   "statusError": "错误",
   "statusDisconnected": "未连接",
+  "statusRunning": "运行中",
+  "statusStarting": "启动中",
+  "statusExited": "已退出",
 
   "timeSecondsAgo": "秒前",
   "timeMinutesAgo": "分钟前",

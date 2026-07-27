@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/theme.dart';
 
 /// A single action button for [NeonDialog].
@@ -31,7 +32,7 @@ class NeonDialog {
     IconData? icon,
     String? emoji,
     bool showRobot = true,
-    String cancelText = 'Cancel',
+    String? cancelText,
     String? confirmText,
     bool confirmIsDanger = false,
     double? maxWidth,
@@ -46,11 +47,11 @@ class NeonDialog {
       maxWidth: maxWidth,
       actions: [
         NeonDialogAction<bool>(
-          label: cancelText,
+          label: cancelText ?? AppStrings.of.cancel,
           onPressed: (ctx) => Navigator.of(ctx).pop(false),
         ),
         NeonDialogAction<bool>(
-          label: confirmText ?? (confirmIsDanger ? 'Confirm' : 'Confirm'),
+          label: confirmText ?? AppStrings.of.confirm,
           isDanger: confirmIsDanger,
           isPrimary: !confirmIsDanger,
           onPressed: (ctx) => Navigator.of(ctx).pop(true),

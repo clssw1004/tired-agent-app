@@ -9,6 +9,7 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 
 class ServerListScreen extends StatelessWidget {
   const ServerListScreen({super.key});
@@ -20,7 +21,7 @@ class ServerListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title('Managers'),
+        title: ThemedText.title(AppStrings.of.managersTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: c.primary),
@@ -54,10 +55,10 @@ class ServerListScreen extends StatelessWidget {
               color: c.primary.withAlpha(180),
             ),
             const SizedBox(height: AppSpacing.four),
-            ThemedText.title('Welcome to tiredAgent'),
+            ThemedText.title(AppStrings.of.managersWelcome),
             const SizedBox(height: AppSpacing.two),
             ThemedText(
-              '添加一个 Manager 服务器来管理你的\n代理服务器和会话',
+              AppStrings.of.managersWelcomeDesc,
               color: c.textSecondary,
               fontSize: 12,
               textAlign: TextAlign.center,
@@ -66,7 +67,7 @@ class ServerListScreen extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () => _showAddManager(context, auth),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('Add Manager'),
+              label: Text(AppStrings.of.managersAdd),
             ),
           ],
         ),
@@ -106,7 +107,7 @@ class ServerListScreen extends StatelessWidget {
 
     final formData = await NeonDialog.show<AddManagerFormData?>(
       context: context,
-      title: 'Add Manager',
+      title: AppStrings.of.managersAdd,
       maxWidth: 480,
       content: AddManagerForm(
         key: formKey,
@@ -114,11 +115,11 @@ class ServerListScreen extends StatelessWidget {
       ),
       actions: [
         NeonDialogAction(
-          label: 'Cancel',
+          label: AppStrings.of.cancel,
           onPressed: (ctx) => Navigator.of(ctx).pop(null),
         ),
         NeonDialogAction(
-          label: 'Connect',
+          label: AppStrings.of.managersConnect,
           isPrimary: true,
           onPressed: (ctx) {
             final data = formKey.currentState?.data;
@@ -140,7 +141,7 @@ class ServerListScreen extends StatelessWidget {
           final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: ThemedText.small('Manager added'),
+              content: ThemedText.small(AppStrings.of.managersAdded),
               backgroundColor: c.backgroundElement,
             ),
           );
@@ -168,17 +169,17 @@ class ServerListScreen extends StatelessWidget {
 
     final result = await NeonDialog.show<String?>(
       context: context,
-      title: 'Reconnect ${conn.profile.name}',
+      title: '${AppStrings.of.reconnectLabel} ${conn.profile.name}',
       maxWidth: 380,
       showRobot: true,
       content: _ReconnectForm(key: formKey),
       actions: [
         NeonDialogAction(
-          label: 'Cancel',
+          label: AppStrings.of.cancel,
           onPressed: (ctx) => Navigator.of(ctx).pop(null),
         ),
         NeonDialogAction(
-          label: 'Reconnect',
+          label: AppStrings.of.reconnectLabel,
           isPrimary: true,
           onPressed: (ctx) {
             final token = formKey.currentState?.token;
@@ -199,14 +200,14 @@ class ServerListScreen extends StatelessWidget {
         if (ok) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: ThemedText.small('${conn.profile.name} reconnected'),
+              content: ThemedText.small('${conn.profile.name} ${AppStrings.of.managersReconnected}'),
               backgroundColor: c.backgroundElement,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(conn.error ?? 'Reconnect failed'),
+              content: Text(conn.error ?? AppStrings.of.managersReconnectFailed),
               backgroundColor: c.danger,
             ),
           );
@@ -249,13 +250,10 @@ class ServerListScreen extends StatelessWidget {
   ) async {
     final confirmed = await NeonDialog.showConfirm(
       context: context,
-      title: 'Remove "${conn.profile.name}"?',
+      title: AppStrings.of.managersRemoveTitle(conn.profile.name),
       showRobot: true,
-      content: ThemedText.small(
-        'This will delete the manager profile and its saved token. '
-        'You can re-add it later.',
-      ),
-      confirmText: 'Remove',
+      content: ThemedText.small(AppStrings.of.managersRemoveDesc),
+      confirmText: AppStrings.of.managersRemove,
       confirmIsDanger: true,
     );
     if (confirmed == true && context.mounted) {
@@ -295,16 +293,16 @@ class _ManagerCard extends StatelessWidget {
     switch (connStatus) {
       case ConnectionStatus.connected:
         statusColor = c.success;
-        statusLabel = 'Connected';
+        statusLabel = AppStrings.of.statusConnected;
       case ConnectionStatus.connecting:
         statusColor = c.warning;
-        statusLabel = 'Connecting…';
+        statusLabel = AppStrings.of.statusConnecting;
       case ConnectionStatus.error:
         statusColor = c.danger;
-        statusLabel = 'Error';
+        statusLabel = AppStrings.of.statusError;
       case ConnectionStatus.idle:
         statusColor = c.textSecondary;
-        statusLabel = 'Disconnected';
+        statusLabel = AppStrings.of.statusDisconnected;
     }
 
     // Agent summary (only meaningful when connected)
@@ -414,7 +412,7 @@ class _ManagerCard extends StatelessWidget {
                           color: c.textSecondary,
                         ),
                         onPressed: () => onDelete?.call(),
-                        tooltip: 'Remove manager',
+                        tooltip: AppStrings.of.agentRemoveTooltip,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
                           minWidth: 28,
@@ -513,13 +511,13 @@ class _ReconnectFormState extends State<_ReconnectForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ThemedText.small(
-          'Session expired. Enter the API token to reconnect.',
+          AppStrings.of.managersSessionExpired,
           color: c.textSecondary,
         ),
         const SizedBox(height: AppSpacing.three),
         TextField(
           controller: _tokenController,
-          decoration: const InputDecoration(labelText: 'Access Token'),
+          decoration: InputDecoration(labelText: AppStrings.of.managersAccessToken),
           obscureText: true,
           autocorrect: false,
         ),

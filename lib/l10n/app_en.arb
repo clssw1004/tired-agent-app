@@ -222,5 +222,8 @@
   "labelToken": "Token",
   "labelAgentName": "Agent Name",
   "labelAgentUrl": "Agent URL",
-  "labelAgentToken": "Agent Token"
+  "labelAgentToken": "Agent Token",
+  "statusRunning": "Running",
+  "statusStarting": "Starting",
+  "statusExited": "Exited"
 }

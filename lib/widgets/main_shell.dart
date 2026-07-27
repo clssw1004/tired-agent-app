@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/theme.dart';
 
 class MainShell extends StatelessWidget {
@@ -31,21 +32,21 @@ class MainShell extends StatelessWidget {
               initialLocation: index == navigationShell.currentIndex,
             );
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.dns_outlined),
               activeIcon: Icon(Icons.dns),
-              label: 'Managers',
+              label: AppStrings.of.navManagers,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.push_pin_outlined),
               activeIcon: Icon(Icons.push_pin),
-              label: 'Sessions',
+              label: AppStrings.of.navSessions,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
               activeIcon: Icon(Icons.settings),
-              label: 'Settings',
+              label: AppStrings.of.navSettings,
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/neon_divider.dart';
@@ -160,9 +161,9 @@ class _MessageBubble extends StatelessWidget {
     StatusKind.thinking => 'Thinking…',
     StatusKind.working => 'Working…',
     StatusKind.done => 'Done',
-    StatusKind.error => 'Error',
+    StatusKind.error => AppStrings.of.statusError,
     StatusKind.idle => 'Idle',
-    StatusKind.starting => 'Starting',
+    StatusKind.starting => AppStrings.of.statusStarting,
   };
 
   Widget _statusIcon(StatusKind kind, AppColors colors) => switch (kind) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
@@ -17,12 +18,12 @@ class GlowBadge extends StatelessWidget {
   });
 
   String get _defaultLabel => switch (status) {
-    BadgeStatus.running => 'Running',
-    BadgeStatus.connected => 'Connected',
-    BadgeStatus.starting => 'Starting',
-    BadgeStatus.error => 'Error',
-    BadgeStatus.exited => 'Exited',
-    BadgeStatus.disconnected => 'Disconnected',
+    BadgeStatus.running => AppStrings.of.statusRunning,
+    BadgeStatus.connected => AppStrings.of.statusConnected,
+    BadgeStatus.starting => AppStrings.of.statusStarting,
+    BadgeStatus.error => AppStrings.of.statusError,
+    BadgeStatus.exited => AppStrings.of.statusExited,
+    BadgeStatus.disconnected => AppStrings.of.statusDisconnected,
   };
 
   Color _color(BuildContext context) {

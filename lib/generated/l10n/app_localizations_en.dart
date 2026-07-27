@@ -430,4 +430,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelAgentToken => 'Agent Token';
+
+  @override
+  String get statusRunning => 'Running';
+
+  @override
+  String get statusStarting => 'Starting';
+
+  @override
+  String get statusExited => 'Exited';
 }

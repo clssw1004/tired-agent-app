@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/theme.dart';
 
 /// Form data returned by [AddManagerForm].
@@ -56,9 +57,9 @@ class AddManagerFormState extends State<AddManagerForm> {
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Label',
-              contentPadding: EdgeInsets.symmetric(
+            decoration: InputDecoration(
+              labelText: AppStrings.of.labelName,
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.three,
                 vertical: AppSpacing.three,
               ),

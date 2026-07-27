@@ -16,6 +16,7 @@ import 'package:tired_agent_app/screens/settings_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/main_shell.dart';
 import 'generated/l10n/app_localizations.dart';
 
@@ -154,6 +155,11 @@ class _TiredAgentAppState extends State<TiredAgentApp> {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             routerConfig: _router,
             debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              // 初始化全局 i18n 工具（context 在 Localizations widget 之下）
+              AppStrings.init(AppLocalizations.of(context)!);
+              return child!;
+            },
           );
         },
       ),

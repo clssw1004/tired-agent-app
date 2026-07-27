@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -350,7 +351,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                   const Spacer(),
                   TextButton(
                     onPressed: widget.onClose,
-                    child: ThemedText.body('Cancel'),
+                    child: ThemedText.body(AppStrings.of.cancel),
                   ),
                   const SizedBox(width: AppSpacing.two),
                   ElevatedButton(
@@ -455,8 +456,8 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   String _relativeTime(int epochMs) {
     final delta = DateTime.now().millisecondsSinceEpoch - epochMs;
     if (delta < 60000) return 'just now';
-    if (delta < 3600000) return '${delta ~/ 60000}m ago';
-    if (delta < 86400000) return '${delta ~/ 3600000}h ago';
-    return '${delta ~/ 86400000}d ago';
+    if (delta < 3600000) return '${delta ~/ 60000}${AppStrings.of.timeMinutesAgo}';
+    if (delta < 86400000) return '${delta ~/ 3600000}${AppStrings.of.timeHoursAgo}';
+    return '${delta ~/ 86400000}${AppStrings.of.timeDaysAgo}';
   }
 }

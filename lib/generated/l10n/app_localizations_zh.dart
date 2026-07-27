@@ -419,4 +419,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelAgentToken => 'Agent 令牌';
+
+  @override
+  String get statusRunning => '运行中';
+
+  @override
+  String get statusStarting => '启动中';
+
+  @override
+  String get statusExited => '已退出';
 }

@@ -9,6 +9,7 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_agent_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
 
 /// Displays all agents for a given manager, with an option to add new ones.
 class ManagerDetailScreen extends StatefulWidget {
@@ -74,16 +75,16 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
 
     final formData = await NeonDialog.show<AddAgentFormData?>(
       context: context,
-      title: 'Add Agent',
+      title: AppStrings.of.agentAddTitle,
       maxWidth: 480,
       content: AddAgentForm(key: formKey),
       actions: [
         NeonDialogAction(
-          label: 'Cancel',
+          label: AppStrings.of.cancel,
           onPressed: (ctx) => Navigator.of(ctx).pop(null),
         ),
         NeonDialogAction(
-          label: 'Register',
+          label: AppStrings.of.agentRegister,
           isPrimary: true,
           onPressed: (ctx) {
             final data = formKey.currentState?.data;
@@ -111,7 +112,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: ThemedText.small('Agent ${formData.name} added'),
+              content: ThemedText.small(AppStrings.of.agentAdded(formData.name)),
               backgroundColor: c.backgroundElement,
             ),
           );
@@ -121,7 +122,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to add agent: $e'),
+              content: Text(AppStrings.of.agentAddFailed(e.toString())),
               backgroundColor: c.danger,
             ),
           );
@@ -133,13 +134,10 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
   Future<void> _deleteAgent(AgentInfo agent) async {
     final confirmed = await NeonDialog.showConfirm(
       context: context,
-      title: 'Remove agent "${agent.name}"?',
+      title: AppStrings.of.agentRemoveTitle(agent.name),
       showRobot: true,
-      content: ThemedText.small(
-        'Unregisters the agent and removes its sessions. '
-        'You can re-add it later.',
-      ),
-      confirmText: 'Remove',
+      content: ThemedText.small(AppStrings.of.agentRemoveDesc),
+      confirmText: AppStrings.of.removeLabel,
       confirmIsDanger: true,
     );
     if (confirmed != true || !mounted) return;
@@ -155,7 +153,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: ThemedText.small('Agent ${agent.name} removed'),
+            content: ThemedText.small(AppStrings.of.agentRemoved(agent.name)),
             backgroundColor: c.backgroundElement,
           ),
         );
@@ -165,7 +163,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to remove agent: $e'),
+            content: Text(AppStrings.of.agentRemoveFailed(e.toString())),
             backgroundColor: c.danger,
           ),
         );
@@ -187,7 +185,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           if (conn?.status == ConnectionStatus.connected)
             IconButton(
               icon: Icon(Icons.add, color: c.primary),
-              tooltip: 'Add Agent',
+              tooltip: AppStrings.of.agentAddTooltip,
               onPressed: _showAddAgent,
             ),
         ],
@@ -198,7 +196,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
 
   Widget _buildBody(ManagerConnection? conn) {
     if (conn == null) {
-      return Center(child: ThemedText.small('Manager not found'));
+      return Center(child: ThemedText.small(AppStrings.of.agentManagerNotFound));
     }
 
     if (_loading) {
@@ -219,7 +217,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
               const SizedBox(height: AppSpacing.three),
               ElevatedButton(
                 onPressed: _loadAgents,
-                child: const Text('Retry'),
+                child: Text(AppStrings.of.agentRetry),
               ),
             ],
           ),
@@ -237,17 +235,17 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
             children: [
               Icon(Icons.dns_outlined, size: 64, color: c.textSecondary),
               const SizedBox(height: AppSpacing.three),
-              ThemedText.title('No Agents', color: c.textSecondary),
+              ThemedText.title(AppStrings.of.agentNoAgents, color: c.textSecondary),
               const SizedBox(height: AppSpacing.one),
               ThemedText.small(
-                'Register an agent to start creating sessions',
+                AppStrings.of.agentNoAgentsDesc,
                 color: c.textSecondary,
               ),
               const SizedBox(height: AppSpacing.four),
               ElevatedButton.icon(
                 onPressed: _showAddAgent,
                 icon: const Icon(Icons.add, size: 20),
-                label: const Text('Add Agent'),
+                label: Text(AppStrings.of.agentAddTooltip),
               ),
             ],
           ),
@@ -365,7 +363,7 @@ class _ManagerAgentCard extends StatelessWidget {
                       color: c.textSecondary,
                     ),
                     onPressed: () => onDelete?.call(),
-                    tooltip: 'Remove agent',
+                    tooltip: AppStrings.of.agentRemoveTooltip,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
                       minWidth: 28,

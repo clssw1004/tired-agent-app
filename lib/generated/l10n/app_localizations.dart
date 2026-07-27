@@ -877,6 +877,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Agent Token'**
   String get labelAgentToken;
+
+  /// No description provided for @statusRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get statusRunning;
+
+  /// No description provided for @statusStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting'**
+  String get statusStarting;
+
+  /// No description provided for @statusExited.
+  ///
+  /// In en, this message translates to:
+  /// **'Exited'**
+  String get statusExited;
 }
 
 class _AppLocalizationsDelegate
