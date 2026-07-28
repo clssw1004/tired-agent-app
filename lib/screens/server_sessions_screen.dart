@@ -105,6 +105,51 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     }
   }
 
+  // ── Resume ───────────────────────────────────────────────────────────
+
+  Future<void> _requestResume(Session session) async {
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null || conn.profile.sessionToken == null) return;
+
+    final newLabel = session.label != null
+        ? '${session.label}-r'
+        : 'resume-${session.id.substring(0, 8)}';
+
+    final spec = SessionSpec(
+      cmd: 'claude',
+      args: ['--name', newLabel, '--resume', session.claudeSessionId!],
+      cwd: session.cwd,
+      cols: session.cols,
+      rows: session.rows,
+      label: newLabel,
+      mode: SessionMode.persistent,
+    );
+
+    try {
+      await conn.ensureFreshSession();
+      final mgrRef = ServerRef(
+        id: '__manager__',
+        name: conn.profile.name,
+        baseUrl: conn.profile.baseUrl,
+        token: conn.profile.sessionToken!,
+      );
+      final newSession = await conn.transport.createSession(
+        mgrRef, spec, agentId: widget.agentId,
+      );
+      if (mounted) {
+        context.push('/session/${widget.profileId}/${widget.agentId}/${newSession.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        final c = context.appColors;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
+        );
+      }
+    }
+  }
+
   // ── Actions ────────────────────────────────────────────────────────
 
   void _requestKill(String sessionId) {
@@ -487,6 +532,11 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                           : null,
                       onDelete: session.status == SessionStatus.exited
                           ? () => _requestDelete(session.id)
+                          : null,
+                      onResume: (session.mode == SessionMode.persistent &&
+                              session.status == SessionStatus.exited &&
+                              session.claudeSessionId != null)
+                          ? () => _requestResume(session)
                           : null,
                       onTap: () => context.push(
                         '/session/${widget.profileId}/${widget.agentId}/${session.id}',
