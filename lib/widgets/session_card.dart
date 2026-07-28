@@ -28,6 +28,7 @@ class SessionCard extends StatelessWidget {
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;
+    if (s <= 0) return '0${AppStrings.of.timeSecondsAgo}';
     if (s < 60000) return '${s ~/ 1000}${AppStrings.of.timeSecondsAgo}';
     if (s < 3600000) return '${s ~/ 60000}${AppStrings.of.timeMinutesAgo}';
     if (s < 86400000) return '${s ~/ 3600000}${AppStrings.of.timeHoursAgo}';
@@ -37,6 +38,11 @@ class SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
+    final canResume = session.claudeSessionId != null &&
+        session.status == SessionStatus.exited &&
+        onResume != null &&
+        (session.mode == SessionMode.persistent ||
+         (session.mode == null && session.cmd == 'claude'));
     return NeonCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.four,
@@ -131,10 +137,7 @@ class SessionCard extends StatelessWidget {
                     color: c.textSecondary,
                     onTap: onDelete!,
                   ),
-                if (session.mode == SessionMode.persistent &&
-                    session.status == SessionStatus.exited &&
-                    session.claudeSessionId != null &&
-                    onResume != null)
+                if (canResume)
                   Tooltip(
                     message: AppStrings.of.sessionResumeTooltip,
                     child: _ActionButton(
@@ -168,10 +171,7 @@ class SessionCard extends StatelessWidget {
                       color: c.textSecondary,
                       onTap: onDelete!,
                     ),
-                  if (session.mode == SessionMode.persistent &&
-                      session.status == SessionStatus.exited &&
-                      session.claudeSessionId != null &&
-                      onResume != null)
+                  if (canResume)
                     Tooltip(
                       message: AppStrings.of.sessionResumeTooltip,
                       child: _ActionButton(

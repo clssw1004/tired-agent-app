@@ -7,8 +7,10 @@ import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/terminal_themes.dart';
 import 'package:tired_agent_app/widgets/claude_chat_view.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/neon_loading.dart';
@@ -294,8 +296,17 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch terminal theme preset so the screen rebuilds when the user changes
+    // theme in settings and navigates back.
+    context.select<AppSettingsProvider, TerminalThemePreset>(
+      (p) => p.terminalThemePreset,
+    );
     final isPersistent = _session?.mode == SessionMode.persistent;
+    final isClaude = _session?.cmd == 'claude';
     final sessionStatus = _session?.status;
+    final canResume = sessionStatus == SessionStatus.exited &&
+        _session!.claudeSessionId != null &&
+        (isPersistent || (isClaude && _session!.mode == null));
     final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
 
@@ -325,8 +336,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
               tooltip: AppStrings.of.sessionKillTooltip,
               onPressed: _requestKill,
             ),
-          if (isPersistent && sessionStatus == SessionStatus.exited &&
-              _session!.claudeSessionId != null)
+          if (canResume)
             IconButton(
               icon: Icon(Icons.replay, color: c.success),
               tooltip: AppStrings.of.sessionResumeTooltip,

@@ -41,6 +41,15 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
     _load();
   }
 
+  @override
+  void didUpdateWidget(ClaudeProjectsPicker old) {
+    super.didUpdateWidget(old);
+    if (old.cwd != widget.cwd) {
+      _selectedSessionId = null;
+      _load();
+    }
+  }
+
   Future<void> _load() async {
     try {
       final auth = context.read<AuthProvider>();
@@ -111,7 +120,21 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
     }
 
     final sessions = _info?.sessions ?? [];
-    if (sessions.isEmpty) return const SizedBox.shrink();
+    if (sessions.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: c.border.withAlpha(40)),
+        ),
+        child: ThemedText.small(
+          AppStrings.of.claudeProjectsNoSessions,
+          color: c.textSecondary,
+        ),
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -122,6 +145,7 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.all(8),
@@ -130,60 +154,70 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
               color: c.primary,
             ),
           ),
-          ...sessions.map((s) {
-            final selected = s.sessionId == _selectedSessionId;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedSessionId =
-                      selected ? null : s.sessionId;
-                });
-                if (!selected) widget.onSelected(s.sessionId);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8, vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? c.primary.withAlpha(12)
-                      : Colors.transparent,
-                  border: Border(
-                    top: BorderSide(color: c.border.withAlpha(30)),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      selected
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      size: 16,
-                      color: selected
-                          ? c.primary
-                          : c.textSecondary,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 240),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: sessions.length,
+              itemBuilder: (context, idx) {
+                final s = sessions[idx];
+                final selected = s.sessionId == _selectedSessionId;
+                final displayName = s.displayName ?? s.sessionId.substring(0, 8);
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedSessionId = selected ? null : s.sessionId;
+                    });
+                    if (!selected) widget.onSelected(s.sessionId);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 8,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ThemedText.code(
-                        s.sessionId.substring(0, 8),
-                        color: c.textCode,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? c.primary.withAlpha(10)
+                          : Colors.transparent,
+                      border: Border(
+                        top: BorderSide(color: c.border.withAlpha(25)),
                       ),
                     ),
-                    ThemedText.small(
-                      _timeSince(s.lastModified),
-                      color: c.textSecondary,
+                    child: Row(
+                      children: [
+                        Icon(
+                          selected
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_off,
+                          size: 16,
+                          color: selected ? c.primary : c.textSecondary,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ThemedText.mono(
+                                displayName,
+                                color: c.text,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              ThemedText.small(
+                                '${s.sessionId.substring(0, 8)} · ${_timeSince(s.lastModified)} · ${_formatSize(s.size)}',
+                                color: c.textSecondary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    ThemedText.small(
-                      _formatSize(s.size),
-                      color: c.textSecondary.withAlpha(150),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

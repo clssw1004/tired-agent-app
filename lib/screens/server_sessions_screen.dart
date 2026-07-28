@@ -533,9 +533,10 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                       onDelete: session.status == SessionStatus.exited
                           ? () => _requestDelete(session.id)
                           : null,
-                      onResume: (session.mode == SessionMode.persistent &&
+                      onResume: (session.claudeSessionId != null &&
                               session.status == SessionStatus.exited &&
-                              session.claudeSessionId != null)
+                              (session.mode == SessionMode.persistent ||
+                               (session.mode == null && session.cmd == 'claude')))
                           ? () => _requestResume(session)
                           : null,
                       onTap: () => context.push(
