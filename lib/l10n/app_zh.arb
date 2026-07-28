@@ -156,6 +156,7 @@
   },
   "sessionKillTooltip": "终止会话",
   "sessionDeleteTooltip": "删除会话",
+  "sessionResumeTooltip": "恢复会话",
   "sessionReconnectTooltip": "重连",
   "sessionNotConnected": "Manager 未连接",
   "sessionNotFound": "未找到会话",

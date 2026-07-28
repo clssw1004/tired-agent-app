@@ -156,6 +156,7 @@
   },
   "sessionKillTooltip": "Kill session",
   "sessionDeleteTooltip": "Delete session",
+  "sessionResumeTooltip": "Resume session",
   "sessionReconnectTooltip": "Reconnect",
   "sessionNotConnected": "Manager not connected",
   "sessionNotFound": "Session not found",
