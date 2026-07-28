@@ -616,6 +616,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _cwdController.text = path;
       _enhancementCtx.cwd = path;
       _updateEnhancements();
+      setState(() {});
     }
   }
 
