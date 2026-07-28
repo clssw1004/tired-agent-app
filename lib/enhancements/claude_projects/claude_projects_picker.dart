@@ -34,6 +34,7 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
   bool _loading = true;
   String? _error;
   String? _selectedSessionId;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -46,8 +47,15 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
     super.didUpdateWidget(old);
     if (old.cwd != widget.cwd) {
       _selectedSessionId = null;
+      _scrollController.jumpTo(0);
       _load();
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -73,12 +81,14 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
     }
   }
 
-  String _timeSince(int ts) {
-    final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s < 60000) return AppStrings.of.timeJustNow;
-    if (s < 3600000) return '${s ~/ 60000}${AppStrings.of.timeMinutesAgo}';
-    if (s < 86400000) return '${s ~/ 3600000}${AppStrings.of.timeHoursAgo}';
-    return '${s ~/ 86400000}${AppStrings.of.timeDaysAgo}';
+  String _formatTime(int ts) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(ts);
+    final now = DateTime.now();
+    final sameDay = dt.year == now.year && dt.month == now.month && dt.day == now.day;
+    String pad(int n) => n.toString().padLeft(2, '0');
+    final time = '${pad(dt.hour)}:${pad(dt.minute)}:${pad(dt.second)}';
+    if (sameDay) return time;
+    return '${pad(dt.month)}/${pad(dt.day)} $time';
   }
 
   String _formatSize(int bytes) {
@@ -155,8 +165,9 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
             ),
           ),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 240),
+            constraints: const BoxConstraints(maxHeight: 280),
             child: ListView.builder(
+              controller: _scrollController,
               shrinkWrap: true,
               itemCount: sessions.length,
               itemBuilder: (context, idx) {
@@ -170,28 +181,39 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
                     });
                     if (!selected) widget.onSelected(s.sessionId);
                   },
-                  child: Container(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 8,
+                      horizontal: 12, vertical: 10,
                     ),
                     decoration: BoxDecoration(
                       color: selected
-                          ? c.primary.withAlpha(10)
+                          ? c.primary.withAlpha(12)
                           : Colors.transparent,
                       border: Border(
-                        top: BorderSide(color: c.border.withAlpha(25)),
+                        bottom: BorderSide(
+                          color: c.border.withAlpha(selected ? 50 : 20),
+                          width: selected ? 1 : 0.5,
+                        ),
                       ),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          selected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_off,
-                          size: 16,
-                          color: selected ? c.primary : c.textSecondary,
+                        Container(
+                          width: 20, height: 20,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: selected ? c.primary : c.textSecondary.withAlpha(80),
+                              width: selected ? 2 : 1.5,
+                            ),
+                            color: selected ? c.primary.withAlpha(20) : Colors.transparent,
+                          ),
+                          child: selected
+                              ? Icon(Icons.check, size: 12, color: c.primary)
+                              : null,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,14 +221,23 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
                             children: [
                               ThemedText.mono(
                                 displayName,
-                                color: c.text,
+                                color: selected ? c.primary : c.text,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 2),
-                              ThemedText.small(
-                                '${s.sessionId.substring(0, 8)} · ${_timeSince(s.lastModified)} · ${_formatSize(s.size)}',
-                                color: c.textSecondary,
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  ThemedText.small(
+                                    _formatTime(s.lastModified),
+                                    color: c.textSecondary.withAlpha(180),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ThemedText.small(
+                                    _formatSize(s.size),
+                                    color: c.textSecondary.withAlpha(120),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
