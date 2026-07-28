@@ -42,10 +42,10 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
     // Use historical session's display name as label if available.
     final label = ctx.selectedSessionDisplayName ?? spec.label;
 
-    // Build extra metadata.
+    // Build extra metadata — always store the effective label.
     final extra = <String, dynamic>{};
-    if (ctx.selectedSessionDisplayName != null) {
-      extra['claudeName'] = ctx.selectedSessionDisplayName;
+    if (label != null && label.isNotEmpty) {
+      extra['claudeName'] = label;
     }
 
     // Always inject --name <label> for claude sessions.

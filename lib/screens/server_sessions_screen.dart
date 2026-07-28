@@ -116,11 +116,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ? '${session.label}-r'
         : 'resume-${session.id.substring(0, 8)}';
 
-    final resumeId = session.claudeSessionId ?? session.id;
-
     final spec = SessionSpec(
       cmd: 'claude',
-      args: ['--name', newLabel, '--resume', resumeId],
+      args: ['--name', newLabel, '--resume', session.claudeSessionId!],
       cwd: session.cwd,
       cols: session.cols,
       rows: session.rows,

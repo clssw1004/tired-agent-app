@@ -239,11 +239,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         ? '${_session!.label}-r'
         : _generateLabel();
 
-    final resumeId = _session!.claudeSessionId ?? _session!.id;
-
     final spec = SessionSpec(
       cmd: 'claude',
-      args: ['--name', newLabel, '--resume', resumeId],
+      args: ['--name', newLabel, '--resume', _session!.claudeSessionId!],
       cwd: _session!.cwd,
       cols: _session!.cols,
       rows: _session!.rows,
