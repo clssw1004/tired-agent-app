@@ -114,13 +114,13 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
     final newLabel = session.label != null
         ? '${session.label}-r'
-        : session.claudeSessionId != null
-            ? '${session.claudeSessionId!.substring(0, 8)}-r'
-            : 'resume-${session.id.substring(0, 8)}';
+        : 'resume-${session.id.substring(0, 8)}';
+
+    final resumeId = session.claudeSessionId ?? session.id;
 
     final spec = SessionSpec(
       cmd: 'claude',
-      args: ['--name', newLabel, '--resume', session.claudeSessionId!],
+      args: ['--name', newLabel, '--resume', resumeId],
       cwd: session.cwd,
       cols: session.cols,
       rows: session.rows,
