@@ -127,6 +127,14 @@ class AuthProvider extends ChangeNotifier {
     for (final conn in _authService.connections) {
       try {
         await conn.ensureFreshSession();
+        // 持久化轮转后的新 refreshToken，防止切后台/崩溃后重新启动时 token 丢失。
+        if (conn.status == ConnectionStatus.connected &&
+            conn.profile.refreshToken != null) {
+          await _authService.storage.saveManagerRefreshToken(
+            conn.profile.id,
+            conn.profile.refreshToken!,
+          );
+        }
       } catch (e) {
         // 静默失败。下次实际请求触发 connect() 时再处理。
         debugPrint('[AuthProvider] refreshAllSessions — ${conn.profile.name}: $e');

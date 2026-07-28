@@ -15,22 +15,24 @@ class ClaudeChatView extends StatefulWidget {
   final ServerRef serverRef;
   final String agentId;
   final Session session;
+  final Future<String?> Function()? tokenProvider;
 
   const ClaudeChatView({
     super.key,
     required this.serverRef,
     required this.agentId,
     required this.session,
+    this.tokenProvider,
   });
 
   @override
-  State<ClaudeChatView> createState() => _ClaudeChatViewState();
+  State<ClaudeChatView> createState() => ClaudeChatViewState();
 }
 
-class _ClaudeChatViewState extends State<ClaudeChatView> {
+class ClaudeChatViewState extends State<ClaudeChatView> {
   final ClaudeRenderer _renderer = ClaudeRenderer();
   final TextEditingController _inputController = TextEditingController();
-  final HttpSseTransport _transport = HttpSseTransport();
+  late final HttpSseTransport _transport;
 
   List<StructuredContent> _contents = [];
   bool _sending = false;
@@ -40,6 +42,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
   @override
   void initState() {
     super.initState();
+    _transport = HttpSseTransport(tokenProvider: widget.tokenProvider);
     _initialize();
   }
 
@@ -87,6 +90,7 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
       SubscribeHandlers(
         onChunk: (chunk) {
           final text = utf8.decode(chunk.data, allowMalformed: true);
+          _currentOffset = chunk.offset + chunk.data.length;
           pending += text;
           final result = _renderer.processChunk(
             pending,
@@ -151,6 +155,13 @@ class _ClaudeChatViewState extends State<ClaudeChatView> {
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  /// 关闭旧 SSE 连接并重新订阅（用于切前台重建流）。
+  void reconnect() {
+    _subscription?.close();
+    _subscription = null;
+    _subscribe();
   }
 
   @override
