@@ -459,10 +459,12 @@ class ClaudeProjectSession {
   final String sessionId;
   final int lastModified;
   final int size;
+  final String? displayName;
   const ClaudeProjectSession({
     required this.sessionId,
     required this.lastModified,
     required this.size,
+    this.displayName,
   });
 
   factory ClaudeProjectSession.fromJson(Map<String, dynamic> json) =>
@@ -470,6 +472,7 @@ class ClaudeProjectSession {
         sessionId: json['sessionId'] as String,
         lastModified: (json['lastModified'] as num).toInt(),
         size: (json['size'] as num).toInt(),
+        displayName: json['displayName'] as String?,
       );
 }
 

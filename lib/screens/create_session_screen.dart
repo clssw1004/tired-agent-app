@@ -148,6 +148,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         .split(RegExp(r'\s+'))
         .where((s) => s.isNotEmpty);
     parts.addAll(manualArgs);
+    if (_enhancementCtx.selectedSessionId != null) {
+      parts.addAll(['--resume', _enhancementCtx.selectedSessionId!]);
+    }
     return parts.join(' ');
   }
 
