@@ -295,7 +295,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   @override
   Widget build(BuildContext context) {
     final isPersistent = _session?.mode == SessionMode.persistent;
+    final isClaude = _session?.cmd == 'claude';
     final sessionStatus = _session?.status;
+    final canResume = sessionStatus == SessionStatus.exited &&
+        _session!.claudeSessionId != null &&
+        (isPersistent || (isClaude && _session!.mode == null));
     final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
 
@@ -325,8 +329,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
               tooltip: AppStrings.of.sessionKillTooltip,
               onPressed: _requestKill,
             ),
-          if (isPersistent && sessionStatus == SessionStatus.exited &&
-              _session!.claudeSessionId != null)
+          if (canResume)
             IconButton(
               icon: Icon(Icons.replay, color: c.success),
               tooltip: AppStrings.of.sessionResumeTooltip,
