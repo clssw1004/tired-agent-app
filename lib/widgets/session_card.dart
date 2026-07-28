@@ -41,8 +41,7 @@ class SessionCard extends StatelessWidget {
     final canResume = session.claudeSessionId != null &&
         session.status == SessionStatus.exited &&
         onResume != null &&
-        (session.mode == SessionMode.persistent ||
-         (session.mode == null && session.cmd == 'claude'));
+        session.cmd == 'claude';
     return NeonCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.four,

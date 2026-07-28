@@ -308,8 +308,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     final isClaude = _session?.cmd == 'claude';
     final sessionStatus = _session?.status;
     final canResume = sessionStatus == SessionStatus.exited &&
-        _session!.claudeSessionId != null &&
-        (isPersistent || (isClaude && _session!.mode == null));
+        _session!.claudeSessionId != null && isClaude;
     final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
 
