@@ -271,6 +271,8 @@
   "statusExited": "Exited",
   "send": "Send",
   "timeJustNow": "just now",
+  "claudeProjectsLoading": "(loading Claude projects…)",
+  "claudeProjectsTitle": "Projects",
   "dirPickerTitle": "Select working directory",
   "dirPickerUpLevel": "Up one level",
   "dirPickerFavorites": "Favorites",

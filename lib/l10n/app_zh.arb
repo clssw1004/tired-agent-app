@@ -268,6 +268,8 @@
   "agentUrlHint": "http://192.168.1.10:3100",
   "send": "发送",
   "timeJustNow": "刚刚",
+  "claudeProjectsLoading": "（正在加载 Claude 项目…）",
+  "claudeProjectsTitle": "Claude 项目",
   "dirPickerTitle": "选择工作目录",
   "dirPickerUpLevel": "上一级",
   "dirPickerFavorites": "收藏夹",
