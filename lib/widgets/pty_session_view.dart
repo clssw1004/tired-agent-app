@@ -190,14 +190,22 @@ class PtySessionViewState extends State<PtySessionView> {
     }
   }
 
-  /// Public — called from [SessionDetailScreen] via GlobalKey to force a
-  /// full re-initialization (fetch output + subscribe).
+  /// Public — called from [SessionDetailScreen] via GlobalKey to
+  /// resubscribe the SSE stream without re-fetching history.
   void reconnect() {
     if (_sessionExited) return;
     _subscription?.close();
     _subscription = null;
     setState(() => _connectionStatus = PtyConnectionStatus.reconnecting);
-    _initialize();
+    _resubscribe();
+  }
+
+  /// Resubscribe the SSE stream from the current offset.
+  /// Unlike [_initialize], this does NOT re-fetch output history.
+  void _resubscribe() {
+    _subscribe();
+    _connectionStatus = PtyConnectionStatus.connected;
+    if (mounted) setState(() {});
   }
 
   void _subscribe() {
@@ -213,6 +221,7 @@ class PtySessionViewState extends State<PtySessionView> {
         },
         onChunk: (OutputChunk chunk) {
           final text = utf8.decode(chunk.data, allowMalformed: true);
+          _currentOffset = chunk.offset + chunk.data.length;
           _terminal.write(text);
         },
         onState: (Session session) {
