@@ -22,12 +22,14 @@ class PtySessionView extends StatefulWidget {
   final ServerRef serverRef;
   final String agentId;
   final Session session;
+  final Future<String?> Function()? tokenProvider;
 
   const PtySessionView({
     super.key,
     required this.serverRef,
     required this.agentId,
     required this.session,
+    this.tokenProvider,
   });
 
   @override
@@ -37,7 +39,7 @@ class PtySessionView extends StatefulWidget {
 class PtySessionViewState extends State<PtySessionView> {
   /// Must be initialized after [initState] when we can access [AppSettingsProvider].
   late final Terminal _terminal;
-  final HttpSseTransport _transport = HttpSseTransport();
+  late final HttpSseTransport _transport;
   final PtyModifierState _modifierState = PtyModifierState();
   /// Toggle the system keyboard (IME) on/off.
   late final FocusNode _terminalFocusNode;
@@ -68,6 +70,7 @@ class PtySessionViewState extends State<PtySessionView> {
   @override
   void initState() {
     super.initState();
+    _transport = HttpSseTransport(tokenProvider: widget.tokenProvider);
     final bufferSize = context.read<AppSettingsProvider>().terminalBufferSize;
     _terminal = Terminal(maxLines: bufferSize);
     _terminalFocusNode = FocusNode();

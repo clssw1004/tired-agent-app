@@ -31,13 +31,15 @@ class SessionDetailScreen extends StatefulWidget {
   State<SessionDetailScreen> createState() => _SessionDetailScreenState();
 }
 
-class _SessionDetailScreenState extends State<SessionDetailScreen> {
+class _SessionDetailScreenState extends State<SessionDetailScreen>
+    with WidgetsBindingObserver {
   Session? _session;
   ManagerConnection? _conn;
   String? _error;
   bool _loading = true;
 
   final GlobalKey<PtySessionViewState> _ptyKey = GlobalKey();
+  final GlobalKey<ClaudeChatViewState> _chatKey = GlobalKey();
   Timer? _statusPoller;
 
   /// Cached from PtySessionView for AppBar display.
@@ -46,6 +48,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
     // Poll PTY status for AppBar indicator (every second).
     _statusPoller = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -58,6 +61,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _statusPoller?.cancel();
     super.dispose();
   }
@@ -110,9 +114,28 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
     token: _conn!.profile.sessionToken!,
   );
 
-  /// Manually trigger PTY reconnection.
+  // ── Lifecycle / Reconnect ──────────────────────────────────────────
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _conn != null) {
+      // 切前台时刷新 session token，再重建 SSE 连接。
+      _conn!.ensureFreshSession().then((_) {
+        _reconnect();
+      }).catchError((_) {
+        // 刷新失败也不阻止重连——transport 的 tokenProvider 会取当前 token。
+        _reconnect();
+      });
+    }
+  }
+
+  /// 重新建立 SSE 连接（PTY 或 Chat）。
   void _reconnect() {
-    _ptyKey.currentState?.reconnect();
+    if (_session?.mode == SessionMode.persistent) {
+      _chatKey.currentState?.reconnect();
+    } else {
+      _ptyKey.currentState?.reconnect();
+    }
   }
 
   // ── Kill / Delete (persistent sessions) ──────────────────────────
@@ -272,15 +295,18 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
               : _session != null && _conn != null
                   ? isPersistent
                       ? ClaudeChatView(
+                          key: _chatKey,
                           serverRef: _conn!.managerRef,
                           agentId: widget.agentId,
                           session: _session!,
+                          tokenProvider: () async => _conn!.profile.sessionToken,
                         )
                       : PtySessionView(
                           key: _ptyKey,
                           serverRef: _conn!.managerRef,
                           agentId: widget.agentId,
                           session: _session!,
+                          tokenProvider: () async => _conn!.profile.sessionToken,
                         )
                   : Center(child: ThemedText.small(AppStrings.of.sessionNotFound)),
     );
