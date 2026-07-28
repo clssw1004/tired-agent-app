@@ -19,10 +19,13 @@ import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/main_shell.dart';
+import 'package:tired_agent_app/enhancements/enhancement.dart';
+import 'package:tired_agent_app/enhancements/claude_projects/claude_projects_enhancement.dart';
 import 'generated/l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  EnhancementRegistry.register(ClaudeProjectsEnhancement());
   runApp(const TiredAgentApp());
 }
 

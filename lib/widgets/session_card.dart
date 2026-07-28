@@ -11,6 +11,7 @@ class SessionCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onKill;
   final VoidCallback? onDelete;
+  final VoidCallback? onResume;
   final bool isPinned;
   final VoidCallback? onPin;
 
@@ -20,6 +21,7 @@ class SessionCard extends StatelessWidget {
     required this.onTap,
     this.onKill,
     this.onDelete,
+    this.onResume,
     this.isPinned = false,
     this.onPin,
   });
@@ -129,6 +131,19 @@ class SessionCard extends StatelessWidget {
                     color: c.textSecondary,
                     onTap: onDelete!,
                   ),
+                if (session.mode == SessionMode.persistent &&
+                    session.status == SessionStatus.exited &&
+                    session.claudeSessionId != null &&
+                    onResume != null)
+                  Tooltip(
+                    message: AppStrings.of.sessionResumeTooltip,
+                    child: _ActionButton(
+                      icon: '▶',
+                      label: AppStrings.of.sessionResumeBtn,
+                      color: c.success,
+                      onTap: onResume!,
+                    ),
+                  ),
               ],
             ),
           ],
@@ -152,6 +167,19 @@ class SessionCard extends StatelessWidget {
                       label: AppStrings.of.sessionsDeleteBtn,
                       color: c.textSecondary,
                       onTap: onDelete!,
+                    ),
+                  if (session.mode == SessionMode.persistent &&
+                      session.status == SessionStatus.exited &&
+                      session.claudeSessionId != null &&
+                      onResume != null)
+                    Tooltip(
+                      message: AppStrings.of.sessionResumeTooltip,
+                      child: _ActionButton(
+                        icon: '▶',
+                        label: AppStrings.of.sessionResumeBtn,
+                        color: c.success,
+                        onTap: onResume!,
+                      ),
                     ),
                 ],
               ),

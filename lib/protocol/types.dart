@@ -69,6 +69,7 @@ class Session {
   final int rows;
   final String? label;
   final SessionMode? mode;
+  final String? claudeSessionId;
 
   const Session({
     required this.id,
@@ -86,6 +87,7 @@ class Session {
     required this.rows,
     this.label,
     this.mode,
+    this.claudeSessionId,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
@@ -107,6 +109,7 @@ class Session {
       mode: json['mode'] != null
           ? SessionMode.values.byName(json['mode'] as String)
           : null,
+      claudeSessionId: json['claudeSessionId'] as String?,
     );
   }
 
@@ -135,6 +138,7 @@ class Session {
     'rows': rows,
     if (label != null) 'label': label,
     if (mode != null) 'mode': mode!.name,
+    if (claudeSessionId != null) 'claudeSessionId': claudeSessionId,
   };
 }
 
@@ -447,6 +451,44 @@ class AgentInfo {
           : null,
     );
   }
+}
+
+// ─── Claude project types ─────────────────────────────────────────
+
+class ClaudeProjectSession {
+  final String sessionId;
+  final int lastModified;
+  final int size;
+  const ClaudeProjectSession({
+    required this.sessionId,
+    required this.lastModified,
+    required this.size,
+  });
+
+  factory ClaudeProjectSession.fromJson(Map<String, dynamic> json) =>
+      ClaudeProjectSession(
+        sessionId: json['sessionId'] as String,
+        lastModified: (json['lastModified'] as num).toInt(),
+        size: (json['size'] as num).toInt(),
+      );
+}
+
+class ClaudeProjectInfo {
+  final String displayPath;
+  final List<ClaudeProjectSession> sessions;
+  const ClaudeProjectInfo({
+    required this.displayPath,
+    required this.sessions,
+  });
+
+  factory ClaudeProjectInfo.fromJson(Map<String, dynamic> json) =>
+      ClaudeProjectInfo(
+        displayPath: json['displayPath'] as String,
+        sessions: (json['sessions'] as List<dynamic>)
+            .map((e) =>
+                ClaudeProjectSession.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
 }
 
 // ─── Structured content types (renderer output) ───────────────────────

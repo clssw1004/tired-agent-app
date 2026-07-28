@@ -61,6 +61,13 @@ abstract class Transport {
     String? agentId,
   });
 
+  /// Get Claude project info for a given path.
+  Future<ClaudeProjectInfo> getClaudeProjects(
+    ServerRef ref, {
+    required String path,
+    String? agentId,
+  });
+
   /// Get directory shortcuts (favorites + recent).
   Future<DirectoryShortcuts> getDirectoryShortcuts(
     ServerRef ref, {

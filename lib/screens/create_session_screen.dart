@@ -17,6 +17,10 @@ import 'package:tired_agent_app/widgets/themed_text.dart';
 
 import 'package:tired_agent_app/utils/app_strings.dart';
 
+import 'package:tired_agent_app/enhancements/enhancement.dart';
+import 'package:tired_agent_app/enhancements/enhancement_context.dart';
+import 'package:tired_agent_app/enhancements/types.dart';
+
 const _labelChars = 'abcdefghijkmnpqrstuvwxyz23456789';
 
 String _generateDefaultLabel() {
@@ -88,6 +92,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   /// optionId → selected value label. A missing key or null = unselected.
   final Map<String, String?> _optionSelections = {};
   bool _busy = false;
+
+  final EnhancementContext _enhancementCtx = EnhancementContext();
+  List<SessionEnhancement> _activeEnhancements = [];
 
   /// Agent OS platform — used to filter builtin presets.
   /// `null` = platform unknown (show all presets).
@@ -173,6 +180,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _argsController.clear();
       _labelController.clear();
     });
+    _updateEnhancements();
   }
 
   void _applyUserPreset(_UserPreset p) {
@@ -183,6 +191,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _argsController.text = p.args.join(' ');
       _labelController.clear();
     });
+    _updateEnhancements();
   }
 
   void _toggleOption(PresetOption opt) {
@@ -404,6 +413,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _platform = agent?.platform?.os;
     }
     _loadPresets();
+    _enhancementCtx
+      ..profileId = widget.profileId
+      ..agentId = widget.agentId
+      ..onStateChanged = () => setState(() {});
   }
 
   Future<void> _loadPresets() async {
@@ -423,6 +436,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           .toList();
     }
     if (mounted) setState(() {});
+  }
+
+  void _updateEnhancements() {
+    _activeEnhancements = EnhancementRegistry.forPoint(
+      EnhancementPoint.directorySelected,
+      _cmd,
+      _selectedBuiltinId,
+    );
   }
 
   Future<void> _saveCustomPresets() async {
@@ -480,7 +501,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         mode: SessionMode.process,
       );
 
-      final session = await conn.transport.createSession(mgrRef, spec, agentId: widget.agentId);
+      // Apply before-submit enhancements
+      final beforeSubmitEnhancements = EnhancementRegistry.forPoint(
+        EnhancementPoint.beforeSubmit, _cmd, _selectedBuiltinId,
+      );
+      var finalSpec = spec;
+      for (final e in beforeSubmitEnhancements) {
+        finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
+      }
+
+      final session = await conn.transport.createSession(mgrRef, finalSpec, agentId: widget.agentId);
 
       if (mounted) {
         _trackRecent(_cmd.trim(), manualArgs);
@@ -584,6 +614,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
     if (path != null && mounted) {
       _cwdController.text = path;
+      _enhancementCtx.cwd = path;
+      _updateEnhancements();
     }
   }
 
@@ -693,7 +725,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               controller: TextEditingController.fromValue(
                 TextEditingValue(text: _cmd),
               ),
-              onChanged: (v) => setState(() => _cmd = v),
+              onChanged: (v) {
+                setState(() => _cmd = v);
+                _updateEnhancements();
+              },
               style: TextStyle(
                 fontFamily: 'monospace',
                 color: c.textCode,
@@ -746,6 +781,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               color: c.textSecondary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.six),
+
+            // ── ENHANCEMENTS ──────────────────────────────────────
+            if (_activeEnhancements.isNotEmpty) ...[
+              for (final e in _activeEnhancements) e.buildWidget(context, _enhancementCtx),
+              const SizedBox(height: AppSpacing.four),
+            ],
 
             // ── SUBMIT ─────────────────────────────────────────
             Row(

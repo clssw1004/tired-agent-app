@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -206,6 +207,49 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     }
   }
 
+  String _generateLabel() {
+    final chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+    final rnd = List.generate(8, (_) => chars[Random().nextInt(chars.length)]).join();
+    final now = DateTime.now();
+    String pad(int n) => n.toString().padLeft(2, '0');
+    final stamp = '${now.year}${pad(now.month)}${pad(now.day)}T${pad(now.hour)}${pad(now.minute)}${pad(now.second)}';
+    return '${rnd}_$stamp';
+  }
+
+  Future<void> _requestResume() async {
+    if (_session == null || _conn == null) return;
+
+    final newLabel = _session!.label != null
+        ? '${_session!.label}-r'
+        : _generateLabel();
+
+    final spec = SessionSpec(
+      cmd: 'claude',
+      args: ['--name', newLabel, '--resume', _session!.claudeSessionId!],
+      cwd: _session!.cwd,
+      cols: _session!.cols,
+      rows: _session!.rows,
+      label: newLabel,
+      mode: SessionMode.persistent,
+    );
+
+    try {
+      final newSession = await _conn!.transport.createSession(
+        _mgrRef(), spec, agentId: widget.agentId,
+      );
+      if (mounted) {
+        context.replace('/session/${widget.profileId}/${widget.agentId}/${newSession.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        final c = context.appColors;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
+        );
+      }
+    }
+  }
+
   // ── AppBar helpers ───────────────────────────────────────────────
 
   Widget _appBarStatusDot() {
@@ -266,6 +310,13 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
               icon: Icon(Icons.stop_circle_outlined, color: c.danger),
               tooltip: AppStrings.of.sessionKillTooltip,
               onPressed: _requestKill,
+            ),
+          if (isPersistent && sessionStatus == SessionStatus.exited &&
+              _session!.claudeSessionId != null)
+            IconButton(
+              icon: Icon(Icons.replay, color: c.success),
+              tooltip: AppStrings.of.sessionResumeTooltip,
+              onPressed: _requestResume,
             ),
           if (isPersistent && sessionStatus == SessionStatus.exited)
             IconButton(
