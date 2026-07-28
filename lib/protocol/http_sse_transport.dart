@@ -85,6 +85,14 @@ class HttpSseTransport implements Transport {
     return '$base/api/v1/directories';
   }
 
+  String _claudeProjectsUrl(String baseUrl, {String? agentId}) {
+    final base = _ensureBaseUrl(baseUrl);
+    if (agentId != null && agentId.isNotEmpty) {
+      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/directories/claude-projects';
+    }
+    return '$base/api/v1/directories/claude-projects';
+  }
+
   String _agentsUrl(String baseUrl) =>
       '${_ensureBaseUrl(baseUrl)}/api/v1/manager/agents';
 
@@ -584,6 +592,21 @@ class HttpSseTransport implements Transport {
       token: ref.token,
       agentId: agentId,
     );
+  }
+
+  @override
+  Future<ClaudeProjectInfo> getClaudeProjects(
+    ServerRef ref, {
+    required String path,
+    String? agentId,
+  }) async {
+    final data = await _request(
+      'GET',
+      '${_claudeProjectsUrl(ref.baseUrl, agentId: agentId)}?path=${Uri.encodeComponent(path)}',
+      token: ref.token,
+      agentId: agentId,
+    );
+    return ClaudeProjectInfo.fromJson(data as Map<String, dynamic>);
   }
 
   // ─── Agent endpoints ──────────────────────────────────────────────────
