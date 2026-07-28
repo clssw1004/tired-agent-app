@@ -504,12 +504,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         mode: SessionMode.process,
       );
 
-      // Apply before-submit enhancements
-      final beforeSubmitEnhancements = EnhancementRegistry.forPoint(
-        EnhancementPoint.beforeSubmit, _cmd, _selectedBuiltinId,
-      );
+      // Apply all active enhancements (including directory-selected ones
+      // like ClaudeProjectsEnhancement that inject --name/--resume).
       var finalSpec = spec;
-      for (final e in beforeSubmitEnhancements) {
+      for (final e in _activeEnhancements) {
+        finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
+      }
+      // Also run beforeSubmit-only enhancements.
+      for (final e in EnhancementRegistry.forPoint(
+        EnhancementPoint.beforeSubmit, _cmd, _selectedBuiltinId,
+      )) {
         finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
       }
 
