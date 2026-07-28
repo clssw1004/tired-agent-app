@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 class EnhancementContext {
   String? cwd;
   String? selectedSessionId;
+  String? selectedSessionDisplayName;
   String? profileId;
   String? agentId;
   VoidCallback? onStateChanged;

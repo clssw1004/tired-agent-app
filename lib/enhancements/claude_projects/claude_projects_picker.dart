@@ -9,13 +9,18 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
+/// Callback when a session is selected in the picker.
+/// [sessionId] — the UUID of the selected session.
+/// [displayName] — optional human-readable name from the jsonl tail.
+typedef SessionSelectedCallback = void Function(String sessionId, String? displayName);
+
 /// Embedded widget shown after directory selection for claude sessions.
 /// Scans ~/.claude/projects/ via backend and displays session list.
 class ClaudeProjectsPicker extends StatefulWidget {
   final String cwd;
   final String profileId;
   final String agentId;
-  final ValueChanged<String> onSelected;
+  final SessionSelectedCallback onSelected;
 
   const ClaudeProjectsPicker({
     super.key,
@@ -179,7 +184,7 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
                     setState(() {
                       _selectedSessionId = selected ? null : s.sessionId;
                     });
-                    if (!selected) widget.onSelected(s.sessionId);
+                    if (!selected) widget.onSelected(s.sessionId, s.displayName);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),

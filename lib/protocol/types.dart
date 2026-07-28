@@ -26,6 +26,7 @@ class SessionSpec {
   final String? label;
   final SessionMode? mode;
   final ExecutionMode? executionMode;
+  final Map<String, dynamic>? extra;
 
   const SessionSpec({
     required this.cmd,
@@ -37,6 +38,7 @@ class SessionSpec {
     this.label,
     this.mode,
     this.executionMode,
+    this.extra,
   });
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +51,7 @@ class SessionSpec {
     if (label != null) 'label': label,
     if (mode != null) 'mode': mode!.name,
     if (executionMode != null) 'executionMode': executionMode!.name,
+    if (extra != null && extra!.isNotEmpty) 'extra': extra,
   };
 }
 
@@ -70,6 +73,7 @@ class Session {
   final String? label;
   final SessionMode? mode;
   final String? claudeSessionId;
+  final Map<String, dynamic>? extra;
 
   const Session({
     required this.id,
@@ -88,6 +92,7 @@ class Session {
     this.label,
     this.mode,
     this.claudeSessionId,
+    this.extra,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
@@ -110,6 +115,7 @@ class Session {
           ? SessionMode.values.byName(json['mode'] as String)
           : null,
       claudeSessionId: json['claudeSessionId'] as String?,
+      extra: json['extra'] as Map<String, dynamic>?,
     );
   }
 
@@ -139,6 +145,7 @@ class Session {
     if (label != null) 'label': label,
     if (mode != null) 'mode': mode!.name,
     if (claudeSessionId != null) 'claudeSessionId': claudeSessionId,
+    if (extra != null && extra!.isNotEmpty) 'extra': extra,
   };
 }
 

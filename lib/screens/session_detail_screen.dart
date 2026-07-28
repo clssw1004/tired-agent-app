@@ -237,7 +237,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
 
     final newLabel = _session!.label != null
         ? '${_session!.label}-r'
-        : _generateLabel();
+        : _session!.claudeSessionId != null
+            ? '${_session!.claudeSessionId!.substring(0, 8)}-r'
+            : _generateLabel();
 
     final spec = SessionSpec(
       cmd: 'claude',
@@ -247,6 +249,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       rows: _session!.rows,
       label: newLabel,
       mode: SessionMode.persistent,
+      extra: {'claudeName': newLabel},
     );
 
     try {
