@@ -120,22 +120,36 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _conn != null) {
-      // 切前台时刷新 session token，再重建 SSE 连接。
-      _conn!.ensureFreshSession().then((_) {
-        _reconnect();
-      }).catchError((_) {
-        // 刷新失败也不阻止重连——transport 的 tokenProvider 会取当前 token。
-        _reconnect();
-      });
+      // 切前台时直接重建 SSE 连接。token 由 main.dart 的 refreshAllSessions
+      // 全局刷新，SSE 的 tokenProvider 按需获取最新 token，无需在此 ensureFreshSession。
+      _reconnect();
     }
   }
 
-  /// 重新建立 SSE 连接（PTY 或 Chat）。
+  /// 重新建立 SSE 连接（PTY 或 Chat），完成后刷新 session 元信息。
   void _reconnect() {
     if (_session?.mode == SessionMode.persistent) {
       _chatKey.currentState?.reconnect();
     } else {
       _ptyKey.currentState?.reconnect();
+    }
+    _refreshSession();
+  }
+
+  /// 从服务端重新拉取 session 元信息（状态、label 等），更新 UI。
+  Future<void> _refreshSession() async {
+    if (!mounted || _conn == null) return;
+    try {
+      final session = await _conn!.transport.getSession(
+        _mgrRef(),
+        widget.sessionId,
+        agentId: widget.agentId,
+      );
+      if (mounted) {
+        setState(() => _session = session);
+      }
+    } catch (_) {
+      // 静默失败——SSE 流数据不受影响。
     }
   }
 
