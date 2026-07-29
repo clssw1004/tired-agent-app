@@ -214,8 +214,8 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         ? _session!.label!
         : _generateLabel();
 
-    // Resume value priority: claudeSessionId > extra.claudeName > label
-    final resumeValue = _session!.claudeSessionId ??
+    // Resume value priority: extra.claudeSessionId > extra.claudeName > label
+    final resumeValue = (_session!.extra?['claudeSessionId'] as String?) ??
         (_session!.extra?['claudeName'] as String?) ??
         _session!.label;
 
@@ -284,7 +284,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     final isClaude = _session?.cmd == 'claude';
     final sessionStatus = _session?.status;
     final canResume = sessionStatus == SessionStatus.exited && isClaude &&
-        (_session!.claudeSessionId != null ||
+        (_session!.extra?['claudeSessionId'] != null ||
          _session!.extra?['claudeName'] != null ||
          _session!.label != null);
     final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;

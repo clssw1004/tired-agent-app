@@ -113,8 +113,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ? session.label!
         : 'resume-${session.id.substring(0, 8)}';
 
-    // Resume value priority: claudeSessionId > extra.claudeName > label
-    final resumeValue = session.claudeSessionId ??
+    // Resume value priority: extra.claudeSessionId > extra.claudeName > label
+    final resumeValue = (session.extra?['claudeSessionId'] as String?) ??
         (session.extra?['claudeName'] as String?) ??
         session.label;
 
@@ -494,7 +494,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                           : null,
                       onResume: (session.status == SessionStatus.exited &&
                               session.cmd == 'claude' &&
-                              (session.claudeSessionId != null ||
+                              (session.extra?['claudeSessionId'] != null ||
                                session.extra?['claudeName'] != null ||
                                session.label != null))
                           ? () => _requestResume(session)
