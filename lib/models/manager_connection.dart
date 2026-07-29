@@ -65,6 +65,17 @@ class ManagerConnection extends ChangeNotifier {
     return _transport!;
   }
 
+  /// Session token that auto-refreshes if close to expiry.
+  ///
+  /// Returns the current [sessionToken] immediately if still fresh, or
+  /// performs a silent refresh via the stored [refreshToken] first.
+  Future<String?> get freshToken async {
+    if (!isSessionFresh && profile.refreshToken != null) {
+      await ensureFreshSession();
+    }
+    return profile.sessionToken;
+  }
+
   /// Build a [ServerRef] for the manager-level proxy API.
   ServerRef get managerRef {
     return ServerRef(
