@@ -239,9 +239,14 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         ? '${_session!.label}-r'
         : _generateLabel();
 
+    // Resume value priority: claudeSessionId > extra.claudeName > label
+    final resumeValue = _session!.claudeSessionId ??
+        (_session!.extra?['claudeName'] as String?) ??
+        _session!.label;
+
     final spec = SessionSpec(
       cmd: 'claude',
-      args: ['--name', newLabel, '--resume', _session!.claudeSessionId!],
+      args: ['--name', newLabel, '--resume', resumeValue ?? _session!.id],
       cwd: _session!.cwd,
       cols: _session!.cols,
       rows: _session!.rows,
@@ -305,8 +310,10 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     final isPersistent = _session?.mode == SessionMode.persistent;
     final isClaude = _session?.cmd == 'claude';
     final sessionStatus = _session?.status;
-    final canResume = sessionStatus == SessionStatus.exited &&
-        _session!.claudeSessionId != null && isClaude;
+    final canResume = sessionStatus == SessionStatus.exited && isClaude &&
+        (_session!.claudeSessionId != null ||
+         _session!.extra?['claudeName'] != null ||
+         _session!.label != null);
     final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
 

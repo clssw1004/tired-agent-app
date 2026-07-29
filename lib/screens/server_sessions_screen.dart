@@ -116,9 +116,14 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ? '${session.label}-r'
         : 'resume-${session.id.substring(0, 8)}';
 
+    // Resume value priority: claudeSessionId > extra.claudeName > label
+    final resumeValue = session.claudeSessionId ??
+        (session.extra?['claudeName'] as String?) ??
+        session.label;
+
     final spec = SessionSpec(
       cmd: 'claude',
-      args: ['--name', newLabel, '--resume', session.claudeSessionId!],
+      args: ['--name', newLabel, '--resume', resumeValue ?? session.id],
       cwd: session.cwd,
       cols: session.cols,
       rows: session.rows,
@@ -534,9 +539,11 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                       onDelete: session.status == SessionStatus.exited
                           ? () => _requestDelete(session.id)
                           : null,
-                      onResume: (session.claudeSessionId != null &&
-                              session.status == SessionStatus.exited &&
-                              session.cmd == 'claude')
+                      onResume: (session.status == SessionStatus.exited &&
+                              session.cmd == 'claude' &&
+                              (session.claudeSessionId != null ||
+                               session.extra?['claudeName'] != null ||
+                               session.label != null))
                           ? () => _requestResume(session)
                           : null,
                       onTap: () => context.push(
