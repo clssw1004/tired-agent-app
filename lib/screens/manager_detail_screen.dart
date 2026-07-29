@@ -295,6 +295,7 @@ class _ManagerAgentCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
       child: GestureDetector(
         onTap: () => context.push('/profile/$profileId/agent/${agent.id}'),
+        onLongPress: onDelete,
         child: Container(
           decoration: BoxDecoration(
             color: c.surface,
@@ -354,22 +355,6 @@ class _ManagerAgentCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Delete button
-                if (onDelete != null)
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: c.textSecondary,
-                    ),
-                    onPressed: () => onDelete?.call(),
-                    tooltip: AppStrings.of.agentRemoveTooltip,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                    ),
-                  ),
                 // Chevron
                 Icon(
                   Icons.chevron_right,

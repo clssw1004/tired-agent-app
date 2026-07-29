@@ -9,6 +9,7 @@ class NeonCard extends StatelessWidget {
   final Color? borderColor;
   final bool glow;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final double borderRadius;
@@ -19,6 +20,7 @@ class NeonCard extends StatelessWidget {
     this.borderColor,
     this.glow = false,
     this.onTap,
+    this.onLongPress,
     this.padding,
     this.margin,
     this.borderRadius = AppSpacing.two,
@@ -35,6 +37,7 @@ class NeonCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         child: InkWell(
           onTap: onTap,
+          onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(borderRadius),
           child: Container(
             padding: padding ?? const EdgeInsets.all(AppSpacing.three),

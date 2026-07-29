@@ -173,14 +173,48 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   }
 
   void _requestPrune() {
+    final resumableIds = <String>{};
+    final pruneTargets = <String>[];
+    for (final s in _sessions) {
+      if (s.status != SessionStatus.exited) continue;
+      if (s.cmd == 'claude' &&
+          (s.extra?['claudeSessionId'] != null ||
+           s.extra?['claudeName'] != null ||
+           s.label != null)) {
+        resumableIds.add(s.id);
+      } else {
+        pruneTargets.add(s.id);
+      }
+    }
+
+    if (pruneTargets.isEmpty) {
+      final c = context.appColors;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: ThemedText.small(AppStrings.of.sessionsNoneToPrune),
+          backgroundColor: c.backgroundElement,
+        ),
+      );
+      return;
+    }
+
+    final resumableCount = resumableIds.length;
     _showConfirm(
       title: AppStrings.of.sessionsPruneTitle,
-      desc: AppStrings.of.sessionsPruneDesc,
+      desc: resumableCount > 0
+          ? '${AppStrings.of.sessionsPruneDesc}（${AppStrings.of.sessionsPruneSkipped(resumableCount)}）'
+          : AppStrings.of.sessionsPruneDesc,
       onConfirm: () async {
         final api = _api;
         if (api == null) return;
-        final result = await api.pruneSessions();
-        setState(() => _pruneInfo = result['removed'] as int?);
+        int removed = 0;
+        for (final sid in pruneTargets) {
+          try {
+            await api.deleteSession(sid);
+            removed++;
+          } catch (_) {}
+        }
+        setState(() => _pruneInfo = removed);
         await _load();
       },
     );
@@ -445,14 +479,30 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                         .isNotEmpty)
                     ? _requestPrune
                     : null,
-                child: ThemedText.small(
-                  AppStrings.of.sessionsPruneBtn,
-                  color:
-                      (_sessions
-                          .where((s) => s.status != SessionStatus.exited)
-                          .isNotEmpty)
-                      ? c.textSecondary
-                      : c.textSecondary.withAlpha(60),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.two,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: (_sessions
+                              .where((s) => s.status != SessionStatus.exited)
+                              .isNotEmpty)
+                          ? c.primary.withAlpha(70)
+                          : c.primary.withAlpha(30),
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.one),
+                  ),
+                  child: ThemedText.small(
+                    AppStrings.of.sessionsPruneBtn,
+                    color:
+                        (_sessions
+                            .where((s) => s.status != SessionStatus.exited)
+                            .isNotEmpty)
+                        ? c.primary
+                        : c.primary.withAlpha(60),
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.two),

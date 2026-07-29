@@ -50,6 +50,7 @@ class SessionCard extends StatelessWidget {
         vertical: AppSpacing.one,
       ),
       onTap: onTap,
+      onLongPress: onDelete,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,6 +132,8 @@ class SessionCard extends StatelessWidget {
                     color: c.danger,
                     onTap: onKill!,
                   ),
+                if (onKill != null && (onDelete != null || canResume))
+                  const SizedBox(width: 6),
                 if (session.status == SessionStatus.exited && onDelete != null)
                   _ActionButton(
                     icon: '🗑',
@@ -138,6 +141,8 @@ class SessionCard extends StatelessWidget {
                     color: c.textSecondary,
                     onTap: onDelete!,
                   ),
+                if (session.status == SessionStatus.exited && onDelete != null && canResume)
+                  const SizedBox(width: 6),
                 if (canResume)
                   Tooltip(
                     message: AppStrings.of.sessionResumeTooltip,
@@ -164,6 +169,9 @@ class SessionCard extends StatelessWidget {
                       color: c.danger,
                       onTap: onKill!,
                     ),
+                  if (onKill != null && (onDelete != null || canResume) &&
+                      session.status != SessionStatus.exited)
+                    const SizedBox(width: 6),
                   if (session.status == SessionStatus.exited &&
                       onDelete != null)
                     _ActionButton(
@@ -172,6 +180,9 @@ class SessionCard extends StatelessWidget {
                       color: c.textSecondary,
                       onTap: onDelete!,
                     ),
+                  if (session.status == SessionStatus.exited &&
+                      onDelete != null && canResume)
+                    const SizedBox(width: 6),
                   if (canResume)
                     Tooltip(
                       message: AppStrings.of.sessionResumeTooltip,

@@ -104,7 +104,7 @@
   "sessionsDeleteBtn": "删除",
   "sessionsConfirm": "确认",
   "sessionsPruneTitle": "清理过期会话？",
-  "sessionsPruneDesc": "将删除所有超过 24 小时未活动的会话。",
+  "sessionsPruneDesc": "将删除所有已退出且不可恢复的会话记录。",
   "sessionsPruneBtn": "清理",
   "sessionsPruned": "已清理 {count} 个会话",
   "@sessionsPruned": {
@@ -114,6 +114,15 @@
       }
     }
   },
+  "sessionsPruneSkipped": "已跳过 {count} 个可恢复会话",
+  "@sessionsPruneSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionsNoneToPrune": "没有可清理的会话",
   "sessionsEmpty": "暂无会话",
   "sessionsLoading": "加载中…",
   "sessionsPinTitle": "固定会话",

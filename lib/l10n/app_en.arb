@@ -104,7 +104,7 @@
   "sessionsDeleteBtn": "Delete",
   "sessionsConfirm": "Confirm",
   "sessionsPruneTitle": "Clean stale sessions?",
-  "sessionsPruneDesc": "Drops all sessions that have been inactive for more than 24 hours.",
+  "sessionsPruneDesc": "Removes all exited sessions that cannot be resumed.",
   "sessionsPruneBtn": "Prune",
   "sessionsPruned": "Pruned {count} session(s)",
   "@sessionsPruned": {
@@ -114,6 +114,15 @@
       }
     }
   },
+  "sessionsPruneSkipped": "Skipped {count} resumable session(s)",
+  "@sessionsPruneSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionsNoneToPrune": "No sessions to prune",
   "sessionsEmpty": "No sessions",
   "sessionsLoading": "Loading…",
   "sessionsPinTitle": "Pin Session",
