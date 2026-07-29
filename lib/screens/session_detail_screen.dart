@@ -17,6 +17,7 @@ import 'package:tired_agent_app/widgets/neon_loading.dart';
 import 'package:tired_agent_app/widgets/pty_session_view.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/protocol/sse_client.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
 
 class SessionDetailScreen extends StatefulWidget {
@@ -47,7 +48,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   Timer? _statusPoller;
 
   /// Cached from PtySessionView for AppBar display.
-  PtyConnectionStatus _ptyStatus = PtyConnectionStatus.disconnected;
+  SseConnectionStatus _ptyStatus = SseConnectionStatus.disconnected;
 
   /// Built once the connection becomes available.
   SessionApiService? _api;
@@ -250,11 +251,11 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     final c = context.appColors;
     final Color color;
     switch (_ptyStatus) {
-      case PtyConnectionStatus.connected:
+      case SseConnectionStatus.connected:
         color = c.success;
-      case PtyConnectionStatus.reconnecting:
+      case SseConnectionStatus.reconnecting:
         color = c.warning;
-      case PtyConnectionStatus.disconnected:
+      case SseConnectionStatus.disconnected:
         color = c.textSecondary;
     }
 
@@ -328,7 +329,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
               onPressed: _requestDelete,
             ),
           // PTY: reconnect
-          if (!isPersistent && _ptyStatus != PtyConnectionStatus.connected)
+          if (!isPersistent && _ptyStatus != SseConnectionStatus.connected)
             IconButton(
               icon: Icon(Icons.refresh, color: c.primary),
               tooltip: AppStrings.of.sessionReconnectTooltip,

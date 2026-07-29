@@ -4,18 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm2/xterm.dart';
 
-import 'package:tired_agent_app/providers/app_settings_provider.dart';
-import 'package:tired_agent_app/protocol/types.dart';
-import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/http_sse_transport.dart';
+import 'package:tired_agent_app/protocol/sse_client.dart';
+import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/widgets/pty_keyboard_panel.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
-
-/// SSE connection state for the PTY session view.
-enum PtyConnectionStatus { connected, reconnecting, disconnected }
 
 /// PTY session view using xterm2 for terminal emulation.
 class PtySessionView extends StatefulWidget {
@@ -40,11 +37,10 @@ class PtySessionViewState extends State<PtySessionView> {
   /// Must be initialized after [initState] when we can access [AppSettingsProvider].
   late final Terminal _terminal;
   late final HttpSseTransport _transport;
+  late final SseClient _sseClient;
   final PtyModifierState _modifierState = PtyModifierState();
   /// Toggle the system keyboard (IME) on/off.
   late final FocusNode _terminalFocusNode;
-  Subscription? _subscription;
-  int _currentOffset = 0;
   bool _keyboardExpanded = false;
 
   /// When true, the system soft keyboard (IME) won't pop up on tap.
@@ -54,14 +50,8 @@ class PtySessionViewState extends State<PtySessionView> {
   /// Timestamp of the last pointer-down event, for double-tap detection.
   DateTime? _lastTapDown;
 
-  /// Current SSE connection status.
-  PtyConnectionStatus _connectionStatus = PtyConnectionStatus.disconnected;
-
-  /// Whether the session has exited — stops automatic reconnection.
-  bool _sessionExited = false;
-
   /// Public getter so [SessionDetailScreen] can read the status.
-  PtyConnectionStatus get connectionStatus => _connectionStatus;
+  SseConnectionStatus get connectionStatus => _sseClient.status;
 
   /// Resolve keyboard layout from the session command.
   PtyKeyboardConfig get _keyboardConfig =>
@@ -71,6 +61,12 @@ class PtySessionViewState extends State<PtySessionView> {
   void initState() {
     super.initState();
     _transport = HttpSseTransport(tokenProvider: widget.tokenProvider);
+    _sseClient = SseClient(
+      transport: _transport,
+      ref: widget.serverRef,
+      sessionId: widget.session.id,
+      agentId: widget.agentId,
+    );
     final bufferSize = context.read<AppSettingsProvider>().terminalBufferSize;
     _terminal = Terminal(maxLines: bufferSize);
     _terminalFocusNode = FocusNode();
@@ -143,30 +139,27 @@ class PtySessionViewState extends State<PtySessionView> {
   }
 
   Future<void> _initialize() async {
-    _currentOffset = widget.session.byteOffset;
-    // Fetch existing output first
-    try {
-      final result = await _transport.fetchOutput(
-        widget.serverRef,
-        widget.session.id,
-        agentId: widget.agentId,
-        tail: 1048576,
-      );
-      for (final chunk in result.chunks) {
-        final text = utf8.decode(
-          base64.decode(chunk.data),
-          allowMalformed: true,
-        );
+    _sseClient
+      ..onChunk = (chunk) {
+        final text = utf8.decode(chunk.data, allowMalformed: true);
         _terminal.write(text);
       }
-      if (result.chunks.isNotEmpty) {
-        _currentOffset = result.upTo;
+      ..onState = (session) {
+        if (session.status == SessionStatus.exited) {
+          _terminal.write('\r\n\x1b[33m[${AppStrings.of.ptySessionExited}]\x1b[0m\r\n');
+          if (mounted) setState(() {});
+        }
       }
-    } catch (_) {
-      // no existing output
-    }
-    _subscribe();
-    _connectionStatus = PtyConnectionStatus.connected;
+      ..onError = (error) {
+        debugPrint('[PtySessionView] SSE error: $error');
+        if (mounted) setState(() {});
+      }
+      ..onHeartbeat = () {
+        // Status transitions handled by SseClient internally.
+        if (mounted) setState(() {});
+      };
+
+    await _sseClient.start();
     if (mounted) setState(() {});
   }
 
@@ -193,68 +186,13 @@ class PtySessionViewState extends State<PtySessionView> {
   /// Public — called from [SessionDetailScreen] via GlobalKey to
   /// resubscribe the SSE stream without re-fetching history.
   void reconnect() {
-    if (_sessionExited) return;
-    _subscription?.close();
-    _subscription = null;
-    setState(() => _connectionStatus = PtyConnectionStatus.reconnecting);
-    _resubscribe();
-  }
-
-  /// Resubscribe the SSE stream from the current offset.
-  /// Unlike [_initialize], this does NOT re-fetch output history.
-  void _resubscribe() {
-    _subscribe();
-    _connectionStatus = PtyConnectionStatus.connected;
+    _sseClient.reconnect();
     if (mounted) setState(() {});
-  }
-
-  void _subscribe() {
-    _subscription = _transport.subscribe(
-      widget.serverRef,
-      widget.session.id,
-      SubscribeHandlers(
-        onHeartbeat: () {
-          // Heartbeat received — SSE connection is alive.
-          if (_connectionStatus == PtyConnectionStatus.reconnecting && mounted) {
-            setState(() => _connectionStatus = PtyConnectionStatus.connected);
-          }
-        },
-        onChunk: (OutputChunk chunk) {
-          final text = utf8.decode(chunk.data, allowMalformed: true);
-          _currentOffset = chunk.offset + chunk.data.length;
-          _terminal.write(text);
-        },
-        onState: (Session session) {
-          if (session.status == SessionStatus.exited) {
-            _terminal.write('\r\n\x1b[33m[${AppStrings.of.ptySessionExited}]\x1b[0m\r\n');
-            _sessionExited = true;
-            _subscription?.close();
-            _subscription = null;
-            if (mounted) {
-              setState(
-                () => _connectionStatus = PtyConnectionStatus.disconnected,
-              );
-            }
-          }
-        },
-        onError: (Object error) {
-          debugPrint('[PtySessionView] SSE error: $error');
-          if (!_sessionExited && mounted) {
-            setState(
-              () => _connectionStatus = PtyConnectionStatus.reconnecting,
-            );
-          }
-        },
-      ),
-      agentId: widget.agentId,
-      fromOffset: _currentOffset,
-    );
-    // Caller (_initialize or reconnect) manages setState for initial connected.
   }
 
   @override
   void dispose() {
-    _subscription?.close();
+    _sseClient.close();
     _terminalFocusNode.dispose();
     _modifierState.dispose();
     super.dispose();
@@ -269,19 +207,19 @@ class PtySessionViewState extends State<PtySessionView> {
     final Color color;
     final String label;
 
-    switch (_connectionStatus) {
-      case PtyConnectionStatus.connected:
+    switch (_sseClient.status) {
+      case SseConnectionStatus.connected:
         visible = false;
         color = c.success;
         label = '';
-      case PtyConnectionStatus.reconnecting:
+      case SseConnectionStatus.reconnecting:
         visible = true;
         color = c.warning;
         label = AppStrings.of.ptyReconnecting;
-      case PtyConnectionStatus.disconnected:
+      case SseConnectionStatus.disconnected:
         visible = true;
         color = c.textSecondary;
-        label = _sessionExited ? AppStrings.of.ptySessionExited : AppStrings.of.ptyDisconnected;
+        label = _sseClient.sessionExited ? AppStrings.of.ptySessionExited : AppStrings.of.ptyDisconnected;
     }
 
     if (!visible) return const SizedBox.shrink();
@@ -303,7 +241,7 @@ class PtySessionViewState extends State<PtySessionView> {
               color: color,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(color: color.withAlpha(120), blurRadius: 4),
+                BoxShadow(color: color.withAlpha(120), blurRadius: 6),
               ],
             ),
           ),
