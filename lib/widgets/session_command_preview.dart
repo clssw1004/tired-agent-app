@@ -4,14 +4,18 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
 /// Terminal-style command preview with traffic-light title bar.
+/// Optionally shows [actions] in the title bar's trailing slot (e.g. a
+/// launch button).
 class SessionCommandPreview extends StatelessWidget {
   final String cmd;
   final String commandLine;
+  final Widget? actions;
 
   const SessionCommandPreview({
     super.key,
     required this.cmd,
     required this.commandLine,
+    this.actions,
   });
 
   @override
@@ -34,8 +38,8 @@ class SessionCommandPreview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title bar — traffic-light dots + prompt label
-          _TitleBar(cmd: cmd),
+          // Title bar — traffic-light dots + prompt label + optional actions
+          _TitleBar(cmd: cmd, actions: actions),
           // Command content
           Padding(
             padding: const EdgeInsets.all(AppSpacing.three),
@@ -54,13 +58,14 @@ class SessionCommandPreview extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
+      );
+    }
 }
 
 class _TitleBar extends StatelessWidget {
   final String cmd;
-  const _TitleBar({required this.cmd});
+  final Widget? actions;
+  const _TitleBar({required this.cmd, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -100,12 +105,19 @@ class _TitleBar extends StatelessWidget {
             color: c.primary.withAlpha(140),
           ),
           const Spacer(),
-          ThemedText.mono(
-            '---',
-            color: c.textSecondary.withAlpha(60),
-          ),
+          actions ?? _TrailingPlaceholder(),
         ],
       ),
     );
+  }
+}
+
+class _TrailingPlaceholder extends StatelessWidget {
+  const _TrailingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    return ThemedText.mono('---', color: c.textSecondary.withAlpha(60));
   }
 }

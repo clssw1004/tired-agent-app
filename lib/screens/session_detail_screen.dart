@@ -211,7 +211,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     if (_session == null || _api == null) return;
 
     final newLabel = _session!.label != null
-        ? '${_session!.label}-r'
+        ? _session!.label!
         : _generateLabel();
 
     // Resume value priority: claudeSessionId > extra.claudeName > label

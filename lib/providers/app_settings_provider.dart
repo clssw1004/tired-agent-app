@@ -81,6 +81,8 @@ class AppSettingsProvider extends ChangeNotifier {
         orElse: () => TerminalThemePreset.classic,
       );
     }
+
+    notifyListeners();
   }
 
   // ── 主题切换 ─────────────────────────────────────────────────────

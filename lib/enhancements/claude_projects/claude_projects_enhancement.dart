@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:tired_agent_app/enhancements/enhancement.dart';
 import 'package:tired_agent_app/enhancements/enhancement_context.dart';
 import 'package:tired_agent_app/enhancements/types.dart';
-import 'package:tired_agent_app/enhancements/claude_projects/claude_projects_picker.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 
 class ClaudeProjectsEnhancement extends SessionEnhancement {
@@ -21,17 +20,9 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
 
   @override
   Widget buildWidget(BuildContext context, EnhancementContext ctx) {
-    if (ctx.cwd == null || ctx.cwd!.isEmpty) return const SizedBox.shrink();
-    return ClaudeProjectsPicker(
-      cwd: ctx.cwd!,
-      profileId: ctx.profileId!,
-      agentId: ctx.agentId!,
-      onSelected: (sessionId, displayName) {
-        ctx.selectedSessionId = sessionId;
-        ctx.selectedSessionDisplayName = displayName;
-        ctx.onStateChanged?.call();
-      },
-    );
+    // Resume is now handled via the --resume option chip in the
+    // CreateSessionScreen — no separate block needed.
+    return const SizedBox.shrink();
   }
 
   @override

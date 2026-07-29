@@ -7,14 +7,14 @@ enum NeonLoadingMode { spinner, pulse, dots }
 class NeonLoading extends StatefulWidget {
   final NeonLoadingMode mode;
   final double size;
-  final Color color;
+  final Color? color;
 
-  NeonLoading({
+  const NeonLoading({
     super.key,
     this.mode = NeonLoadingMode.spinner,
     this.size = 24,
-    Color? color,
-  }) : color = color ?? AppColors.dark.primary;
+    this.color,
+  });
 
   @override
   State<NeonLoading> createState() => _NeonLoadingState();
@@ -41,26 +41,27 @@ class _NeonLoadingState extends State<NeonLoading>
 
   @override
   Widget build(BuildContext context) {
+    final ac = widget.color ?? context.appColors.primary;
     return switch (widget.mode) {
-      NeonLoadingMode.spinner => _buildSpinner(),
-      NeonLoadingMode.pulse => _buildPulse(),
-      NeonLoadingMode.dots => _buildDots(),
+      NeonLoadingMode.spinner => _buildSpinner(ac),
+      NeonLoadingMode.pulse => _buildPulse(ac),
+      NeonLoadingMode.dots => _buildDots(ac),
     };
   }
 
-  Widget _buildSpinner() {
+  Widget _buildSpinner(Color activeColor) {
     return SizedBox(
       width: widget.size,
       height: widget.size,
       child: CircularProgressIndicator(
         strokeWidth: 2.5,
-        valueColor: AlwaysStoppedAnimation(widget.color),
-        backgroundColor: widget.color.withAlpha(20),
+        valueColor: AlwaysStoppedAnimation(activeColor),
+        backgroundColor: activeColor.withAlpha(20),
       ),
     );
   }
 
-  Widget _buildPulse() {
+  Widget _buildPulse(Color activeColor) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (_, _) => Row(
@@ -74,10 +75,10 @@ class _NeonLoadingState extends State<NeonLoading>
               width: widget.size * 0.35,
               height: widget.size * 0.35,
               decoration: BoxDecoration(
-                color: widget.color.withAlpha((opacity * 255).toInt()),
+                color: activeColor.withAlpha((opacity * 255).toInt()),
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: widget.color.withAlpha(60), blurRadius: 4, spreadRadius: 0),
+                  BoxShadow(color: activeColor.withAlpha(60), blurRadius: 4, spreadRadius: 0),
                 ],
               ),
             ),
@@ -87,14 +88,14 @@ class _NeonLoadingState extends State<NeonLoading>
     );
   }
 
-  Widget _buildDots() {
+  Widget _buildDots(Color activeColor) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (_, _) {
         final count = (_controller.value * 8).floor() % 4 + 1;
         return ThemedText.mono(
           '${'·' * count}${' ' * (4 - count)}',
-          color: widget.color,
+          color: activeColor,
         );
       },
     );

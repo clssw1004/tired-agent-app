@@ -70,25 +70,25 @@ class AppColors extends ThemeExtension<AppColors> {
     textCode: Color(0xFFB8B8C0),
   );
 
-  // ── 亮色主题实例 ──────────────────────────────────────────────
+  // ── 亮色主题实例（暖纸本低对比 — 消除刺眼感） ────────────
   static const light = AppColors(
-    // ── 基础色板 ──────────────────────────────────────────────
-    background: Color(0xFFF0F0F5), // 浅灰紫底
-    surface: Color(0xFFFFFFFF), // 纯白卡片
-    surfaceAlt: Color(0xFFE8E8F0), // 浅灰高亮
-    border: Color(0xFFD0D0E0), // 浅边框
-    borderGlow: Color(0xFFB8B8C8), // 浅发光
-    // ── 语义色板 ──────────────────────────────────────────────
-    primary: Color(0xFF0098A8), // 更深青（白底可读）
-    secondary: Color(0xFFCC00CC), // 更深品红
-    purple: Color(0xFF6B51E0), // 更深紫
-    success: Color(0xFF00AA30), // 更深绿
-    warning: Color(0xFFCC5500), // 更深橙
-    danger: Color(0xFFCC0030), // 更深红
+    // ── 基础色板（暖调配色 — 纸本质感，消除刺眼） ────────────
+    background: Color(0xFFEFEBE4), // 暖米灰底 — 明显非白，基调柔和
+    surface: Color(0xFFF7F3EC), // 暖白卡片 — 轻微纸本质感，不反光
+    surfaceAlt: Color(0xFFEBE7E0), // 暖灰过渡 — 低对比
+    border: Color(0xFFD8D4CC), // 暖灰边框 — 极低可见度
+    borderGlow: Color(0xFFC8C4BC), // 暖灰发光 — 近乎不可见
+    // ── 语义色板（极低饱和度 — 仅保留色相暗示） ────────────
+    primary: Color(0xFF3A7075), // 青灰 — 极低饱和，可见即可感
+    secondary: Color(0xFF6A4070), // 紫灰 — 极低饱和
+    purple: Color(0xFF5A4D80), // 紫罗兰灰
+    success: Color(0xFF4A6A50), // 绿灰
+    warning: Color(0xFF7A6530), // 琥珀灰
+    danger: Color(0xFF7A3A3A), // 红灰
     // ── 文字色板 ──────────────────────────────────────────────
-    text: Color(0xFF1A1A2E), // 深色文字
-    textSecondary: Color(0xFF6A6A8A), // 次级文字
-    textCode: Color(0xFF2A2A3E), // 代码文字
+    text: Color(0xFF2E2C2E), // 深灰文字
+    textSecondary: Color(0xFF7A7878), // 中灰色
+    textCode: Color(0xFF3E3C3E), // 深灰代码
   );
 
   @override

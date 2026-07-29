@@ -188,3 +188,35 @@ const List<BuiltinPreset> builtinPresets = [
     ],
   ),
 ];
+
+/// A user-defined or recently-used command preset, persisted locally.
+class UserPreset {
+  final String id;
+  final String label;
+  final String cmd;
+  final List<String> args;
+  final String emoji;
+  const UserPreset({
+    required this.id,
+    required this.label,
+    required this.cmd,
+    this.args = const [],
+    this.emoji = '⚡',
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'label': label,
+    'cmd': cmd,
+    'args': args,
+    'emoji': emoji,
+  };
+
+  factory UserPreset.fromJson(Map<String, dynamic> json) => UserPreset(
+    id: json['id'] as String? ?? '',
+    label: json['label'] as String? ?? '',
+    cmd: json['cmd'] as String? ?? '',
+    args: (json['args'] as List<dynamic>?)?.cast<String>() ?? [],
+    emoji: json['emoji'] as String? ?? '⚡',
+  );
+}

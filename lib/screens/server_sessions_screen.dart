@@ -110,7 +110,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     if (api == null) return;
 
     final newLabel = session.label != null
-        ? '${session.label}-r'
+        ? session.label!
         : 'resume-${session.id.substring(0, 8)}';
 
     // Resume value priority: claudeSessionId > extra.claudeName > label
