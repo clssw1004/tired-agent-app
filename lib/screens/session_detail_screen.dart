@@ -17,6 +17,7 @@ import 'package:tired_agent_app/widgets/neon_loading.dart';
 import 'package:tired_agent_app/widgets/pty_session_view.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/services/session_api_service.dart';
 
 class SessionDetailScreen extends StatefulWidget {
   final String profileId;
@@ -47,6 +48,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
 
   /// Cached from PtySessionView for AppBar display.
   PtyConnectionStatus _ptyStatus = PtyConnectionStatus.disconnected;
+
+  /// Built once the connection becomes available.
+  SessionApiService? _api;
 
   @override
   void initState() {
@@ -80,18 +84,8 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         });
         return;
       }
-      await conn.ensureFreshSession();
-      final mgrRef = ServerRef(
-        id: '__manager__',
-        name: conn.profile.name,
-        baseUrl: conn.profile.baseUrl,
-        token: conn.profile.sessionToken!,
-      );
-      final session = await conn.transport.getSession(
-        mgrRef,
-        widget.sessionId,
-        agentId: widget.agentId,
-      );
+      _api = SessionApiService(conn: conn, agentId: widget.agentId);
+      final session = await _api!.getSession(widget.sessionId);
       if (mounted) {
         setState(() {
           _session = session;
@@ -108,14 +102,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       }
     }
   }
-
-  /// Build manager-level ref for kill/delete API calls.
-  ServerRef _mgrRef() => ServerRef(
-    id: '__manager__',
-    name: _conn!.profile.name,
-    baseUrl: _conn!.profile.baseUrl,
-    token: _conn!.profile.sessionToken!,
-  );
 
   // ── Lifecycle / Reconnect ──────────────────────────────────────────
 
@@ -142,11 +128,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   Future<void> _refreshSession() async {
     if (!mounted || _conn == null) return;
     try {
-      final session = await _conn!.transport.getSession(
-        _mgrRef(),
-        widget.sessionId,
-        agentId: widget.agentId,
-      );
+      final session = await _api!.getSession(widget.sessionId);
       if (mounted) {
         setState(() => _session = session);
       }
@@ -171,11 +153,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     if (confirmed != true || !mounted) return;
 
     try {
-      await _conn!.transport.killSession(
-        _mgrRef(),
-        widget.sessionId,
-        agentId: widget.agentId,
-      );
+      await _api!.killSession(widget.sessionId);
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
@@ -204,11 +182,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     if (confirmed != true || !mounted) return;
 
     try {
-      await _conn!.transport.deleteSession(
-        _mgrRef(),
-        widget.sessionId,
-        agentId: widget.agentId,
-      );
+      await _api!.deleteSession(widget.sessionId);
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
@@ -233,7 +207,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   }
 
   Future<void> _requestResume() async {
-    if (_session == null || _conn == null) return;
+    if (_session == null || _api == null) return;
 
     final newLabel = _session!.label != null
         ? '${_session!.label}-r'
@@ -256,9 +230,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     );
 
     try {
-      final newSession = await _conn!.transport.createSession(
-        _mgrRef(), spec, agentId: widget.agentId,
-      );
+      final newSession = await _api!.createSession(spec);
       if (mounted) {
         context.replace('/session/${widget.profileId}/${widget.agentId}/${newSession.id}');
       }

@@ -20,6 +20,7 @@ import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/enhancements/enhancement.dart';
 import 'package:tired_agent_app/enhancements/enhancement_context.dart';
 import 'package:tired_agent_app/enhancements/types.dart';
+import 'package:tired_agent_app/services/session_api_service.dart';
 
 const _labelChars = 'abcdefghijkmnpqrstuvwxyz23456789';
 
@@ -479,13 +480,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         }
         return;
       }
-      await conn.ensureFreshSession();
-      final mgrRef = ServerRef(
-        id: '__manager__',
-        name: conn.profile.name,
-        baseUrl: conn.profile.baseUrl,
-        token: conn.profile.sessionToken!,
-      );
+      final api = SessionApiService(conn: conn, agentId: widget.agentId);
 
       final manualArgs = _argsController.text
           .trim()
@@ -517,7 +512,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
       }
 
-      final session = await conn.transport.createSession(mgrRef, finalSpec, agentId: widget.agentId);
+      final session = await api.createSession(finalSpec);
 
       if (mounted) {
         _trackRecent(_cmd.trim(), manualArgs);
@@ -606,16 +601,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final auth = context.read<AuthProvider>();
     final conn = auth.connectionFor(widget.profileId);
     if (conn == null || conn.profile.sessionToken == null) return;
-    await conn.ensureFreshSession();
-    final mgrRef = ServerRef(
-      id: '__manager__',
-      name: conn.profile.name,
-      baseUrl: conn.profile.baseUrl,
-      token: conn.profile.sessionToken!,
-    );
     final path = await DirectoryPickerModal.show(
       context,
-      serverRef: mgrRef,
+      serverRef: conn.managerRef,
       agentId: widget.agentId,
       initialPath: _cwdController.text.isNotEmpty ? _cwdController.text : null,
     );

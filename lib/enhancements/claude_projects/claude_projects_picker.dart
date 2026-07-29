@@ -8,6 +8,7 @@ import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/services/session_api_service.dart';
 
 /// Callback when a session is selected in the picker.
 /// [sessionId] — the UUID of the selected session.
@@ -68,18 +69,8 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
       final auth = context.read<AuthProvider>();
       final conn = auth.connectionFor(widget.profileId);
       if (conn == null || conn.profile.sessionToken == null) return;
-      await conn.ensureFreshSession();
-      final mgrRef = ServerRef(
-        id: '__manager__',
-        name: conn.profile.name,
-        baseUrl: conn.profile.baseUrl,
-        token: conn.profile.sessionToken!,
-      );
-      final info = await conn.transport.getClaudeProjects(
-        mgrRef,
-        path: widget.cwd,
-        agentId: widget.agentId,
-      );
+      final api = SessionApiService(conn: conn, agentId: widget.agentId);
+      final info = await api.getClaudeProjects(path: widget.cwd);
       if (mounted) setState(() { _info = info; _loading = false; });
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _loading = false; });
