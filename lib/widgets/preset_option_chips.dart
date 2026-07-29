@@ -19,11 +19,16 @@ class PresetOptionChips extends StatelessWidget {
   final Map<String, String?> selections;
   final ValueChanged<Map<String, String?>> onChanged;
 
+  /// Optional extra chips to append inline after the preset option chips.
+  /// Each widget should be a small chip-like widget styled consistently.
+  final List<Widget>? extra;
+
   const PresetOptionChips({
     super.key,
     required this.preset,
     required this.selections,
     required this.onChanged,
+    this.extra,
   });
 
   @override
@@ -45,6 +50,7 @@ class PresetOptionChips extends StatelessWidget {
           onTap: () => _chipTapped(context, opt),
         )),
         if (overflow.isNotEmpty) _MoreChip(count: overflow.length, onTap: () => _showAll(context)),
+        if (extra != null) ...extra!,
       ],
     );
   }

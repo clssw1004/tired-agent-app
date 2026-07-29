@@ -5,12 +5,14 @@ import 'package:tired_agent_app/widgets/themed_text.dart';
 /// 霓虹风格分割线。可选 [label] 显示居中标段文字。
 class NeonDivider extends StatelessWidget {
   final String? label;
-  final Color color;
+  final Color? color;
 
-  NeonDivider({super.key, this.label, Color? color}) : color = color ?? AppColors.dark.primary;
+  const NeonDivider({super.key, this.label, this.color});
 
   @override
   Widget build(BuildContext context) {
+    final c = context.appColors;
+    final dividerColor = color ?? c.primary;
     if (label == null) {
       return Container(
         height: 1,
@@ -18,9 +20,9 @@ class NeonDivider extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              color.withAlpha(0),
-              color.withAlpha(80),
-              color.withAlpha(0),
+              dividerColor.withAlpha(0),
+              dividerColor.withAlpha(80),
+              dividerColor.withAlpha(0),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -34,7 +36,7 @@ class NeonDivider extends StatelessWidget {
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withAlpha(0), color.withAlpha(60)],
+                colors: [dividerColor.withAlpha(0), dividerColor.withAlpha(60)],
                 stops: const [0.0, 1.0],
               ),
             ),
@@ -42,14 +44,14 @@ class NeonDivider extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two),
-          child: ThemedText.label(label!, color: color.withAlpha(180)),
+          child: ThemedText.label(label!, color: dividerColor.withAlpha(180)),
         ),
         Expanded(
           child: Container(
             height: 1,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withAlpha(60), color.withAlpha(0)],
+                colors: [dividerColor.withAlpha(60), dividerColor.withAlpha(0)],
                 stops: const [0.0, 1.0],
               ),
             ),
