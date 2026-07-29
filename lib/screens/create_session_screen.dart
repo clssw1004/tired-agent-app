@@ -16,6 +16,7 @@ import 'package:tired_agent_app/enhancements/types.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
 import 'package:tired_agent_app/widgets/directory_picker_field.dart';
 import 'package:tired_agent_app/widgets/directory_picker_modal.dart';
+import 'package:tired_agent_app/widgets/launch_chip.dart';
 import 'package:tired_agent_app/widgets/preset_option_chips.dart';
 import 'package:tired_agent_app/widgets/preset_selector.dart';
 import 'package:tired_agent_app/widgets/resume_option_chip.dart';
@@ -287,7 +288,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               child: SessionCommandPreview(
                 cmd: _cmd,
                 commandLine: _previewCommand,
-                actions: _buildLaunchChip(),
+                actions: LaunchChip(
+                  busy: _busy,
+                  disabled: _busy || _cmd.trim().isEmpty,
+                  onTap: _submit,
+                ),
               ),
             ),
           Expanded(
@@ -376,36 +381,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLaunchChip() {
-    final c = context.appColors;
-    final disabled = _busy || _cmd.trim().isEmpty;
-    return GestureDetector(
-      onTap: disabled ? null : _submit,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: 1),
-        decoration: BoxDecoration(
-          color: c.primary.withAlpha(disabled ? 3 : 10),
-          borderRadius: BorderRadius.circular(AppSpacing.three),
-          border: Border.all(color: c.primary.withAlpha(disabled ? 15 : 60), width: 0.5),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_busy)
-              const SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5))
-            else
-              Icon(Icons.play_arrow, size: 12, color: disabled ? c.textSecondary.withAlpha(60) : c.primary),
-            const SizedBox(width: 3),
-            ThemedText.mono(
-              AppStrings.of.createLaunch,
-              color: disabled ? c.textSecondary.withAlpha(60) : c.primary,
-            ),
-          ],
-        ),
       ),
     );
   }
