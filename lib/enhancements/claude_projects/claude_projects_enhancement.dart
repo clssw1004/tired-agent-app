@@ -26,8 +26,9 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
       cwd: ctx.cwd!,
       profileId: ctx.profileId!,
       agentId: ctx.agentId!,
-      onSelected: (sessionId) {
+      onSelected: (sessionId, displayName) {
         ctx.selectedSessionId = sessionId;
+        ctx.selectedSessionDisplayName = displayName;
         ctx.onStateChanged?.call();
       },
     );
@@ -38,9 +39,18 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
       SessionSpec spec, EnhancementContext ctx) async {
     final extraArgs = <String>[];
 
+    // Use historical session's display name as label if available.
+    final label = ctx.selectedSessionDisplayName ?? spec.label;
+
+    // Build extra metadata — always store the effective label.
+    final extra = <String, dynamic>{};
+    if (label != null && label.isNotEmpty) {
+      extra['claudeName'] = label;
+    }
+
     // Always inject --name <label> for claude sessions.
-    if (spec.label != null && spec.label!.isNotEmpty) {
-      extraArgs.addAll(['--name', spec.label!]);
+    if (label != null && label.isNotEmpty) {
+      extraArgs.addAll(['--name', label]);
     }
 
     // Inject --resume if user selected a session.
@@ -48,7 +58,7 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
       extraArgs.addAll(['--resume', ctx.selectedSessionId!]);
     }
 
-    if (extraArgs.isEmpty) return spec;
+    if (extraArgs.isEmpty && extra.isEmpty) return spec;
 
     return SessionSpec(
       cmd: spec.cmd,
@@ -57,9 +67,10 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
       env: spec.env,
       cols: spec.cols,
       rows: spec.rows,
-      label: spec.label,
+      label: label,
       mode: spec.mode,
       executionMode: spec.executionMode,
+      extra: extra.isNotEmpty ? extra : null,
     );
   }
 }

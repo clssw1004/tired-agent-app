@@ -38,11 +38,12 @@ class SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    final canResume = session.claudeSessionId != null &&
-        session.status == SessionStatus.exited &&
+    final canResume = session.status == SessionStatus.exited &&
         onResume != null &&
-        (session.mode == SessionMode.persistent ||
-         (session.mode == null && session.cmd == 'claude'));
+        session.cmd == 'claude' &&
+        (session.claudeSessionId != null ||
+         session.extra?['claudeName'] != null ||
+         session.label != null);
     return NeonCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.four,
