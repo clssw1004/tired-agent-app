@@ -226,7 +226,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       cols: _session!.cols,
       rows: _session!.rows,
       label: newLabel,
-      mode: SessionMode.persistent,
+      mode: SessionMode.process,
       extra: {'claudeName': newLabel},
     );
 

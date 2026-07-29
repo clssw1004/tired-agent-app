@@ -125,7 +125,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       cols: session.cols,
       rows: session.rows,
       label: newLabel,
-      mode: SessionMode.persistent,
+      mode: SessionMode.process,
       extra: {'claudeName': newLabel},
     );
 
