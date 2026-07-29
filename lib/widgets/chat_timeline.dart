@@ -86,10 +86,7 @@ class _MessageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.three),
-            border: Border.all(
-              color: c.border.withAlpha(60),
-              width: 0.5,
-            ),
+            border: Border.all(color: c.border.withAlpha(60), width: 0.5),
           ),
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.85,
@@ -180,11 +177,7 @@ class _MessageBubble extends StatelessWidget {
       size: 14,
       color: colors.success,
     ),
-    StatusKind.error => Icon(
-      Icons.error,
-      size: 14,
-      color: colors.danger,
-    ),
+    StatusKind.error => Icon(Icons.error, size: 14, color: colors.danger),
     _ => const SizedBox(width: 12),
   };
 }

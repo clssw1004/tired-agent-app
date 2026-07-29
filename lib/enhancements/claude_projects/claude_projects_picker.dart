@@ -13,7 +13,8 @@ import 'package:tired_agent_app/services/session_api_service.dart';
 /// Callback when a session is selected in the picker.
 /// [sessionId] — the UUID of the selected session.
 /// [displayName] — optional human-readable name from the jsonl tail.
-typedef SessionSelectedCallback = void Function(String sessionId, String? displayName);
+typedef SessionSelectedCallback =
+    void Function(String sessionId, String? displayName);
 
 /// Embedded widget shown after directory selection for claude sessions.
 /// Scans ~/.claude/projects/ via backend and displays session list.
@@ -73,16 +74,25 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
       if (conn == null || conn.profile.sessionToken == null) return;
       final api = SessionApiService(conn: conn, agentId: widget.agentId);
       final info = await api.getClaudeProjects(path: widget.cwd);
-      if (mounted) setState(() { _info = info; _loading = false; });
+      if (mounted)
+        setState(() {
+          _info = info;
+          _loading = false;
+        });
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+      if (mounted)
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
     }
   }
 
   String _formatTime(int ts) {
     final dt = DateTime.fromMillisecondsSinceEpoch(ts);
     final now = DateTime.now();
-    final sameDay = dt.year == now.year && dt.month == now.month && dt.day == now.day;
+    final sameDay =
+        dt.year == now.year && dt.month == now.month && dt.day == now.day;
     String pad(int n) => n.toString().padLeft(2, '0');
     final time = '${pad(dt.hour)}:${pad(dt.minute)}:${pad(dt.second)}';
     if (sameDay) return time;
@@ -105,7 +115,8 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
         child: Row(
           children: [
             const SizedBox(
-              width: 14, height: 14,
+              width: 14,
+              height: 14,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
             const SizedBox(width: 8),
@@ -171,18 +182,21 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
               itemBuilder: (context, idx) {
                 final s = sessions[idx];
                 final selected = s.sessionId == _selectedSessionId;
-                final displayName = s.displayName ?? s.sessionId.substring(0, 8);
+                final displayName =
+                    s.displayName ?? s.sessionId.substring(0, 8);
                 return GestureDetector(
                   onTap: () {
                     setState(() {
                       _selectedSessionId = selected ? null : s.sessionId;
                     });
-                    if (!selected) widget.onSelected(s.sessionId, s.displayName);
+                    if (!selected)
+                      widget.onSelected(s.sessionId, s.displayName);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10,
+                      horizontal: 12,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
                       color: selected
@@ -198,14 +212,19 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
                     child: Row(
                       children: [
                         Container(
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: selected ? c.primary : c.textSecondary.withAlpha(80),
+                              color: selected
+                                  ? c.primary
+                                  : c.textSecondary.withAlpha(80),
                               width: selected ? 2 : 1.5,
                             ),
-                            color: selected ? c.primary.withAlpha(20) : Colors.transparent,
+                            color: selected
+                                ? c.primary.withAlpha(20)
+                                : Colors.transparent,
                           ),
                           child: selected
                               ? Icon(Icons.check, size: 12, color: c.primary)

@@ -15,9 +15,7 @@ class PtyScrollBehavior extends ScrollBehavior {
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) {
-    return const PtyScrollPhysics(
-      parent: RangeMaintainingScrollPhysics(),
-    );
+    return const PtyScrollPhysics(parent: RangeMaintainingScrollPhysics());
   }
 }
 
@@ -52,8 +50,7 @@ class PtyScrollPhysics extends ScrollPhysics {
   /// Allow overscroll so the drag can enter the overscroll region
   /// (the spring simulation will return it).
   @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) =>
-      0.0;
+  double applyBoundaryConditions(ScrollMetrics position, double value) => 0.0;
 
   // ── Fling ─────────────────────────────────────────────────────
 

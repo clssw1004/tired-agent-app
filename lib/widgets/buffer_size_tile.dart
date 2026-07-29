@@ -26,10 +26,8 @@ class BufferSizeTile extends StatelessWidget {
   void _showCustomDialog(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (_) => BufferSizeCustomDialog(
-        initialValue: currentSize,
-        onSave: onChanged,
-      ),
+      builder: (_) =>
+          BufferSizeCustomDialog(initialValue: currentSize, onSave: onChanged),
     );
   }
 
@@ -63,12 +61,14 @@ class BufferSizeTile extends StatelessWidget {
               ),
               icon: Icon(Icons.arrow_drop_down, color: c.textSecondary),
               items: [
-                ...kTerminalBufferPresets.map((size) => DropdownMenuItem(
-                      value: size,
-                      child: ThemedText.body(
-                        AppStrings.of.settingsBufferSizeLines(size),
-                      ),
-                    )),
+                ...kTerminalBufferPresets.map(
+                  (size) => DropdownMenuItem(
+                    value: size,
+                    child: ThemedText.body(
+                      AppStrings.of.settingsBufferSizeLines(size),
+                    ),
+                  ),
+                ),
                 DropdownMenuItem(
                   value: _customSentinel,
                   child: Column(
@@ -193,8 +193,7 @@ class _BufferSizeCustomDialogState extends State<BufferSizeCustomDialog> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 10),
-                    child:
-                        Icon(Icons.smart_toy, color: c.primary, size: 22),
+                    child: Icon(Icons.smart_toy, color: c.primary, size: 22),
                   ),
                   Expanded(
                     child: Text(

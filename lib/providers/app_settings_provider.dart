@@ -5,24 +5,17 @@ import 'package:xterm2/xterm.dart' show TerminalTheme;
 import 'package:tired_agent_app/utils/terminal_themes.dart';
 
 /// 终端缓冲区大小预设选项（行数）
-const List<int> kTerminalBufferPresets = [
-  1000,
-  2000,
-  3000,
-  5000,
-  8000,
-  10000,
-];
+const List<int> kTerminalBufferPresets = [1000, 2000, 3000, 5000, 8000, 10000];
 
 /// 应用设置 Provider — 管理主题模式 + 语言偏好 + 终端配置
 ///
 /// 提供运行时切换和持久化能力，切换后立即生效无需重启。
 class AppSettingsProvider extends ChangeNotifier {
   AppSettingsProvider()
-      : _themeMode = ThemeMode.dark,
-        _locale = const Locale('zh'),
-        _terminalBufferSize = kDefaultBufferSize,
-        _terminalThemePreset = TerminalThemePreset.classic;
+    : _themeMode = ThemeMode.dark,
+      _locale = const Locale('zh'),
+      _terminalBufferSize = kDefaultBufferSize,
+      _terminalThemePreset = TerminalThemePreset.classic;
 
   // ── 持久化 Key ──────────────────────────────────────────────────
   static const _kThemeMode = 'app_theme_mode';
@@ -71,7 +64,8 @@ class AppSettingsProvider extends ChangeNotifier {
     }
 
     // 终端缓冲区大小
-    _terminalBufferSize = prefs.getInt(_kTerminalBufferSize) ?? kDefaultBufferSize;
+    _terminalBufferSize =
+        prefs.getInt(_kTerminalBufferSize) ?? kDefaultBufferSize;
 
     // 终端主题
     final terminalThemeStr = prefs.getString(_kTerminalTheme);
@@ -96,7 +90,9 @@ class AppSettingsProvider extends ChangeNotifier {
   }
 
   Future<void> toggleTheme() async {
-    final next = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    final next = _themeMode == ThemeMode.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
     await setThemeMode(next);
   }
 

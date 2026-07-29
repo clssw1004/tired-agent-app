@@ -41,6 +41,7 @@ class PtySessionViewState extends State<PtySessionView> {
   late final HttpSseTransport _transport;
   late final SseClient _sseClient;
   final PtyModifierState _modifierState = PtyModifierState();
+
   /// Toggle the system keyboard (IME) on/off.
   late final FocusNode _terminalFocusNode;
   bool _keyboardExpanded = false;
@@ -148,7 +149,9 @@ class PtySessionViewState extends State<PtySessionView> {
       }
       ..onState = (session) {
         if (session.status == SessionStatus.exited) {
-          _terminal.write('\r\n\x1b[33m[${AppStrings.of.ptySessionExited}]\x1b[0m\r\n');
+          _terminal.write(
+            '\r\n\x1b[33m[${AppStrings.of.ptySessionExited}]\x1b[0m\r\n',
+          );
           if (mounted) setState(() {});
         }
       }
@@ -221,7 +224,9 @@ class PtySessionViewState extends State<PtySessionView> {
       case SseConnectionStatus.disconnected:
         visible = true;
         color = c.textSecondary;
-        label = _sseClient.sessionExited ? AppStrings.of.ptySessionExited : AppStrings.of.ptyDisconnected;
+        label = _sseClient.sessionExited
+            ? AppStrings.of.ptySessionExited
+            : AppStrings.of.ptyDisconnected;
     }
 
     if (!visible) return const SizedBox.shrink();
@@ -300,9 +305,8 @@ class PtySessionViewState extends State<PtySessionView> {
               imeActive: !_hardwareKeyboardOnly,
               onToggle: () =>
                   setState(() => _keyboardExpanded = !_keyboardExpanded),
-              onToggleIme: () => _toggleIme(
-                extraState: () => _keyboardExpanded = false,
-              ),
+              onToggleIme: () =>
+                  _toggleIme(extraState: () => _keyboardExpanded = false),
               onSendBytes: (bytes) => _transport.sendInput(
                 widget.serverRef,
                 widget.session.id,
@@ -316,4 +320,3 @@ class PtySessionViewState extends State<PtySessionView> {
     );
   }
 }
-

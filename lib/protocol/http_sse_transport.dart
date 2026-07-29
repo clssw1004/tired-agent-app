@@ -381,16 +381,18 @@ class HttpSseTransport implements Transport {
                     // 404 NOT_FOUND → session 已永久删除/退出，不重连。
                     if (response.statusCode == 404 &&
                         error.code == 'NOT_FOUND') {
-                      handlers.onState(Session(
-                        id: id,
-                        cmd: '',
-                        args: [],
-                        status: SessionStatus.exited,
-                        createdAt: 0,
-                        byteOffset: currentFrom,
-                        cols: 80,
-                        rows: 24,
-                      ));
+                      handlers.onState(
+                        Session(
+                          id: id,
+                          cmd: '',
+                          args: [],
+                          status: SessionStatus.exited,
+                          createdAt: 0,
+                          byteOffset: currentFrom,
+                          cols: 80,
+                          rows: 24,
+                        ),
+                      );
                       teardown();
                       return;
                     }

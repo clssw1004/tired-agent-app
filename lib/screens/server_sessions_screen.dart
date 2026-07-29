@@ -88,7 +88,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     try {
       final api = _api;
       if (api == null) {
-        if (mounted) setState(() => _error = AppStrings.of.sessionsNotConnected);
+        if (mounted)
+          setState(() => _error = AppStrings.of.sessionsNotConnected);
         return;
       }
       final sessions = await api.listSessions();
@@ -115,7 +116,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         : 'resume-${session.id.substring(0, 8)}';
 
     // Resume value priority: extra.claudeSessionId > extra.claudeName > label
-    final resumeValue = (session.extra?['claudeSessionId'] as String?) ??
+    final resumeValue =
+        (session.extra?['claudeSessionId'] as String?) ??
         (session.extra?['claudeName'] as String?) ??
         session.label;
 
@@ -133,7 +135,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     try {
       final newSession = await api.createSession(spec);
       if (mounted) {
-        context.push('/session/${widget.profileId}/${widget.agentId}/${newSession.id}');
+        context.push(
+          '/session/${widget.profileId}/${widget.agentId}/${newSession.id}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -180,8 +184,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       if (s.status != SessionStatus.exited) continue;
       if (s.cmd == 'claude' &&
           (s.extra?['claudeSessionId'] != null ||
-           s.extra?['claudeName'] != null ||
-           s.label != null)) {
+              s.extra?['claudeName'] != null ||
+              s.label != null)) {
         resumableIds.add(s.id);
       } else {
         pruneTargets.add(s.id);
@@ -241,10 +245,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: c.danger,
-            ),
+            SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
           );
         }
       }
@@ -366,7 +367,10 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             icon: Icon(Icons.filter_list, color: c.textSecondary),
             onSelected: (f) => setState(() => _statusFilter = f),
             itemBuilder: (_) => [
-              PopupMenuItem(value: null, child: Text(AppStrings.of.sessionsFilterAll)),
+              PopupMenuItem(
+                value: null,
+                child: Text(AppStrings.of.sessionsFilterAll),
+              ),
               PopupMenuItem(
                 value: SessionStatus.running,
                 child: Text(AppStrings.of.sessionsFilterRunning),
@@ -392,7 +396,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   Widget _buildContent(ManagerConnection? conn) {
     if (conn == null) {
-      return Center(child: ThemedText.small(AppStrings.of.sessionsManagerNotFound));
+      return Center(
+        child: ThemedText.small(AppStrings.of.sessionsManagerNotFound),
+      );
     }
 
     if (_loading && _sessions.isEmpty) {
@@ -413,11 +419,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             color: c.primary.withAlpha(15),
             child: Row(
               children: [
-                Icon(
-                  Icons.cleaning_services,
-                  size: 14,
-                  color: c.primary,
-                ),
+                Icon(Icons.cleaning_services, size: 14, color: c.primary),
                 const SizedBox(width: AppSpacing.one),
                 ThemedText.small(
                   AppStrings.of.sessionsPruned(_pruneInfo!),
@@ -426,11 +428,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                 const Spacer(),
                 GestureDetector(
                   onTap: () => setState(() => _pruneInfo = null),
-                  child: Icon(
-                    Icons.close,
-                    size: 14,
-                    color: c.textSecondary,
-                  ),
+                  child: Icon(Icons.close, size: 14, color: c.textSecondary),
                 ),
               ],
             ),
@@ -451,10 +449,11 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             ),
             child: Row(
               children: [
-                Expanded(
-                  child: ThemedText.small(_error!, color: c.danger),
+                Expanded(child: ThemedText.small(_error!, color: c.danger)),
+                TextButton(
+                  onPressed: _load,
+                  child: Text(AppStrings.of.agentRetry),
                 ),
-                TextButton(onPressed: _load, child: Text(AppStrings.of.agentRetry)),
               ],
             ),
           ),
@@ -488,7 +487,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: (_sessions
+                      color:
+                          (_sessions
                               .where((s) => s.status != SessionStatus.exited)
                               .isNotEmpty)
                           ? c.primary.withAlpha(70)
@@ -521,7 +521,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
           child: _visible.isEmpty
               ? Center(
                   child: ThemedText.small(
-                    _loading ? AppStrings.of.sessionsLoading : AppStrings.of.sessionsEmpty,
+                    _loading
+                        ? AppStrings.of.sessionsLoading
+                        : AppStrings.of.sessionsEmpty,
                     color: c.textSecondary,
                   ),
                 )
@@ -544,11 +546,12 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                       onDelete: session.status == SessionStatus.exited
                           ? () => _requestDelete(session.id)
                           : null,
-                      onResume: (session.status == SessionStatus.exited &&
+                      onResume:
+                          (session.status == SessionStatus.exited &&
                               session.cmd == 'claude' &&
                               (session.extra?['claudeSessionId'] != null ||
-                               session.extra?['claudeName'] != null ||
-                               session.label != null))
+                                  session.extra?['claudeName'] != null ||
+                                  session.label != null))
                           ? () => _requestResume(session)
                           : null,
                       onTap: () => context.push(
@@ -562,4 +565,3 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     );
   }
 }
-

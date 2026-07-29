@@ -12,7 +12,8 @@ class _DropdownItem {
   _DropdownItem._({this.builtin, this.user, this.separatorLabel});
   factory _DropdownItem.builtin(BuiltinPreset p) => _DropdownItem._(builtin: p);
   factory _DropdownItem.user(UserPreset p) => _DropdownItem._(user: p);
-  factory _DropdownItem.separator(String label) => _DropdownItem._(separatorLabel: label);
+  factory _DropdownItem.separator(String label) =>
+      _DropdownItem._(separatorLabel: label);
 
   bool get isSeparator => separatorLabel != null;
   String get label => builtin?.label ?? user?.label ?? separatorLabel ?? '';
@@ -70,12 +71,7 @@ class SessionPresetDropdown extends StatelessWidget {
             width: hasSelection ? 1 : 0.5,
           ),
           boxShadow: hasSelection
-              ? [
-                  BoxShadow(
-                    color: c.primary.withAlpha(15),
-                    blurRadius: 6,
-                  ),
-                ]
+              ? [BoxShadow(color: c.primary.withAlpha(15), blurRadius: 6)]
               : null,
         ),
         child: Row(
@@ -88,11 +84,7 @@ class SessionPresetDropdown extends StatelessWidget {
                 color: hasSelection ? c.primary : c.text,
               ),
             ),
-            Icon(
-              Icons.unfold_more,
-              color: c.primary.withAlpha(140),
-              size: 18,
-            ),
+            Icon(Icons.unfold_more, color: c.primary.withAlpha(140), size: 18),
           ],
         ),
       ),
@@ -115,13 +107,12 @@ class SessionPresetDropdown extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.four),
             child: Row(
               children: [
-                Icon(
-                  Icons.terminal,
-                  color: c.primary.withAlpha(180),
-                  size: 20,
-                ),
+                Icon(Icons.terminal, color: c.primary.withAlpha(180), size: 20),
                 const SizedBox(width: AppSpacing.two),
-                ThemedText.mono(AppStrings.of.createSelectPreset, color: c.primary),
+                ThemedText.mono(
+                  AppStrings.of.createSelectPreset,
+                  color: c.primary,
+                ),
               ],
             ),
           ),
@@ -135,8 +126,10 @@ class SessionPresetDropdown extends StatelessWidget {
                 if (item.isSeparator) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.four, AppSpacing.two,
-                      AppSpacing.four, AppSpacing.one,
+                      AppSpacing.four,
+                      AppSpacing.two,
+                      AppSpacing.four,
+                      AppSpacing.one,
                     ),
                     child: ThemedText.mono(
                       item.separatorLabel ?? '',
@@ -144,11 +137,13 @@ class SessionPresetDropdown extends StatelessWidget {
                     ),
                   );
                 }
-                final isActive = item.builtin != null &&
+                final isActive =
+                    item.builtin != null &&
                     item.builtin!.id == selectedBuiltinId;
                 return Container(
                   margin: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.two, vertical: 1,
+                    horizontal: AppSpacing.two,
+                    vertical: 1,
                   ),
                   decoration: BoxDecoration(
                     color: isActive
@@ -156,15 +151,15 @@ class SessionPresetDropdown extends StatelessWidget {
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(AppSpacing.two),
                     border: isActive
-                        ? Border.all(
-                            color: c.primary.withAlpha(40),
-                            width: 0.5,
-                          )
+                        ? Border.all(color: c.primary.withAlpha(40), width: 0.5)
                         : null,
                   ),
                   child: ListTile(
                     dense: true,
-                    leading: Text(item.emoji, style: const TextStyle(fontSize: 18)),
+                    leading: Text(
+                      item.emoji,
+                      style: const TextStyle(fontSize: 18),
+                    ),
                     title: ThemedText.mono(
                       item.label,
                       color: isActive ? c.primary : c.text,

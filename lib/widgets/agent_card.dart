@@ -43,10 +43,7 @@ class AgentCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.two),
-            border: Border.all(
-              color: c.primary.withAlpha(40),
-              width: 0.5,
-            ),
+            border: Border.all(color: c.primary.withAlpha(40), width: 0.5),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.three),
@@ -77,10 +74,7 @@ class AgentCard extends StatelessWidget {
                     children: [
                       ThemedText.body(agent.name, color: c.text),
                       const SizedBox(height: 2),
-                      ThemedText.label(
-                        agent.baseUrl,
-                        color: c.textSecondary,
-                      ),
+                      ThemedText.label(agent.baseUrl, color: c.textSecondary),
                       if (agent.platform != null) ...[
                         const SizedBox(height: 2),
                         Row(
@@ -101,7 +95,11 @@ class AgentCard extends StatelessWidget {
                 // Edit button
                 if (onEdit != null)
                   IconButton(
-                    icon: Icon(Icons.edit_outlined, size: 16, color: c.textSecondary),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: c.textSecondary,
+                    ),
                     tooltip: AppStrings.of.agentEditTooltip,
                     onPressed: onEdit,
                     padding: EdgeInsets.zero,
@@ -111,11 +109,7 @@ class AgentCard extends StatelessWidget {
                     ),
                   ),
                 // Chevron
-                Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: c.textSecondary,
-                ),
+                Icon(Icons.chevron_right, size: 20, color: c.textSecondary),
               ],
             ),
           ),

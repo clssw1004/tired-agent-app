@@ -6,8 +6,8 @@ class PinnedSession {
   final String agentId;
   final String agentName;
   final String sessionId;
-  final String sessionLabel;   // display label (from label ?? cmd)
-  final String sessionType;    // "pty" | "claude"
+  final String sessionLabel; // display label (from label ?? cmd)
+  final String sessionType; // "pty" | "claude"
   final int pinnedAtMs;
 
   PinnedSession({

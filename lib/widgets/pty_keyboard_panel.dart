@@ -73,7 +73,9 @@ class PtyKeyboardPanel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
-        children: keys.map((k) => Expanded(child: _buildKeyButton(k, colors))).toList(),
+        children: keys
+            .map((k) => Expanded(child: _buildKeyButton(k, colors)))
+            .toList(),
       ),
     );
   }
@@ -188,11 +190,7 @@ class _ExpandHandle extends StatelessWidget {
           ),
 
           // Separator line
-          Container(
-            width: 0.5,
-            height: 16,
-            color: colors.border.withAlpha(60),
-          ),
+          Container(width: 0.5, height: 16, color: colors.border.withAlpha(60)),
 
           // ── Right half: IME toggle ──────────────────────────────
           Expanded(
@@ -214,7 +212,9 @@ class _ExpandHandle extends StatelessWidget {
                         color: imeActive
                             ? colors.primary
                             : colors.textSecondary.withAlpha(140),
-                        fontWeight: imeActive ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: imeActive
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -419,10 +419,7 @@ class _KeyButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.surfaceAlt,
             borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: c.border.withAlpha(100),
-              width: 0.5,
-            ),
+            border: Border.all(color: c.border.withAlpha(100), width: 0.5),
           ),
           child: keyDef.icon != null
               ? Icon(keyDef.icon, size: 16, color: c.textCode)

@@ -11,9 +11,9 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
 
   @override
   EnhancementActivation get activation => const EnhancementActivation(
-        presetIds: ['claude'],
-        commandPattern: 'claude',
-      );
+    presetIds: ['claude'],
+    commandPattern: 'claude',
+  );
 
   @override
   EnhancementPoint get point => EnhancementPoint.directorySelected;
@@ -27,7 +27,9 @@ class ClaudeProjectsEnhancement extends SessionEnhancement {
 
   @override
   Future<SessionSpec> modifySpec(
-      SessionSpec spec, EnhancementContext ctx) async {
+    SessionSpec spec,
+    EnhancementContext ctx,
+  ) async {
     final extraArgs = <String>[];
 
     // Use historical session's display name as label if available.

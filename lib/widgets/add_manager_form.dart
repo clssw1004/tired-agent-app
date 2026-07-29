@@ -44,10 +44,10 @@ class AddManagerFormState extends State<AddManagerForm> {
   }
 
   AddManagerFormData get data => AddManagerFormData(
-        _nameController.text.trim(),
-        _urlController.text.trim(),
-        _tokenController.text.trim(),
-      );
+    _nameController.text.trim(),
+    _urlController.text.trim(),
+    _tokenController.text.trim(),
+  );
 
   @override
   Widget build(BuildContext context) {

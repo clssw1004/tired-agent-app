@@ -2,6 +2,7 @@
 enum EnhancementPoint {
   /// After user selects a working directory.
   directorySelected,
+
   /// Before session spec is submitted.
   beforeSubmit,
 }
@@ -10,13 +11,11 @@ enum EnhancementPoint {
 class EnhancementActivation {
   /// Activate when preset.id matches one of these.
   final List<String> presetIds;
+
   /// Activate when cmd matches this pattern.
   final Pattern? commandPattern;
 
-  const EnhancementActivation({
-    this.presetIds = const [],
-    this.commandPattern,
-  });
+  const EnhancementActivation({this.presetIds = const [], this.commandPattern});
 
   bool matches(String cmd, String? presetId) {
     if (presetId != null && presetIds.contains(presetId)) return true;

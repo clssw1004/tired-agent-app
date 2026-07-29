@@ -105,8 +105,7 @@ class _ThemeTile extends StatelessWidget {
           children: [
             ThemedText.body(label, color: selected ? c.primary : c.text),
             const Spacer(),
-            if (selected)
-              Icon(Icons.check, size: 18, color: c.primary),
+            if (selected) Icon(Icons.check, size: 18, color: c.primary),
           ],
         ),
       ),

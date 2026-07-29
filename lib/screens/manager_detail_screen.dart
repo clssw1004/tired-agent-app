@@ -112,7 +112,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: ThemedText.small(AppStrings.of.agentAdded(formData.name)),
+              content: ThemedText.small(
+                AppStrings.of.agentAdded(formData.name),
+              ),
               backgroundColor: c.backgroundElement,
             ),
           );
@@ -180,7 +182,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title(conn?.profile.name ?? AppStrings.of.agentManagerNotFound),
+        title: ThemedText.title(
+          conn?.profile.name ?? AppStrings.of.agentManagerNotFound,
+        ),
         actions: [
           if (conn?.status == ConnectionStatus.connected)
             IconButton(
@@ -196,7 +200,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
 
   Widget _buildBody(ManagerConnection? conn) {
     if (conn == null) {
-      return Center(child: ThemedText.small(AppStrings.of.agentManagerNotFound));
+      return Center(
+        child: ThemedText.small(AppStrings.of.agentManagerNotFound),
+      );
     }
 
     if (_loading) {
@@ -235,7 +241,10 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
             children: [
               Icon(Icons.dns_outlined, size: 64, color: c.textSecondary),
               const SizedBox(height: AppSpacing.three),
-              ThemedText.title(AppStrings.of.agentNoAgents, color: c.textSecondary),
+              ThemedText.title(
+                AppStrings.of.agentNoAgents,
+                color: c.textSecondary,
+              ),
               const SizedBox(height: AppSpacing.one),
               ThemedText.small(
                 AppStrings.of.agentNoAgentsDesc,
@@ -275,4 +284,3 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     );
   }
 }
-

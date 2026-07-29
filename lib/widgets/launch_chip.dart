@@ -56,16 +56,12 @@ class LaunchChip extends StatelessWidget {
               Icon(
                 Icons.play_arrow,
                 size: 12,
-                color: disabled
-                    ? c.textSecondary.withAlpha(60)
-                    : c.primary,
+                color: disabled ? c.textSecondary.withAlpha(60) : c.primary,
               ),
             const SizedBox(width: 3),
             ThemedText.mono(
               AppStrings.of.createLaunch,
-              color: disabled
-                  ? c.textSecondary.withAlpha(60)
-                  : c.primary,
+              color: disabled ? c.textSecondary.withAlpha(60) : c.primary,
             ),
           ],
         ),

@@ -50,11 +50,7 @@ class ServerListScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.smart_toy,
-              size: 80,
-              color: c.primary.withAlpha(180),
-            ),
+            Icon(Icons.smart_toy, size: 80, color: c.primary.withAlpha(180)),
             const SizedBox(height: AppSpacing.four),
             ThemedText.title(AppStrings.of.managersWelcome),
             const SizedBox(height: AppSpacing.two),
@@ -100,10 +96,7 @@ class ServerListScreen extends StatelessWidget {
 
   // ── Add Manager dialog ──────────────────────────────────────────────
 
-  Future<void> _showAddManager(
-    BuildContext context,
-    AuthProvider auth,
-  ) async {
+  Future<void> _showAddManager(BuildContext context, AuthProvider auth) async {
     final formKey = GlobalKey<AddManagerFormState>();
 
     final formData = await NeonDialog.show<AddManagerFormData?>(
@@ -112,7 +105,9 @@ class ServerListScreen extends StatelessWidget {
       maxWidth: 480,
       content: AddManagerForm(
         key: formKey,
-        initialName: AppStrings.of.managersDefaultName(auth.connections.length + 1),
+        initialName: AppStrings.of.managersDefaultName(
+          auth.connections.length + 1,
+        ),
       ),
       actions: [
         NeonDialogAction(
@@ -151,10 +146,7 @@ class ServerListScreen extends StatelessWidget {
         if (context.mounted) {
           final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: c.danger,
-            ),
+            SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
           );
         }
       }
@@ -201,14 +193,18 @@ class ServerListScreen extends StatelessWidget {
         if (ok) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: ThemedText.small('${conn.profile.name} ${AppStrings.of.managersReconnected}'),
+              content: ThemedText.small(
+                '${conn.profile.name} ${AppStrings.of.managersReconnected}',
+              ),
               backgroundColor: c.backgroundElement,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(conn.error ?? AppStrings.of.managersReconnectFailed),
+              content: Text(
+                conn.error ?? AppStrings.of.managersReconnectFailed,
+              ),
               backgroundColor: c.danger,
             ),
           );

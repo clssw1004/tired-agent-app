@@ -38,12 +38,13 @@ class SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    final canResume = session.status == SessionStatus.exited &&
+    final canResume =
+        session.status == SessionStatus.exited &&
         onResume != null &&
         session.cmd == 'claude' &&
         (session.extra?['claudeSessionId'] != null ||
-         session.extra?['claudeName'] != null ||
-         session.label != null);
+            session.extra?['claudeName'] != null ||
+            session.label != null);
     return NeonCard(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.four,
@@ -66,9 +67,7 @@ class SessionCard extends StatelessWidget {
                     child: Icon(
                       isPinned ? Icons.push_pin : Icons.push_pin_outlined,
                       size: 16,
-                      color: isPinned
-                          ? c.primary
-                          : c.textSecondary,
+                      color: isPinned ? c.primary : c.textSecondary,
                     ),
                   ),
                 ),
@@ -105,7 +104,11 @@ class SessionCard extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.folder_outlined, size: 12, color: c.primary.withAlpha(120)),
+                Icon(
+                  Icons.folder_outlined,
+                  size: 12,
+                  color: c.primary.withAlpha(120),
+                ),
                 const SizedBox(width: 4),
                 Flexible(
                   child: ThemedText.mono(
@@ -141,7 +144,9 @@ class SessionCard extends StatelessWidget {
                     color: c.textSecondary,
                     onTap: onDelete!,
                   ),
-                if (session.status == SessionStatus.exited && onDelete != null && canResume)
+                if (session.status == SessionStatus.exited &&
+                    onDelete != null &&
+                    canResume)
                   const SizedBox(width: 6),
                 if (canResume)
                   Tooltip(
@@ -169,7 +174,8 @@ class SessionCard extends StatelessWidget {
                       color: c.danger,
                       onTap: onKill!,
                     ),
-                  if (onKill != null && (onDelete != null || canResume) &&
+                  if (onKill != null &&
+                      (onDelete != null || canResume) &&
                       session.status != SessionStatus.exited)
                     const SizedBox(width: 6),
                   if (session.status == SessionStatus.exited &&
@@ -181,7 +187,8 @@ class SessionCard extends StatelessWidget {
                       onTap: onDelete!,
                     ),
                   if (session.status == SessionStatus.exited &&
-                      onDelete != null && canResume)
+                      onDelete != null &&
+                      canResume)
                     const SizedBox(width: 6),
                   if (canResume)
                     Tooltip(

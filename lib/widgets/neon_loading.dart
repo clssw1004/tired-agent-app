@@ -67,8 +67,13 @@ class _NeonLoadingState extends State<NeonLoading>
       builder: (_, _) => Row(
         mainAxisSize: MainAxisSize.min,
         children: List.generate(3, (i) {
-          final phase = (_controller.value * 2 * 3.14159 + i * 2 * 3.14159 / 3) % (2 * 3.14159);
-          final opacity = (phase < 3.14159 ? (phase / 3.14159) : 0).clamp(0.3, 1.0);
+          final phase =
+              (_controller.value * 2 * 3.14159 + i * 2 * 3.14159 / 3) %
+              (2 * 3.14159);
+          final opacity = (phase < 3.14159 ? (phase / 3.14159) : 0).clamp(
+            0.3,
+            1.0,
+          );
           return Padding(
             padding: EdgeInsets.only(right: i < 2 ? 4 : 0),
             child: Container(
@@ -78,7 +83,11 @@ class _NeonLoadingState extends State<NeonLoading>
                 color: activeColor.withAlpha((opacity * 255).toInt()),
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: activeColor.withAlpha(60), blurRadius: 4, spreadRadius: 0),
+                  BoxShadow(
+                    color: activeColor.withAlpha(60),
+                    blurRadius: 4,
+                    spreadRadius: 0,
+                  ),
                 ],
               ),
             ),

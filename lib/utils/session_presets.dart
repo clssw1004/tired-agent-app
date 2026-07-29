@@ -6,11 +6,7 @@ class OptionValue {
   final String label;
   final List<String> args;
   final String hint;
-  const OptionValue({
-    required this.label,
-    required this.args,
-    this.hint = '',
-  });
+  const OptionValue({required this.label, required this.args, this.hint = ''});
 }
 
 /// A configurable option under a preset, with one or more selectable values.
@@ -73,12 +69,36 @@ const List<BuiltinPreset> builtinPresets = [
         label: 'Mode',
         hint: 'Permission mode for the session',
         values: [
-          OptionValue(label: 'Manual', args: ['--permission-mode', 'manual'], hint: 'Approve each action'),
-          OptionValue(label: 'Auto', args: ['--permission-mode', 'auto'], hint: 'Auto approve all'),
-          OptionValue(label: 'Plan', args: ['--permission-mode', 'plan'], hint: 'Plan only, no execution'),
-          OptionValue(label: 'Accept edits', args: ['--permission-mode', 'acceptEdits'], hint: 'Auto accept edits'),
-          OptionValue(label: 'Bypass', args: ['--permission-mode', 'bypassPermissions'], hint: 'Skip all prompts'),
-          OptionValue(label: "Don't ask", args: ['--permission-mode', 'dontAsk'], hint: 'Suppress prompts'),
+          OptionValue(
+            label: 'Manual',
+            args: ['--permission-mode', 'manual'],
+            hint: 'Approve each action',
+          ),
+          OptionValue(
+            label: 'Auto',
+            args: ['--permission-mode', 'auto'],
+            hint: 'Auto approve all',
+          ),
+          OptionValue(
+            label: 'Plan',
+            args: ['--permission-mode', 'plan'],
+            hint: 'Plan only, no execution',
+          ),
+          OptionValue(
+            label: 'Accept edits',
+            args: ['--permission-mode', 'acceptEdits'],
+            hint: 'Auto accept edits',
+          ),
+          OptionValue(
+            label: 'Bypass',
+            args: ['--permission-mode', 'bypassPermissions'],
+            hint: 'Skip all prompts',
+          ),
+          OptionValue(
+            label: "Don't ask",
+            args: ['--permission-mode', 'dontAsk'],
+            hint: 'Suppress prompts',
+          ),
         ],
       ),
       PresetOption(

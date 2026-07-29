@@ -228,11 +228,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                 ThemedText.title(AppStrings.of.dirPickerTitle),
                 const Spacer(),
                 IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: c.textSecondary,
-                    size: 20,
-                  ),
+                  icon: Icon(Icons.close, color: c.textSecondary, size: 20),
                   onPressed: widget.onClose,
                 ),
               ],
@@ -245,18 +241,16 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
               children: [
                 if (_parent != null)
                   IconButton(
-                    icon: Icon(
-                      Icons.arrow_upward,
-                      color: c.accent,
-                      size: 20,
-                    ),
+                    icon: Icon(Icons.arrow_upward, color: c.accent, size: 20),
                     onPressed: _loading ? null : () => _navigateTo(_parent!),
                     tooltip: AppStrings.of.dirPickerUpLevel,
                   ),
                 const SizedBox(width: AppSpacing.two),
                 Expanded(
                   child: ThemedText.small(
-                    _currentPath.isNotEmpty ? _currentPath : AppStrings.of.dirPickerLoading,
+                    _currentPath.isNotEmpty
+                        ? _currentPath
+                        : AppStrings.of.dirPickerLoading,
                     color: c.textSecondary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -282,16 +276,10 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: ThemedText.small(_error!, color: c.danger),
-                  ),
+                  Expanded(child: ThemedText.small(_error!, color: c.danger)),
                   GestureDetector(
                     onTap: () => setState(() => _error = null),
-                    child: Icon(
-                      Icons.close,
-                      color: c.danger,
-                      size: 16,
-                    ),
+                    child: Icon(Icons.close, color: c.danger, size: 16),
                   ),
                 ],
               ),
@@ -329,9 +317,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
             ),
             decoration: BoxDecoration(
               color: c.background,
-              border: Border(
-                top: BorderSide(color: c.backgroundElement),
-              ),
+              border: Border(top: BorderSide(color: c.backgroundElement)),
             ),
             child: SafeArea(
               top: false,
@@ -344,7 +330,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
                     child: ThemedText.small(
                       _savingFavorite
                           ? '…'
-                          : (_isFavorited ? AppStrings.of.dirPickerUnfavorite : AppStrings.of.dirPickerFavorite),
+                          : (_isFavorited
+                                ? AppStrings.of.dirPickerUnfavorite
+                                : AppStrings.of.dirPickerFavorite),
                       color: c.textSecondary,
                     ),
                   ),
@@ -372,7 +360,9 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   Widget _buildFavoritesTab() {
     final c = context.appColors;
     if (_favorites.isEmpty) {
-      return Center(child: ThemedText.small(AppStrings.of.dirPickerNoFavorites));
+      return Center(
+        child: ThemedText.small(AppStrings.of.dirPickerNoFavorites),
+      );
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four),
@@ -408,11 +398,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
       itemBuilder: (context, index) {
         final recent = _recent[index];
         return ListTile(
-          leading: Icon(
-            Icons.history,
-            color: c.textSecondary,
-            size: 20,
-          ),
+          leading: Icon(Icons.history, color: c.textSecondary, size: 20),
           title: ThemedText.small(
             recent.path,
             maxLines: 1,
@@ -441,11 +427,7 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
       itemBuilder: (context, index) {
         final entry = _entries[index];
         return ListTile(
-          leading: Icon(
-            Icons.folder_outlined,
-            color: c.accent,
-            size: 20,
-          ),
+          leading: Icon(Icons.folder_outlined, color: c.accent, size: 20),
           title: ThemedText.body(entry.name),
           onTap: () => _navigateTo(entry.path),
         );
@@ -456,8 +438,10 @@ class _DirectoryPickerModalState extends State<DirectoryPickerModal>
   String _relativeTime(int epochMs) {
     final delta = DateTime.now().millisecondsSinceEpoch - epochMs;
     if (delta < 60000) return AppStrings.of.timeJustNow;
-    if (delta < 3600000) return '${delta ~/ 60000}${AppStrings.of.timeMinutesAgo}';
-    if (delta < 86400000) return '${delta ~/ 3600000}${AppStrings.of.timeHoursAgo}';
+    if (delta < 3600000)
+      return '${delta ~/ 60000}${AppStrings.of.timeMinutesAgo}';
+    if (delta < 86400000)
+      return '${delta ~/ 3600000}${AppStrings.of.timeHoursAgo}';
     return '${delta ~/ 86400000}${AppStrings.of.timeDaysAgo}';
   }
 }

@@ -55,9 +55,15 @@ class ManagerCard extends StatelessWidget {
     // Agent summary (only meaningful when connected)
     final agents = connection.agents;
     final totalAgents = agents.length;
-    final onlineAgents = agents.where((a) => a.state == AgentState.online).length;
-    final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
-    final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
+    final onlineAgents = agents
+        .where((a) => a.state == AgentState.online)
+        .length;
+    final offlineAgents = agents
+        .where((a) => a.state == AgentState.offline)
+        .length;
+    final pendingAgents = agents
+        .where((a) => a.state == AgentState.pending)
+        .length;
     final hasAgentInfo = totalAgents > 0;
 
     return Padding(
@@ -120,7 +126,10 @@ class ManagerCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ThemedText.body(profile.name, color: c.text),
-                          ThemedText.label(profile.baseUrl, color: c.textSecondary),
+                          ThemedText.label(
+                            profile.baseUrl,
+                            color: c.textSecondary,
+                          ),
                         ],
                       ),
                     ),
@@ -143,7 +152,11 @@ class ManagerCard extends StatelessWidget {
                     // Error info icon
                     if (connection.error != null)
                       IconButton(
-                        icon: Icon(Icons.info_outline, size: 16, color: c.danger),
+                        icon: Icon(
+                          Icons.info_outline,
+                          size: 16,
+                          color: c.danger,
+                        ),
                         onPressed: () => _showError(context),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
@@ -181,10 +194,15 @@ class ManagerCard extends StatelessWidget {
                           child: ThemedText.mono(
                             pendingAgents > 0
                                 ? AppStrings.of.managerAgentCountsWithPending(
-                                    totalAgents, onlineAgents, offlineAgents, pendingAgents,
+                                    totalAgents,
+                                    onlineAgents,
+                                    offlineAgents,
+                                    pendingAgents,
                                   )
                                 : AppStrings.of.managerAgentCounts(
-                                    totalAgents, onlineAgents, offlineAgents,
+                                    totalAgents,
+                                    onlineAgents,
+                                    offlineAgents,
                                   ),
                             color: c.textSecondary,
                           ),
@@ -207,10 +225,7 @@ class ManagerCard extends StatelessWidget {
   void _showError(BuildContext context) {
     final c = context.appColors;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(connection.error!),
-        backgroundColor: c.danger,
-      ),
+      SnackBar(content: Text(connection.error!), backgroundColor: c.danger),
     );
   }
 }

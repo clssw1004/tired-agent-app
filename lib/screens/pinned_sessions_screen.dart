@@ -28,7 +28,9 @@ class PinnedSessionsScreen extends StatelessWidget {
           child: Container(color: c.primary),
         ),
       ),
-      body: all.isEmpty ? _buildEmpty(context) : _buildList(context, pinService, all),
+      body: all.isEmpty
+          ? _buildEmpty(context)
+          : _buildList(context, pinService, all),
     );
   }
 
@@ -84,22 +86,19 @@ class PinnedSessionsScreen extends StatelessWidget {
           children: [
             // Group header
             Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.two,
-              ),
-              child: ThemedText.title(
-                profileName,
-                color: c.primary,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.two),
+              child: ThemedText.title(profileName, color: c.primary),
             ),
             // Session cards
-            ...sessions.map((pinned) => _PinnedSessionCard(
-                  pinned: pinned,
-                  onTap: () => context.push(
-                    '/session/${pinned.profileId}/${pinned.agentId}/${pinned.sessionId}',
-                  ),
-                  onUnpin: () => _unpin(context, pinService, pinned),
-                )),
+            ...sessions.map(
+              (pinned) => _PinnedSessionCard(
+                pinned: pinned,
+                onTap: () => context.push(
+                  '/session/${pinned.profileId}/${pinned.agentId}/${pinned.sessionId}',
+                ),
+                onUnpin: () => _unpin(context, pinService, pinned),
+              ),
+            ),
             const SizedBox(height: AppSpacing.two),
           ],
         );
@@ -159,31 +158,21 @@ class _PinnedSessionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.surface,
             borderRadius: BorderRadius.circular(AppSpacing.two),
-            border: Border.all(
-              color: c.primary.withAlpha(40),
-              width: 0.5,
-            ),
+            border: Border.all(color: c.primary.withAlpha(40), width: 0.5),
           ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.three),
             child: Row(
               children: [
                 // Pin icon
-                Icon(
-                  Icons.push_pin,
-                  size: 16,
-                  color: c.primary,
-                ),
+                Icon(Icons.push_pin, size: 16, color: c.primary),
                 const SizedBox(width: AppSpacing.two),
                 // Label + meta
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ThemedText.body(
-                        pinned.sessionLabel,
-                        color: c.text,
-                      ),
+                      ThemedText.body(pinned.sessionLabel, color: c.text),
                       const SizedBox(height: 2),
                       ThemedText(
                         '${pinned.agentName} · ${pinned.sessionType.toUpperCase()} · pinned ${_timeSince(pinned.pinnedAtMs)}',
@@ -194,11 +183,7 @@ class _PinnedSessionCard extends StatelessWidget {
                   ),
                 ),
                 // Chevron
-                Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: c.textSecondary,
-                ),
+                Icon(Icons.chevron_right, size: 18, color: c.textSecondary),
               ],
             ),
           ),
