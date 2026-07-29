@@ -90,7 +90,7 @@ class ManagerCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.three,
                   AppSpacing.two,
-                  AppSpacing.one,
+                  AppSpacing.three,
                   AppSpacing.one,
                 ),
                 child: Row(
@@ -125,7 +125,21 @@ class ManagerCard extends StatelessWidget {
                       ),
                     ),
                     // Status label
-                    ThemedText.label(statusLabel, color: statusColor),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.two,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withAlpha(12),
+                        borderRadius: BorderRadius.circular(AppSpacing.one),
+                        border: Border.all(
+                          color: statusColor.withAlpha(40),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: ThemedText.label(statusLabel, color: statusColor),
+                    ),
                     // Error info icon
                     if (connection.error != null)
                       IconButton(
@@ -137,16 +151,14 @@ class ManagerCard extends StatelessWidget {
                           minHeight: 28,
                         ),
                       ),
-                    // Delete button
-                    if (onDelete != null)
-                      IconButton(
-                        icon: Icon(Icons.delete_outline, size: 18, color: c.textSecondary),
-                        onPressed: () => onDelete?.call(),
-                        tooltip: AppStrings.of.agentRemoveTooltip,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 28,
-                          minHeight: 28,
+                    // Entry chevron hint (only when connected)
+                    if (connStatus == ConnectionStatus.connected)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: c.textSecondary,
                         ),
                       ),
                   ],

@@ -713,7 +713,7 @@ packages:
       sha256: "0b62e7510b414329dfb6ce7dbcffcfe97cc5109033573cf0f4abca568dac8149"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "5.1.0"
+    version: "5.2.0"
   yaml:
     dependency: transitive
     description:
