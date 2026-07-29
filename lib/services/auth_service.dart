@@ -49,15 +49,7 @@ class AuthService {
     final conn = _connections[profileId];
     if (conn == null) throw Exception('Profile not found: $profileId');
     await conn.connect(apiToken: apiToken);
-
-    // Persist the new refresh token after any successful auth.
-    if (conn.status == ConnectionStatus.connected &&
-        conn.profile.refreshToken != null) {
-      await storage.saveManagerRefreshToken(
-        profileId,
-        conn.profile.refreshToken!,
-      );
-    }
+    await _persistRefreshToken(conn);
   }
 
   /// Disconnect and unregister a connection.
@@ -75,18 +67,27 @@ class AuthService {
       _connections.values.map((conn) async {
         if (conn.profile.refreshToken != null || conn.profile.sessionToken != null) {
           await conn.connect();
-          // Persist rotated refresh token (single-use sliding refresh).
-          if (conn.status == ConnectionStatus.connected &&
-              conn.profile.refreshToken != null) {
-            await storage.saveManagerRefreshToken(
-              conn.profile.id,
-              conn.profile.refreshToken!,
-            );
-          }
+          await _persistRefreshToken(conn);
         }
       }),
       eagerError: false,
     );
+  }
+
+  /// Refresh all sessions silently (called on app resume).
+  ///
+  /// Iterates every connection; if a session token is stale, replaces it via
+  /// the stored refresh token. The Confirmed Rotation mechanism guarantees
+  /// the client can safely retry even if the refresh response is lost.
+  Future<void> refreshAllSessions() async {
+    for (final conn in _connections.values) {
+      try {
+        await conn.ensureFreshSession();
+        await _persistRefreshToken(conn);
+      } catch (e) {
+        debugPrint('[AuthService] refreshAllSessions — ${conn.profile.name}: $e');
+      }
+    }
   }
 
   // ─── Boot / load ──────────────────────────────────────────────────────
@@ -135,21 +136,13 @@ class AuthService {
     if (existing != null) {
       await existing.disconnect();
       await existing.connect(apiToken: apiToken);
-      // Persist the new refresh token (rotated by login).
-      if (existing.status == ConnectionStatus.connected &&
-          existing.profile.refreshToken != null) {
-        await storage.saveManagerRefreshToken(
-          existing.profile.id,
-          existing.profile.refreshToken!,
-        );
-      }
+      await _persistRefreshToken(existing);
       // Update name if caller provided one.
       if (name != null) existing.profile.name = name;
       await _persistProfiles();
       return existing;
     }
 
-    // Create new profile.
     // Create new profile.
     final profile = ManagerProfile(
       id: const Uuid().v4(),
@@ -160,14 +153,7 @@ class AuthService {
     await conn.connect(apiToken: apiToken);
     _connections[profile.id] = conn;
 
-    // Persist refresh token.
-    if (conn.profile.refreshToken != null) {
-      await storage.saveManagerRefreshToken(
-        profile.id,
-        conn.profile.refreshToken!,
-      );
-    }
-
+    await _persistRefreshToken(conn);
     await _persistProfiles();
     return conn;
   }
@@ -226,6 +212,19 @@ class AuthService {
   }
 
   // ─── Internals ────────────────────────────────────────────────────────
+
+  /// Persist the rotated refresh token after a successful auth flow.
+  ///
+  /// Only saves when the connection is healthy and a token is available.
+  Future<void> _persistRefreshToken(ManagerConnection conn) async {
+    if (conn.status == ConnectionStatus.connected &&
+        conn.profile.refreshToken != null) {
+      await storage.saveManagerRefreshToken(
+        conn.profile.id,
+        conn.profile.refreshToken!,
+      );
+    }
+  }
 
   Future<void> _persistProfiles() async {
     await storage.saveProfiles(profiles);

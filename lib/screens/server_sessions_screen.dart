@@ -13,6 +13,7 @@ import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/services/session_api_service.dart';
 
 typedef _StatusFilter = SessionStatus?;
 
@@ -40,6 +41,14 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   Timer? _tickTimer;
 
   int? _pruneInfo;
+
+  /// Convenience: build [SessionApiService] from the current connection.
+  SessionApiService? get _api {
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null || conn.profile.sessionToken == null) return null;
+    return SessionApiService(conn: conn, agentId: widget.agentId);
+  }
 
   @override
   void initState() {
@@ -76,23 +85,12 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
 
   Future<void> _loadSilent() async {
     try {
-      final auth = context.read<AuthProvider>();
-      final conn = auth.connectionFor(widget.profileId);
-      if (conn == null || conn.profile.sessionToken == null) {
+      final api = _api;
+      if (api == null) {
         if (mounted) setState(() => _error = AppStrings.of.sessionsNotConnected);
         return;
       }
-      await conn.ensureFreshSession();
-      final mgrRef = ServerRef(
-        id: '__manager__',
-        name: conn.profile.name,
-        baseUrl: conn.profile.baseUrl,
-        token: conn.profile.sessionToken!,
-      );
-      final sessions = await conn.transport.listSessions(
-        mgrRef,
-        agentId: widget.agentId,
-      );
+      final sessions = await api.listSessions();
       if (mounted) {
         setState(() {
           _sessions = sessions;
@@ -108,9 +106,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   // ── Resume ───────────────────────────────────────────────────────────
 
   Future<void> _requestResume(Session session) async {
-    final auth = context.read<AuthProvider>();
-    final conn = auth.connectionFor(widget.profileId);
-    if (conn == null || conn.profile.sessionToken == null) return;
+    final api = _api;
+    if (api == null) return;
 
     final newLabel = session.label != null
         ? '${session.label}-r'
@@ -128,21 +125,12 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       cols: session.cols,
       rows: session.rows,
       label: newLabel,
-      mode: SessionMode.persistent,
+      mode: SessionMode.process,
       extra: {'claudeName': newLabel},
     );
 
     try {
-      await conn.ensureFreshSession();
-      final mgrRef = ServerRef(
-        id: '__manager__',
-        name: conn.profile.name,
-        baseUrl: conn.profile.baseUrl,
-        token: conn.profile.sessionToken!,
-      );
-      final newSession = await conn.transport.createSession(
-        mgrRef, spec, agentId: widget.agentId,
-      );
+      final newSession = await api.createSession(spec);
       if (mounted) {
         context.push('/session/${widget.profileId}/${widget.agentId}/${newSession.id}');
       }
@@ -163,21 +151,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       title: AppStrings.of.sessionsKillTitle,
       desc: AppStrings.of.sessionsKillDesc,
       onConfirm: () async {
-        final auth = context.read<AuthProvider>();
-        final conn = auth.connectionFor(widget.profileId);
-        if (conn == null) return;
-        await conn.ensureFreshSession();
-        final mgrRef = ServerRef(
-          id: '__manager__',
-          name: conn.profile.name,
-          baseUrl: conn.profile.baseUrl,
-          token: conn.profile.sessionToken!,
-        );
-        await conn.transport.killSession(
-          mgrRef,
-          sessionId,
-          agentId: widget.agentId,
-        );
+        final api = _api;
+        if (api == null) return;
+        await api.killSession(sessionId);
         await _load();
       },
     );
@@ -188,21 +164,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       title: AppStrings.of.sessionsDeleteTitle,
       desc: AppStrings.of.sessionsDeleteDesc,
       onConfirm: () async {
-        final auth = context.read<AuthProvider>();
-        final conn = auth.connectionFor(widget.profileId);
-        if (conn == null) return;
-        await conn.ensureFreshSession();
-        final mgrRef = ServerRef(
-          id: '__manager__',
-          name: conn.profile.name,
-          baseUrl: conn.profile.baseUrl,
-          token: conn.profile.sessionToken!,
-        );
-        await conn.transport.deleteSession(
-          mgrRef,
-          sessionId,
-          agentId: widget.agentId,
-        );
+        final api = _api;
+        if (api == null) return;
+        await api.deleteSession(sessionId);
         await _load();
       },
     );
@@ -213,20 +177,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       title: AppStrings.of.sessionsPruneTitle,
       desc: AppStrings.of.sessionsPruneDesc,
       onConfirm: () async {
-        final auth = context.read<AuthProvider>();
-        final conn = auth.connectionFor(widget.profileId);
-        if (conn == null) return;
-        await conn.ensureFreshSession();
-        final mgrRef = ServerRef(
-          id: '__manager__',
-          name: conn.profile.name,
-          baseUrl: conn.profile.baseUrl,
-          token: conn.profile.sessionToken!,
-        );
-        final result = await conn.transport.pruneSessions(
-          mgrRef,
-          agentId: widget.agentId,
-        );
+        final api = _api;
+        if (api == null) return;
+        final result = await api.pruneSessions();
         setState(() => _pruneInfo = result['removed'] as int?);
         await _load();
       },

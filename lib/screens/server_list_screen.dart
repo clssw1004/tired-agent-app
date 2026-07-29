@@ -3,13 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
-import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/manager_card.dart';
+import 'package:tired_agent_app/widgets/reconnect_form.dart';
 
 class ServerListScreen extends StatelessWidget {
   const ServerListScreen({super.key});
@@ -88,7 +89,7 @@ class ServerListScreen extends StatelessWidget {
       itemCount: auth.connections.length,
       itemBuilder: (context, index) {
         final conn = auth.connections[index];
-        return _ManagerCard(
+        return ManagerCard(
           connection: conn,
           onTap: () => _onTapCard(context, auth, conn),
           onDelete: () => _deleteManager(context, auth, conn),
@@ -165,14 +166,14 @@ class ServerListScreen extends StatelessWidget {
     AuthProvider auth,
     ManagerConnection conn,
   ) async {
-    final formKey = GlobalKey<_ReconnectFormState>();
+    final formKey = GlobalKey<ReconnectFormState>();
 
     final result = await NeonDialog.show<String?>(
       context: context,
       title: '${AppStrings.of.reconnectLabel} ${conn.profile.name}',
       maxWidth: 380,
       showRobot: true,
-      content: _ReconnectForm(key: formKey),
+      content: ReconnectForm(key: formKey),
       actions: [
         NeonDialogAction(
           label: AppStrings.of.cancel,
@@ -225,14 +226,9 @@ class ServerListScreen extends StatelessWidget {
     if (conn.status == ConnectionStatus.connected) return;
 
     // Silent retry with stored credentials.
-    // - If a boot/background connect() is already in progress, the guard
-    //   in ManagerConnection.connect() waits for it rather than racing.
-    // - If no auth is available, connect() throws → we show the dialog.
     await conn.connect();
 
     if (conn.status == ConnectionStatus.connected && context.mounted) {
-      // Connection succeeded (e.g. we waited for a concurrent boot to
-      // finish) → navigate now instead of making the user tap again.
       context.push('/profile/${conn.profile.id}');
       return;
     }
@@ -259,272 +255,5 @@ class ServerListScreen extends StatelessWidget {
     if (confirmed == true && context.mounted) {
       await auth.removeManager(conn.profile.id);
     }
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// Manager card
-// ═══════════════════════════════════════════════════════════════════════
-
-class _ManagerCard extends StatelessWidget {
-  final ManagerConnection connection;
-  final VoidCallback? onTap;
-  final VoidCallback? onDelete;
-
-  const _ManagerCard({required this.connection, this.onTap, this.onDelete});
-
-  String _timeSince(int ts) {
-    final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s < 60000) return '${s ~/ 1000}${AppStrings.of.timeSecondsAgo}';
-    if (s < 3600000) return '${s ~/ 60000}${AppStrings.of.timeMinutesAgo}';
-    if (s < 86400000) return '${s ~/ 3600000}${AppStrings.of.timeHoursAgo}';
-    return '${s ~/ 86400000}${AppStrings.of.timeDaysAgo}';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final profile = connection.profile;
-    final connStatus = connection.status;
-    final c = context.appColors;
-
-    // Status color + label
-    Color statusColor;
-    String statusLabel;
-    switch (connStatus) {
-      case ConnectionStatus.connected:
-        statusColor = c.success;
-        statusLabel = AppStrings.of.statusConnected;
-      case ConnectionStatus.connecting:
-        statusColor = c.warning;
-        statusLabel = AppStrings.of.statusConnecting;
-      case ConnectionStatus.error:
-        statusColor = c.danger;
-        statusLabel = AppStrings.of.statusError;
-      case ConnectionStatus.idle:
-        statusColor = c.textSecondary;
-        statusLabel = AppStrings.of.statusDisconnected;
-    }
-
-    // Agent summary (only meaningful when connected)
-    final agents = connection.agents;
-    final totalAgents = agents.length;
-    final onlineAgents = agents.where((a) => a.state == AgentState.online).length;
-    final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
-    final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
-    final hasAgentInfo = totalAgents > 0;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.three),
-      child: GestureDetector(
-        onTap: () {
-          if (connStatus == ConnectionStatus.connected) {
-            context.push('/profile/${profile.id}');
-          } else {
-            onTap?.call();
-          }
-        },
-        onLongPress: onDelete,
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(AppSpacing.two),
-            border: Border.all(
-              color: connStatus == ConnectionStatus.connected
-                  ? c.primary.withAlpha(60)
-                  : c.border.withAlpha(80),
-              width: 0.5,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header row ─────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.three,
-                  AppSpacing.two,
-                  AppSpacing.one,
-                  AppSpacing.one,
-                ),
-                child: Row(
-                  children: [
-                    // Status dot
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        shape: BoxShape.circle,
-                        boxShadow: connStatus == ConnectionStatus.connected
-                            ? [
-                                BoxShadow(
-                                  color: statusColor.withAlpha(80),
-                                  blurRadius: 4,
-                                ),
-                              ]
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.two),
-                    // Name + URL
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ThemedText.body(
-                            profile.name,
-                            color: c.text,
-                          ),
-                          ThemedText.label(
-                            profile.baseUrl,
-                            color: c.textSecondary,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Status label
-                    ThemedText.label(
-                      statusLabel,
-                      color: statusColor,
-                    ),
-                    // Error info icon
-                    if (connection.error != null)
-                      IconButton(
-                        icon: Icon(
-                          Icons.info_outline,
-                          size: 16,
-                          color: c.danger,
-                        ),
-                        onPressed: () => _showError(context),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 28,
-                          minHeight: 28,
-                        ),
-                      ),
-                    // Delete button
-                    if (onDelete != null)
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete_outline,
-                          size: 18,
-                          color: c.textSecondary,
-                        ),
-                        onPressed: () => onDelete?.call(),
-                        tooltip: AppStrings.of.agentRemoveTooltip,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 28,
-                          minHeight: 28,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-
-              // ── Secondary info row ─────────────────────────────
-              if (hasAgentInfo || profile.lastUsedMs > 0)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.three,
-                    0,
-                    AppSpacing.three,
-                    AppSpacing.two,
-                  ),
-                  child: Row(
-                    children: [
-                      if (hasAgentInfo)
-                        Expanded(
-                          child: ThemedText.mono(
-                            pendingAgents > 0
-                                ? AppStrings.of.managerAgentCountsWithPending(
-                                    totalAgents, onlineAgents, offlineAgents, pendingAgents,
-                                  )
-                                : AppStrings.of.managerAgentCounts(
-                                    totalAgents, onlineAgents, offlineAgents,
-                                  ),
-                            color: c.textSecondary,
-                          ),
-                        ),
-                      if (profile.lastUsedMs > 0)
-                        ThemedText.mono(
-                          _timeSince(profile.lastUsedMs),
-                          color: c.textSecondary,
-                        ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showError(BuildContext context) {
-    final c = context.appColors;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(connection.error!),
-        backgroundColor: c.danger,
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// Reconnect form
-// ═══════════════════════════════════════════════════════════════════════
-
-/// Reconnect form — owns its [TextEditingController] and disposes it in
-/// [State.dispose], in sync with the widget tree lifecycle.
-class _ReconnectForm extends StatefulWidget {
-  const _ReconnectForm({super.key});
-
-  @override
-  _ReconnectFormState createState() => _ReconnectFormState();
-}
-
-class _ReconnectFormState extends State<_ReconnectForm> {
-  late final TextEditingController _tokenController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tokenController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _tokenController.dispose();
-    super.dispose();
-  }
-
-  String? get token {
-    final t = _tokenController.text.trim();
-    return t.isNotEmpty ? t : null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColors;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ThemedText.small(
-          AppStrings.of.managersSessionExpired,
-          color: c.textSecondary,
-        ),
-        const SizedBox(height: AppSpacing.three),
-        TextField(
-          controller: _tokenController,
-          decoration: InputDecoration(labelText: AppStrings.of.managersAccessToken),
-          obscureText: true,
-          autocorrect: false,
-        ),
-      ],
-    );
   }
 }
