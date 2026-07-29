@@ -9,6 +9,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/label_form_field.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -285,15 +286,16 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       }
     } else {
       // Not pinned → show label dialog then pin.
-      final formKey = GlobalKey<_PinLabelFormState>();
+      final formKey = GlobalKey<LabelFormFieldState>();
       final result = await NeonDialog.show<String?>(
         context: context,
         title: AppStrings.of.sessionsPinTitle,
         showRobot: true,
         maxWidth: 400,
-        content: _PinLabelForm(
+        content: LabelFormField(
           key: formKey,
-          initialLabel: session.label ?? session.cmd,
+          initialText: session.label ?? session.cmd,
+          labelText: AppStrings.of.sessionsPinLabel,
         ),
         actions: [
           NeonDialogAction(
@@ -304,7 +306,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
             label: AppStrings.of.pinLabel,
             isPrimary: true,
             onPressed: (ctx) {
-              final label = formKey.currentState?.label;
+              final label = formKey.currentState?.text;
               if (label != null && label.isNotEmpty) {
                 Navigator.of(ctx).pop(label);
               }
@@ -561,48 +563,3 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// Pin label form — owns its TextEditingController to avoid
-// `_dependents.isEmpty` crash on dialog close.
-// ═══════════════════════════════════════════════════════════════════════
-
-class _PinLabelForm extends StatefulWidget {
-  final String initialLabel;
-  const _PinLabelForm({super.key, required this.initialLabel});
-
-  @override
-  _PinLabelFormState createState() => _PinLabelFormState();
-}
-
-class _PinLabelFormState extends State<_PinLabelForm> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialLabel);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  String? get label {
-    final t = _controller.text.trim();
-    return t.isNotEmpty ? t : null;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: TextField(
-        controller: _controller,
-        decoration: InputDecoration(labelText: AppStrings.of.sessionsPinLabel),
-        autofocus: true,
-      ),
-    );
-  }
-}
