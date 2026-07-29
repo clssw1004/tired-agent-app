@@ -41,7 +41,7 @@ class SessionCard extends StatelessWidget {
     final canResume = session.status == SessionStatus.exited &&
         onResume != null &&
         session.cmd == 'claude' &&
-        (session.claudeSessionId != null ||
+        (session.extra?['claudeSessionId'] != null ||
          session.extra?['claudeName'] != null ||
          session.label != null);
     return NeonCard(

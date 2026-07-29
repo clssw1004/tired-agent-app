@@ -72,7 +72,6 @@ class Session {
   final int rows;
   final String? label;
   final SessionMode? mode;
-  final String? claudeSessionId;
   final Map<String, dynamic>? extra;
 
   const Session({
@@ -91,7 +90,6 @@ class Session {
     required this.rows,
     this.label,
     this.mode,
-    this.claudeSessionId,
     this.extra,
   });
 
@@ -114,7 +112,6 @@ class Session {
       mode: json['mode'] != null
           ? SessionMode.values.byName(json['mode'] as String)
           : null,
-      claudeSessionId: json['claudeSessionId'] as String?,
       extra: json['extra'] as Map<String, dynamic>?,
     );
   }
@@ -144,7 +141,6 @@ class Session {
     'rows': rows,
     if (label != null) 'label': label,
     if (mode != null) 'mode': mode!.name,
-    if (claudeSessionId != null) 'claudeSessionId': claudeSessionId,
     if (extra != null && extra!.isNotEmpty) 'extra': extra,
   };
 }
