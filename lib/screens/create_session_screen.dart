@@ -21,6 +21,9 @@ import 'package:tired_agent_app/enhancements/enhancement.dart';
 import 'package:tired_agent_app/enhancements/enhancement_context.dart';
 import 'package:tired_agent_app/enhancements/types.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
+import 'package:tired_agent_app/widgets/session_command_preview.dart';
+import 'package:tired_agent_app/widgets/directory_picker_field.dart';
+import 'package:tired_agent_app/widgets/session_preset_dropdown.dart';
 
 const _labelChars = 'abcdefghijkmnpqrstuvwxyz23456789';
 
@@ -34,38 +37,6 @@ String _generateDefaultLabel() {
   final stamp =
       '${now.year}${pad(now.month)}${pad(now.day)}T${pad(now.hour)}${pad(now.minute)}${pad(now.second)}';
   return '${rnd}_$stamp';
-}
-
-/// A user-defined or recently-used command preset, persisted locally.
-class _UserPreset {
-  final String id;
-  final String label;
-  final String cmd;
-  final List<String> args;
-  final String emoji;
-  const _UserPreset({
-    required this.id,
-    required this.label,
-    required this.cmd,
-    this.args = const [],
-    this.emoji = '⚡',
-  });
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'label': label,
-    'cmd': cmd,
-    'args': args,
-    'emoji': emoji,
-  };
-
-  factory _UserPreset.fromJson(Map<String, dynamic> json) => _UserPreset(
-    id: json['id'] as String? ?? '',
-    label: json['label'] as String? ?? '',
-    cmd: json['cmd'] as String? ?? '',
-    args: (json['args'] as List<dynamic>?)?.cast<String>() ?? [],
-    emoji: json['emoji'] as String? ?? '⚡',
-  );
 }
 
 class CreateSessionScreen extends StatefulWidget {
@@ -114,8 +85,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _visibleBuiltinPresets.where((p) => p.id == _selectedBuiltinId).firstOrNull;
 
   // ── Custom & recent presets ─────────────────────────────────────
-  List<_UserPreset> _customPresets = [];
-  List<_UserPreset> _recentPresets = [];
+  List<UserPreset> _customPresets = [];
+  List<UserPreset> _recentPresets = [];
 
   static const _kCustomPresets = 'create_session_custom_presets';
   static const _kRecentPresets = 'create_session_recent_presets';
@@ -155,27 +126,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return parts.join(' ');
   }
 
-  /// All presets for the dropdown: builtin → Recent → Custom.
-  List<_DropdownItem> get _dropdownItems {
-    final items = <_DropdownItem>[];
-    for (final p in _visibleBuiltinPresets) {
-      items.add(_DropdownItem.builtin(p));
-    }
-    if (_recentPresets.isNotEmpty) {
-      items.add(_DropdownItem.separator(AppStrings.of.createSectionRecent));
-      for (final p in _recentPresets) {
-        items.add(_DropdownItem.user(p));
-      }
-    }
-    if (_customPresets.isNotEmpty) {
-      items.add(_DropdownItem.separator(AppStrings.of.createSectionCustom));
-      for (final p in _customPresets) {
-        items.add(_DropdownItem.user(p));
-      }
-    }
-    return items;
-  }
-
   void _applyBuiltin(BuiltinPreset p) {
     setState(() {
       _selectedBuiltinId = p.id;
@@ -187,7 +137,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     _updateEnhancements();
   }
 
-  void _applyUserPreset(_UserPreset p) {
+  void _applyUserPreset(UserPreset p) {
     setState(() {
       _selectedBuiltinId = null;
       _cmd = p.cmd;
@@ -429,14 +379,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     if (customRaw != null) {
       final list = json.decode(customRaw) as List<dynamic>;
       _customPresets = list
-          .map((e) => _UserPreset.fromJson(e as Map<String, dynamic>))
+          .map((e) => UserPreset.fromJson(e as Map<String, dynamic>))
           .toList();
     }
     final recentRaw = prefs.getString(_kRecentPresets);
     if (recentRaw != null) {
       final list = json.decode(recentRaw) as List<dynamic>;
       _recentPresets = list
-          .map((e) => _UserPreset.fromJson(e as Map<String, dynamic>))
+          .map((e) => UserPreset.fromJson(e as Map<String, dynamic>))
           .toList();
     }
     if (mounted) setState(() {});
@@ -533,7 +483,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     _recentPresets.removeWhere((p) => p.cmd == cmd && _listEq(p.args, args));
     _recentPresets.insert(
       0,
-      _UserPreset(
+      UserPreset(
         id: 'recent_${DateTime.now().millisecondsSinceEpoch}',
         label: cmd,
         cmd: cmd,
@@ -552,7 +502,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   Future<void> _showAddCustomPresetDialog() async {
     final labelCtrl = TextEditingController(text: _cmd);
-    final result = await NeonDialog.show<_UserPreset>(
+    final result = await NeonDialog.show<UserPreset>(
       context: context,
       title: AppStrings.of.createSaveAsPreset,
       content: Column(
@@ -564,11 +514,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         ],
       ),
       actions: [
-        NeonDialogAction<_UserPreset>(
+        NeonDialogAction<UserPreset>(
           label: AppStrings.of.cancel,
           onPressed: (ctx) => Navigator.of(ctx).pop(),
         ),
-        NeonDialogAction<_UserPreset>(
+        NeonDialogAction<UserPreset>(
           label: AppStrings.of.createSave,
           isPrimary: true,
           onPressed: (ctx) {
@@ -579,7 +529,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 .split(RegExp(r'\s+'))
                 .where((s) => s.isNotEmpty)
                 .toList();
-            Navigator.of(ctx).pop(_UserPreset(
+            Navigator.of(ctx).pop(UserPreset(
               id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
               label: label,
               cmd: _cmd.trim(),
@@ -877,311 +827,35 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   /// Terminal-style command preview window with title bar.
-  Widget _buildTerminalPreview() {
-    final c = context.appColors;
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: c.background,
-        borderRadius: BorderRadius.circular(AppSpacing.two),
-        border: Border.all(color: c.primary.withAlpha(50)),
-        boxShadow: [
-          BoxShadow(
-            color: c.primary.withAlpha(12),
-            blurRadius: 8,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title bar — traffic-light dots + prompt label
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.three,
-              vertical: AppSpacing.one,
-            ),
-            decoration: BoxDecoration(
-              color: c.surfaceAlt.withAlpha(120),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppSpacing.two - 1),
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: c.primary.withAlpha(30),
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                // Traffic-light dots
-                ...[0xFF003C, 0xFF6600, 0x00FF41].map((hex) {
-                  final c = Color(hex | 0xFF000000);
-                  return Container(
-                    width: 8, height: 8,
-                    margin: const EdgeInsets.only(right: 5),
-                    decoration: BoxDecoration(
-                      color: c.withAlpha(120),
-                      shape: BoxShape.circle,
-                    ),
-                  );
-                }),
-                const SizedBox(width: AppSpacing.two),
-                ThemedText.mono(
-                  _cmd,
-                  color: c.primary.withAlpha(140),
-                ),
-                const Spacer(),
-                ThemedText.mono(
-                  '---',
-                  color: c.textSecondary.withAlpha(60),
-                ),
-              ],
-            ),
-          ),
-          // Command content
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.three),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ThemedText.mono(
-                  r'$ ',
-                  color: c.success.withAlpha(180),
-                ),
-                Expanded(
-                  child: ThemedText.code(_previewCommand),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildTerminalPreview() => SessionCommandPreview(
+    cmd: _cmd,
+    commandLine: _previewCommand,
+  );
 
   Widget _buildPresetDropdown() {
-    final c = context.appColors;
-    final items = _dropdownItems;
     final selectedPresetLabel = _selectedPreset?.label;
-
-    String currentLabel;
-    if (_selectedBuiltinId != null && selectedPresetLabel != null) {
-      currentLabel = selectedPresetLabel;
-    } else {
-      currentLabel = _cmd;
-    }
-
-    final hasSelection = _selectedBuiltinId != null;
-
-    return GestureDetector(
-      onTap: () => _showPresetPicker(items),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.three,
-          vertical: AppSpacing.two,
-        ),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: Border.all(
-            color: hasSelection
-                ? c.primary.withAlpha(80)
-                : c.border.withAlpha(60),
-            width: hasSelection ? 1 : 0.5,
-          ),
-          boxShadow: hasSelection
-              ? [
-                  BoxShadow(
-                    color: c.primary.withAlpha(15),
-                    blurRadius: 6,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            if (_selectedPreset != null) ...[
-              Text(_selectedPreset!.emoji, style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: AppSpacing.one),
-            ],
-            Expanded(
-              child: ThemedText.mono(
-                currentLabel,
-                color: hasSelection ? c.primary : c.text,
-              ),
-            ),
-            Icon(
-              Icons.unfold_more,
-              color: c.primary.withAlpha(140),
-              size: 18,
-            ),
-          ],
-        ),
-      ),
+    final label = _selectedBuiltinId != null && selectedPresetLabel != null
+        ? selectedPresetLabel
+        : _cmd;
+    return SessionPresetDropdown(
+      currentLabel: label,
+      hasSelection: _selectedBuiltinId != null,
+      emoji: _selectedPreset?.emoji ?? '⚡',
+      builtinPresets: _visibleBuiltinPresets,
+      recentPresets: _recentPresets,
+      customPresets: _customPresets,
+      selectedBuiltinId: _selectedBuiltinId,
+      onSelectBuiltin: _applyBuiltin,
+      onSelectUser: _applyUserPreset,
     );
   }
 
-  void _showPresetPicker(List<_DropdownItem> items) {
-    final c = context.appColors;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: c.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      ),
-      builder: (ctx) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.four),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.terminal,
-                  color: c.primary.withAlpha(180),
-                  size: 20,
-                ),
-                const SizedBox(width: AppSpacing.two),
-                ThemedText.mono(AppStrings.of.createSelectPreset, color: c.primary),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: c.border),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: items.length,
-              itemBuilder: (_, i) {
-                final item = items[i];
-                if (item.isSeparator) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.four, AppSpacing.two,
-                      AppSpacing.four, AppSpacing.one,
-                    ),
-                    child: ThemedText.mono(
-                      item.separatorLabel ?? '',
-                      color: c.primary.withAlpha(120),
-                    ),
-                  );
-                }
-                final isActive = item.builtin != null &&
-                    item.builtin!.id == _selectedBuiltinId;
-                return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.two, vertical: 1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? c.primary.withAlpha(10)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppSpacing.two),
-                    border: isActive
-                        ? Border.all(
-                            color: c.primary.withAlpha(40),
-                            width: 0.5,
-                          )
-                        : null,
-                  ),
-                  child: ListTile(
-                    dense: true,
-                    leading: Text(item.emoji, style: const TextStyle(fontSize: 18)),
-                    title: ThemedText.mono(
-                      item.label,
-                      color: isActive ? c.primary : c.text,
-                    ),
-                    subtitle: item.builtin != null
-                        ? ThemedText.small(item.builtin!.hint)
-                        : null,
-                    trailing: isActive
-                        ? Icon(Icons.check, color: c.primary, size: 18)
-                        : null,
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      if (item.builtin != null) {
-                        _applyBuiltin(item.builtin!);
-                      } else if (item.user != null) {
-                        _applyUserPreset(item.user!);
-                      }
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDirectoryPicker() {
-    final c = context.appColors;
-    final hasPath = _cwdController.text.isNotEmpty;
-    return GestureDetector(
-      onTap: _busy ? null : _pickDirectory,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.three),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: Border.all(
-            color: hasPath
-                ? c.primary.withAlpha(60)
-                : c.border.withAlpha(60),
-            width: hasPath ? 1 : 0.5,
-          ),
-          boxShadow: hasPath
-              ? [
-                  BoxShadow(
-                    color: c.primary.withAlpha(10),
-                    blurRadius: 6,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.folder_outlined,
-              color: hasPath ? c.primary : c.textSecondary,
-              size: 18,
-            ),
-            const SizedBox(width: AppSpacing.two),
-            Expanded(
-              child: ThemedText.mono(
-                hasPath ? _cwdController.text : AppStrings.of.createHomeDir,
-                color: hasPath ? c.textCode : c.textSecondary,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (hasPath)
-              GestureDetector(
-                onTap: () => _cwdController.clear(),
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: c.textSecondary.withAlpha(30),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                  child: Icon(Icons.close, size: 14, color: c.textSecondary),
-                ),
-              ),
-            const SizedBox(width: AppSpacing.two),
-            Icon(
-              Icons.chevron_right,
-              color: c.primary.withAlpha(120),
-              size: 18,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildDirectoryPicker() => DirectoryPickerField(
+    path: _cwdController.text.isNotEmpty ? _cwdController.text : null,
+    enabled: !_busy,
+    onPick: _pickDirectory,
+    onClear: () => _cwdController.clear(),
+  );
 
   Widget _buildOptionChips() {
     final preset = _selectedPreset!;
@@ -1297,19 +971,4 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       ),
     );
   }
-}
-
-/// Internal helper for the preset dropdown bottom sheet.
-class _DropdownItem {
-  final BuiltinPreset? builtin;
-  final _UserPreset? user;
-  final String? separatorLabel;
-  _DropdownItem._({this.builtin, this.user, this.separatorLabel});
-  factory _DropdownItem.builtin(BuiltinPreset p) => _DropdownItem._(builtin: p);
-  factory _DropdownItem.user(_UserPreset p) => _DropdownItem._(user: p);
-  factory _DropdownItem.separator(String label) => _DropdownItem._(separatorLabel: label);
-
-  bool get isSeparator => separatorLabel != null;
-  String get label => builtin?.label ?? user?.label ?? separatorLabel ?? '';
-  String get emoji => builtin?.emoji ?? user?.emoji ?? '';
 }
