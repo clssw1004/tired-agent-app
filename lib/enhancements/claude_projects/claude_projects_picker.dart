@@ -53,7 +53,9 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
     super.didUpdateWidget(old);
     if (old.cwd != widget.cwd) {
       _selectedSessionId = null;
-      _scrollController.jumpTo(0);
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
       _load();
     }
   }
