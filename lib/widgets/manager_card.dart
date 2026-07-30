@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
@@ -69,13 +68,7 @@ class ManagerCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
       child: GestureDetector(
-        onTap: () {
-          if (connStatus == ConnectionStatus.connected) {
-            context.push('/profile/${profile.id}');
-          } else {
-            onTap?.call();
-          }
-        },
+        onTap: onTap,
         onLongPress: onDelete,
         child: Container(
           decoration: BoxDecoration(
