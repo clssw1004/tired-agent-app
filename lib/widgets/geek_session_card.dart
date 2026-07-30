@@ -79,12 +79,14 @@ class GeekSessionCard extends StatelessWidget {
             ThemedText(
               '│ ${() {
                 final cmd = [session.cmd, ...session.args].join(' ');
+                final uptime = session.status == SessionStatus.exited
+                    ? session.exitedAt != null ? 'ago=${_timeSince(session.exitedAt!)}' : ''
+                    : 'up=${_timeSince(session.createdAt)}';
                 if (session.status == SessionStatus.exited) {
                   final exitInfo = 'exit=${session.exitCode ?? '?'}';
-                  final ago = session.exitedAt != null ? ' ${_timeSince(session.exitedAt!)}' : '';
-                  return '$cmd  $exitInfo$ago';
+                  return '$cmd  $exitInfo  $uptime';
                 }
-                return '$cmd  pid=${session.pid ?? '?'}';
+                return '$cmd  pid=${session.pid ?? '?'}  $uptime';
               }()}',
               fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 2, overflow: TextOverflow.ellipsis),
             if (session.cwd != null && session.cwd!.isNotEmpty)
