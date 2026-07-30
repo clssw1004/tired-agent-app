@@ -101,7 +101,11 @@ class PtySessionViewState extends State<PtySessionView> {
   void _flushOutput() {
     _outputScheduled = false;
     if (_pendingOutput.isEmpty) return;
-    final normalized = _pendingOutput.replaceAll('\n\r', '\r');
+    // Dedup Enter sequences from mobile IME: the IME commit + xterm2 key event
+    // produce either \n\r or \r\n instead of a single \r.
+    final normalized = _pendingOutput
+        .replaceAll('\r\n', '\r')
+        .replaceAll('\n\r', '\r');
     _pendingOutput = '';
     if (normalized.isEmpty) return;
     final bytes = utf8.encode(normalized);
