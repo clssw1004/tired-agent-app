@@ -185,13 +185,26 @@ ThemeData buildDarkTheme() {
     brightness: Brightness.dark,
     colorScheme: ColorScheme.dark(
       primary: c.primary,
-      secondary: c.secondary,
-      surface: c.surface,
-      error: c.danger,
       onPrimary: c.text,
+      primaryContainer: c.surfaceAlt,
+      onPrimaryContainer: c.primary,
+      secondary: c.secondary,
       onSecondary: c.text,
+      secondaryContainer: c.surfaceAlt,
+      onSecondaryContainer: c.secondary,
+      tertiary: c.purple,
+      onTertiary: c.text,
+      surface: c.surface,
+      surfaceContainerHighest: c.surfaceAlt,
       onSurface: c.text,
+      onSurfaceVariant: c.textSecondary,
+      error: c.danger,
       onError: c.text,
+      outline: c.border,
+      outlineVariant: c.borderGlow,
+      inverseSurface: c.text,
+      onInverseSurface: c.background,
+      inversePrimary: const Color(0xFF00838F),
     ),
     scaffoldBackgroundColor: c.background,
     appBarTheme: AppBarTheme(
@@ -262,6 +275,32 @@ ThemeData buildDarkTheme() {
         elevation: 1,
       ),
     ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: c.surface,
+      contentTextStyle: TextStyle(color: c.text, fontSize: 14),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        side: BorderSide(color: c.border.withAlpha(60), width: 0.5),
+      ),
+      actionTextColor: c.primary,
+    ),
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(
+        color: c.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppSpacing.one),
+      ),
+      textStyle: TextStyle(color: c.text, fontSize: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: c.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        side: BorderSide(color: c.border, width: 0.5),
+      ),
+      textStyle: TextStyle(color: c.text, fontSize: 14),
+    ),
   );
 }
 
@@ -272,13 +311,26 @@ ThemeData buildLightTheme() {
     brightness: Brightness.light,
     colorScheme: ColorScheme.light(
       primary: c.primary,
-      secondary: c.secondary,
-      surface: c.surface,
-      error: c.danger,
       onPrimary: c.text,
+      primaryContainer: c.surfaceAlt,
+      onPrimaryContainer: c.primary,
+      secondary: c.secondary,
       onSecondary: c.text,
+      secondaryContainer: c.surfaceAlt,
+      onSecondaryContainer: c.secondary,
+      tertiary: c.purple,
+      onTertiary: c.text,
+      surface: c.surface,
+      surfaceContainerHighest: c.surfaceAlt,
       onSurface: c.text,
+      onSurfaceVariant: c.textSecondary,
+      error: c.danger,
       onError: c.text,
+      outline: c.border,
+      outlineVariant: c.borderGlow,
+      inverseSurface: c.text,
+      onInverseSurface: c.background,
+      inversePrimary: const Color(0xFF00F0FF),
     ),
     scaffoldBackgroundColor: c.background,
     appBarTheme: AppBarTheme(
@@ -348,6 +400,32 @@ ThemeData buildLightTheme() {
         shadowColor: c.primary.withAlpha(25),
         elevation: 1,
       ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: c.surface,
+      contentTextStyle: TextStyle(color: c.text, fontSize: 14),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        side: BorderSide(color: c.border.withAlpha(60), width: 0.5),
+      ),
+      actionTextColor: c.primary,
+    ),
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(
+        color: c.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppSpacing.one),
+      ),
+      textStyle: TextStyle(color: c.text, fontSize: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: c.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.two),
+        side: BorderSide(color: c.border, width: 0.5),
+      ),
+      textStyle: TextStyle(color: c.text, fontSize: 14),
     ),
   );
 }

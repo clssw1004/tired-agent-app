@@ -109,13 +109,11 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         );
         await _loadAgents();
         if (mounted) {
-          final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: ThemedText.small(
                 AppStrings.of.agentAdded(formData.name),
               ),
-              backgroundColor: c.backgroundElement,
             ),
           );
         }
@@ -152,11 +150,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
       await conn.transport.deleteAgent(conn.managerRef, agent.id);
       await _loadAgents();
       if (mounted) {
-        final c = context.appColors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: ThemedText.small(AppStrings.of.agentRemoved(agent.name)),
-            backgroundColor: c.backgroundElement,
           ),
         );
       }
