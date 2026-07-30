@@ -43,6 +43,22 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.four),
 
+          // ── Theme flavor ────────────────────────────────────────
+          SectionHeader(label: AppStrings.of.settingsTheme),
+          const SizedBox(height: AppSpacing.two),
+          _ThemeTile(
+            label: '赛博朋克',
+            selected: settings.themeFlavor == ThemeFlavor.cyberpunk,
+            onTap: () => settings.setThemeFlavor(ThemeFlavor.cyberpunk),
+          ),
+          const SizedBox(height: AppSpacing.one),
+          _ThemeTile(
+            label: '极简极客',
+            selected: settings.themeFlavor == ThemeFlavor.minimal,
+            onTap: () => settings.setThemeFlavor(ThemeFlavor.minimal),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
           // ── Language ─────────────────────────────────────────────
           SectionHeader(label: AppStrings.of.settingsLanguage),
           const SizedBox(height: AppSpacing.two),

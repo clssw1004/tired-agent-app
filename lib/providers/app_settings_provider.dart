@@ -4,20 +4,35 @@ import 'package:xterm2/xterm.dart' show TerminalTheme;
 
 import 'package:tired_agent_app/utils/terminal_themes.dart';
 
+/// 主题风格枚举
+enum ThemeFlavor {
+  cyberpunk,
+  minimal,
+}
+
 /// 终端缓冲区大小预设选项（行数）
-const List<int> kTerminalBufferPresets = [1000, 2000, 3000, 5000, 8000, 10000];
+const List<int> kTerminalBufferPresets = [
+  1000,
+  2000,
+  3000,
+  5000,
+  8000,
+  10000,
+];
 
 /// 应用设置 Provider — 管理主题模式 + 语言偏好 + 终端配置
 ///
 /// 提供运行时切换和持久化能力，切换后立即生效无需重启。
 class AppSettingsProvider extends ChangeNotifier {
   AppSettingsProvider()
-    : _themeMode = ThemeMode.dark,
+    : _themeFlavor = ThemeFlavor.cyberpunk,
+      _themeMode = ThemeMode.dark,
       _locale = const Locale('zh'),
       _terminalBufferSize = kDefaultBufferSize,
       _terminalThemePreset = TerminalThemePreset.classic;
 
   // ── 持久化 Key ──────────────────────────────────────────────────
+  static const _kThemeFlavor = 'app_theme_flavor';
   static const _kThemeMode = 'app_theme_mode';
   static const _kLocale = 'app_locale';
   static const _kTerminalBufferSize = 'terminal_buffer_size';
@@ -27,11 +42,13 @@ class AppSettingsProvider extends ChangeNotifier {
   /// 默认终端缓冲区大小。
   static const int kDefaultBufferSize = 5000;
 
+  ThemeFlavor _themeFlavor;
   ThemeMode _themeMode;
   Locale _locale;
   int _terminalBufferSize;
   TerminalThemePreset _terminalThemePreset;
 
+  ThemeFlavor get themeFlavor => _themeFlavor;
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
   int get terminalBufferSize => _terminalBufferSize;
@@ -47,7 +64,16 @@ class AppSettingsProvider extends ChangeNotifier {
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // 主题
+    // 主题风格
+    final flavorStr = prefs.getString(_kThemeFlavor);
+    if (flavorStr != null) {
+      _themeFlavor = switch (flavorStr) {
+        'minimal' => ThemeFlavor.minimal,
+        _ => ThemeFlavor.cyberpunk,
+      };
+    }
+
+    // 主题模式
     final themeStr = prefs.getString(_kThemeMode);
     if (themeStr != null) {
       _themeMode = switch (themeStr) {
@@ -79,7 +105,17 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── 主题切换 ─────────────────────────────────────────────────────
+  // ── 主题风格切换 ────────────────────────────────────────────────
+
+  Future<void> setThemeFlavor(ThemeFlavor flavor) async {
+    if (_themeFlavor == flavor) return;
+    _themeFlavor = flavor;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kThemeFlavor, flavor.name);
+  }
+
+  // ── 主题模式切换 ─────────────────────────────────────────────────
 
   Future<void> setThemeMode(ThemeMode mode) async {
     if (_themeMode == mode) return;
