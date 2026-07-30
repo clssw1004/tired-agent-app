@@ -134,11 +134,9 @@ class ServerListScreen extends StatelessWidget {
           name: formData.name.isNotEmpty ? formData.name : null,
         );
         if (context.mounted) {
-          final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: ThemedText.small(AppStrings.of.managersAdded),
-              backgroundColor: c.backgroundElement,
             ),
           );
         }
@@ -196,7 +194,6 @@ class ServerListScreen extends StatelessWidget {
               content: ThemedText.small(
                 '${conn.profile.name} ${AppStrings.of.managersReconnected}',
               ),
-              backgroundColor: c.backgroundElement,
             ),
           );
         } else {

@@ -27,8 +27,8 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
-          // ── Theme ─────────────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsTheme),
+          // ── Theme mode ─────────────────────────────────────────
+          SectionHeader(label: '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsMode}'),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
             label: AppStrings.of.settingsThemeDark,
@@ -40,6 +40,28 @@ class SettingsScreen extends StatelessWidget {
             label: AppStrings.of.settingsThemeLight,
             selected: settings.themeMode == ThemeMode.light,
             onTap: () => settings.setThemeMode(ThemeMode.light),
+          ),
+          const SizedBox(height: AppSpacing.one),
+          _ThemeTile(
+            label: AppStrings.of.settingsThemeSystem,
+            selected: settings.themeMode == ThemeMode.system,
+            onTap: () => settings.setThemeMode(ThemeMode.system),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
+          // ── Theme style ─────────────────────────────────────────
+          SectionHeader(label: '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsStyle}'),
+          const SizedBox(height: AppSpacing.two),
+          _ThemeTile(
+            label: AppStrings.of.settingsStyleCyberpunk,
+            selected: settings.themeFlavor == ThemeFlavor.cyberpunk,
+            onTap: () => settings.setThemeFlavor(ThemeFlavor.cyberpunk),
+          ),
+          const SizedBox(height: AppSpacing.one),
+          _ThemeTile(
+            label: AppStrings.of.settingsStyleMinimal,
+            selected: settings.themeFlavor == ThemeFlavor.minimal,
+            onTap: () => settings.setThemeFlavor(ThemeFlavor.minimal),
           ),
           const SizedBox(height: AppSpacing.four),
 

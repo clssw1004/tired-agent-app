@@ -193,11 +193,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     }
 
     if (pruneTargets.isEmpty) {
-      final c = context.appColors;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: ThemedText.small(AppStrings.of.sessionsNoneToPrune),
-          backgroundColor: c.backgroundElement,
         ),
       );
       return;
@@ -259,7 +257,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     final auth = context.read<AuthProvider>();
     final conn = auth.connectionFor(widget.profileId);
     if (conn == null) return;
-    final c = context.appColors;
 
     final agentName = conn.agents
         .where((a) => a.id == widget.agentId)
@@ -281,7 +278,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: ThemedText.small(AppStrings.of.sessionsUnpinned),
-            backgroundColor: c.backgroundElement,
           ),
         );
       }
@@ -328,7 +324,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: ThemedText.small(AppStrings.of.sessionsPinned),
-            backgroundColor: c.backgroundElement,
           ),
         );
       }
