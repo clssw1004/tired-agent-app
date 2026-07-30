@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
@@ -273,15 +274,17 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         itemBuilder: (context, index) {
           final agent = _agents[index];
           final geek = context.watch<AppSettingsProvider>().themeFlavor == ThemeFlavor.minimal;
+          final agentId = agent.id;
           return geek
               ? GeekAgentCard(
                   agent: agent,
-                  profileId: widget.profileId,
+                  onTap: () => context.push('/profile/${widget.profileId}/agent/$agentId'),
                   onDelete: () => _deleteAgent(agent),
                 )
               : AgentCard(
                   agent: agent,
                   profileId: widget.profileId,
+                  onTap: () => context.push('/profile/${widget.profileId}/agent/$agentId'),
                   onDelete: () => _deleteAgent(agent),
                 );
         },

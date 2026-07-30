@@ -224,8 +224,11 @@ class ServerListScreen extends StatelessWidget {
     AuthProvider auth,
     ManagerConnection conn,
   ) async {
-    // Already connected → caller navigates directly (no-op here).
-    if (conn.status == ConnectionStatus.connected) return;
+    // Already connected → navigate directly.
+    if (conn.status == ConnectionStatus.connected) {
+      if (context.mounted) context.push('/profile/${conn.profile.id}');
+      return;
+    }
 
     // Silent retry with stored credentials.
     await conn.connect();
