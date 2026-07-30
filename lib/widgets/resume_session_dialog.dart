@@ -48,10 +48,7 @@ class _ResumeDialogContent extends StatefulWidget {
   final List<ClaudeProjectSession> sessions;
   final String? currentSessionId;
 
-  const _ResumeDialogContent({
-    required this.sessions,
-    this.currentSessionId,
-  });
+  const _ResumeDialogContent({required this.sessions, this.currentSessionId});
 
   @override
   State<_ResumeDialogContent> createState() => _ResumeDialogContentState();
@@ -78,9 +75,12 @@ class _ResumeDialogContentState extends State<_ResumeDialogContent> {
     final diff = DateTime.now().millisecondsSinceEpoch - ts;
     if (diff <= 0) return AppStrings.of.timeJustNow;
     if (diff < 60000) return '${diff ~/ 1000}${AppStrings.of.timeSecondsAgo}';
-    if (diff < 3600000) return '${diff ~/ 60000}${AppStrings.of.timeMinutesAgo}';
-    if (diff < 86400000) return '${diff ~/ 3600000}${AppStrings.of.timeHoursAgo}';
-    if (diff < 604800000) return '${diff ~/ 86400000}${AppStrings.of.timeDaysAgo}';
+    if (diff < 3600000)
+      return '${diff ~/ 60000}${AppStrings.of.timeMinutesAgo}';
+    if (diff < 86400000)
+      return '${diff ~/ 3600000}${AppStrings.of.timeHoursAgo}';
+    if (diff < 604800000)
+      return '${diff ~/ 86400000}${AppStrings.of.timeDaysAgo}';
     final dt = DateTime.fromMillisecondsSinceEpoch(ts);
     String pad(int n) => n.toString().padLeft(2, '0');
     return '${pad(dt.month)}/${pad(dt.day)} ${pad(dt.hour)}:${pad(dt.minute)}';
@@ -121,14 +121,19 @@ class _ResumeDialogContentState extends State<_ResumeDialogContent> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: c.border.withAlpha(120), width: 0.5),
+                  bottom: BorderSide(
+                    color: c.border.withAlpha(120),
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(Icons.history, color: c.primary, size: 22),
                   const SizedBox(width: 10),
-                  ThemedText.title('${AppStrings.of.claudeProjectsTitle} (${widget.sessions.length})'),
+                  ThemedText.title(
+                    '${AppStrings.of.claudeProjectsTitle} (${widget.sessions.length})',
+                  ),
                 ],
               ),
             ),
@@ -142,7 +147,8 @@ class _ResumeDialogContentState extends State<_ResumeDialogContent> {
                 itemBuilder: (context, idx) {
                   final s = widget.sessions[idx];
                   final selected = s.sessionId == _selectedId;
-                  final displayName = s.displayName ?? s.sessionId.substring(0, 8);
+                  final displayName =
+                      s.displayName ?? s.sessionId.substring(0, 8);
                   return GestureDetector(
                     onTap: () => setState(() => _selectedId = s.sessionId),
                     child: AnimatedContainer(
@@ -292,10 +298,14 @@ class _ResumeDialogContentState extends State<_ResumeDialogContent> {
                     style: TextButton.styleFrom(
                       foregroundColor: c.textSecondary,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10,
+                        horizontal: 14,
+                        vertical: 10,
                       ),
                     ),
-                    child: ThemedText.small(AppStrings.of.cancel, color: c.textSecondary),
+                    child: ThemedText.small(
+                      AppStrings.of.cancel,
+                      color: c.textSecondary,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
@@ -316,12 +326,15 @@ class _ResumeDialogContentState extends State<_ResumeDialogContent> {
                       foregroundColor: c.primary,
                       disabledForegroundColor: c.textSecondary.withAlpha(80),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10,
+                        horizontal: 16,
+                        vertical: 10,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                         side: BorderSide(
-                          color: c.primary.withAlpha(_selectedId != null ? 50 : 15),
+                          color: c.primary.withAlpha(
+                            _selectedId != null ? 50 : 15,
+                          ),
                           width: 0.5,
                         ),
                       ),
@@ -329,7 +342,9 @@ class _ResumeDialogContentState extends State<_ResumeDialogContent> {
                     ),
                     child: ThemedText.small(
                       AppStrings.of.sessionResumeBtn,
-                      color: _selectedId != null ? c.primary : c.textSecondary.withAlpha(80),
+                      color: _selectedId != null
+                          ? c.primary
+                          : c.textSecondary.withAlpha(80),
                     ),
                   ),
                 ],

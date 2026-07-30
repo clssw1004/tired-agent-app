@@ -39,11 +39,7 @@ class ServerCard extends StatelessWidget {
           ),
           if (onDelete != null)
             IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                color: c.danger,
-                size: 20,
-              ),
+              icon: Icon(Icons.delete_outline, color: c.danger, size: 20),
               onPressed: onDelete,
             ),
         ],

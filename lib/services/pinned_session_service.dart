@@ -45,10 +45,12 @@ class PinnedSessionService {
     String sessionType = 'pty',
   }) async {
     // De-duplicate: remove existing pin for same (profile, agent, session).
-    _cache.removeWhere((p) =>
-        p.profileId == profileId &&
-        p.agentId == agentId &&
-        p.sessionId == sessionId);
+    _cache.removeWhere(
+      (p) =>
+          p.profileId == profileId &&
+          p.agentId == agentId &&
+          p.sessionId == sessionId,
+    );
 
     final pinned = PinnedSession(
       id: const Uuid().v4(),
@@ -78,10 +80,12 @@ class PinnedSessionService {
     required String agentId,
     required String sessionId,
   }) async {
-    _cache.removeWhere((p) =>
-        p.profileId == profileId &&
-        p.agentId == agentId &&
-        p.sessionId == sessionId);
+    _cache.removeWhere(
+      (p) =>
+          p.profileId == profileId &&
+          p.agentId == agentId &&
+          p.sessionId == sessionId,
+    );
     await _persist();
   }
 
@@ -91,10 +95,12 @@ class PinnedSessionService {
     required String agentId,
     required String sessionId,
   }) {
-    return _cache.any((p) =>
-        p.profileId == profileId &&
-        p.agentId == agentId &&
-        p.sessionId == sessionId);
+    return _cache.any(
+      (p) =>
+          p.profileId == profileId &&
+          p.agentId == agentId &&
+          p.sessionId == sessionId,
+    );
   }
 
   /// Get all pinned sessions.

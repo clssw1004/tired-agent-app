@@ -126,10 +126,7 @@ class _NeonDialogContent<T> extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: c.primary.withAlpha(50),
-            width: 0.5,
-          ),
+          border: Border.all(color: c.primary.withAlpha(50), width: 0.5),
           boxShadow: [
             BoxShadow(
               color: c.primary.withAlpha(15),
@@ -159,8 +156,7 @@ class _NeonDialogContent<T> extends StatelessWidget {
             ),
 
             // ── Action buttons ───────────────────────────────────────
-            if (actions.isNotEmpty)
-              _ActionBar<T>(actions: actions),
+            if (actions.isNotEmpty) _ActionBar<T>(actions: actions),
           ],
         ),
       ),
@@ -192,10 +188,7 @@ class _TitleBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: c.border.withAlpha(120),
-            width: 0.5,
-          ),
+          bottom: BorderSide(color: c.border.withAlpha(120), width: 0.5),
         ),
       ),
       child: Row(
@@ -276,8 +269,7 @@ class _ActionBar<T> extends StatelessWidget {
                       width: 0.5,
                     ),
                   ),
-                  backgroundColor:
-                      (resolvedColor ?? c.primary).withAlpha(8),
+                  backgroundColor: (resolvedColor ?? c.primary).withAlpha(8),
                 ),
                 child: Text(
                   action.label,

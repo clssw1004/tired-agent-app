@@ -118,8 +118,7 @@ class _ThemeTile extends StatelessWidget {
           children: [
             ThemedText.body(label, color: selected ? c.primary : c.text),
             const Spacer(),
-            if (selected)
-              Icon(Icons.check, size: 18, color: c.primary),
+            if (selected) Icon(Icons.check, size: 18, color: c.primary),
           ],
         ),
       ),
@@ -135,10 +134,7 @@ class _NavigationTile extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NavigationTile({
-    required this.label,
-    required this.onTap,
-  });
+  const _NavigationTile({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -153,10 +149,7 @@ class _NavigationTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: Border.all(
-            color: c.border.withAlpha(40),
-            width: 0.5,
-          ),
+          border: Border.all(color: c.border.withAlpha(40), width: 0.5),
         ),
         child: Row(
           children: [

@@ -46,20 +46,15 @@ class SessionCommandPreview extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ThemedText.mono(
-                  r'$ ',
-                  color: c.success.withAlpha(180),
-                ),
-                Expanded(
-                  child: ThemedText.code(commandLine),
-                ),
+                ThemedText.mono(r'$ ', color: c.success.withAlpha(180)),
+                Expanded(child: ThemedText.code(commandLine)),
               ],
             ),
           ),
         ],
       ),
-      );
-    }
+    );
+  }
 }
 
 class _TitleBar extends StatelessWidget {
@@ -81,9 +76,7 @@ class _TitleBar extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.two - 1),
         ),
-        border: Border(
-          bottom: BorderSide(color: c.primary.withAlpha(30)),
-        ),
+        border: Border(bottom: BorderSide(color: c.primary.withAlpha(30))),
       ),
       child: Row(
         children: [
@@ -91,7 +84,8 @@ class _TitleBar extends StatelessWidget {
           ...[0xFF003C, 0xFF6600, 0x00FF41].map((hex) {
             final dotColor = Color(hex | 0xFF000000);
             return Container(
-              width: 8, height: 8,
+              width: 8,
+              height: 8,
               margin: const EdgeInsets.only(right: 5),
               decoration: BoxDecoration(
                 color: dotColor.withAlpha(120),
@@ -100,10 +94,7 @@ class _TitleBar extends StatelessWidget {
             );
           }),
           const SizedBox(width: AppSpacing.two),
-          ThemedText.mono(
-            cmd,
-            color: c.primary.withAlpha(140),
-          ),
+          ThemedText.mono(cmd, color: c.primary.withAlpha(140)),
           const Spacer(),
           actions ?? _TrailingPlaceholder(),
         ],

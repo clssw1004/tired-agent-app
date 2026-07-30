@@ -33,21 +33,21 @@ class TerminalThemes {
 
   /// 预设主题的中文名称（用于 UI 展示）。
   static String displayNameZh(TerminalThemePreset preset) => switch (preset) {
-        TerminalThemePreset.classic => '默认',
-        TerminalThemePreset.whiteOnBlack => '白底黑字',
-        TerminalThemePreset.solarizedDark => 'Solarized Dark',
-        TerminalThemePreset.dracula => 'Dracula',
-        TerminalThemePreset.neon => '霓虹',
-      };
+    TerminalThemePreset.classic => '默认',
+    TerminalThemePreset.whiteOnBlack => '白底黑字',
+    TerminalThemePreset.solarizedDark => 'Solarized Dark',
+    TerminalThemePreset.dracula => 'Dracula',
+    TerminalThemePreset.neon => '霓虹',
+  };
 
   /// 预设主题的英文名称（用于 UI 展示）。
   static String displayNameEn(TerminalThemePreset preset) => switch (preset) {
-        TerminalThemePreset.classic => 'Classic',
-        TerminalThemePreset.whiteOnBlack => 'White on Black',
-        TerminalThemePreset.solarizedDark => 'Solarized Dark',
-        TerminalThemePreset.dracula => 'Dracula',
-        TerminalThemePreset.neon => 'Neon',
-      };
+    TerminalThemePreset.classic => 'Classic',
+    TerminalThemePreset.whiteOnBlack => 'White on Black',
+    TerminalThemePreset.solarizedDark => 'Solarized Dark',
+    TerminalThemePreset.dracula => 'Dracula',
+    TerminalThemePreset.neon => 'Neon',
+  };
 
   static const Map<TerminalThemePreset, TerminalTheme> _all = {
     // ── Classic (VS Code Dark, #1E1E1E) ──────────────────────────────

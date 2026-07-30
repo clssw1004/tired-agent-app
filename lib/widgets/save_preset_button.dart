@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme.dart';
@@ -58,13 +57,15 @@ class SavePresetButton extends StatelessWidget {
                 .split(RegExp(r'\s+'))
                 .where((s) => s.isNotEmpty)
                 .toList();
-            Navigator.of(ctx).pop(UserPreset(
-              id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
-              label: label,
-              cmd: cmd.trim(),
-              args: manualArgs,
-              emoji: '⚡',
-            ));
+            Navigator.of(ctx).pop(
+              UserPreset(
+                id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+                label: label,
+                cmd: cmd.trim(),
+                args: manualArgs,
+                emoji: '⚡',
+              ),
+            );
           },
         ),
       ],
@@ -87,17 +88,21 @@ class SavePresetButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          border: Border.all(
-            color: c.primary.withAlpha(50),
-            width: 0.5,
-          ),
+          border: Border.all(color: c.primary.withAlpha(50), width: 0.5),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.save_outlined, size: 14, color: c.primary.withAlpha(180)),
+            Icon(
+              Icons.save_outlined,
+              size: 14,
+              color: c.primary.withAlpha(180),
+            ),
             const SizedBox(width: 4),
-            ThemedText.mono(AppStrings.of.createSave, color: c.primary.withAlpha(180)),
+            ThemedText.mono(
+              AppStrings.of.createSave,
+              color: c.primary.withAlpha(180),
+            ),
           ],
         ),
       ),

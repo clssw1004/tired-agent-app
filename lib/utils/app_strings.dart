@@ -23,8 +23,10 @@ class AppStrings {
 
   /// 当前本地化实例。
   static AppLocalizations get of {
-    assert(_loc != null,
-        'AppStrings not initialized — call AppStrings.init(context) in MaterialApp.router builder');
+    assert(
+      _loc != null,
+      'AppStrings not initialized — call AppStrings.init(context) in MaterialApp.router builder',
+    );
     return _loc!;
   }
 

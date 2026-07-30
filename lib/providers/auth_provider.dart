@@ -34,8 +34,9 @@ class AuthProvider extends ChangeNotifier {
       _authService.transportFor(profileId);
 
   /// Whether there is at least one connected manager.
-  bool get hasAnyConnection =>
-      _authService.connections.any((c) => c.status == ConnectionStatus.connected);
+  bool get hasAnyConnection => _authService.connections.any(
+    (c) => c.status == ConnectionStatus.connected,
+  );
 
   // ═══════════════════════════════════════════════════════════════════
   //  Boot
@@ -97,7 +98,9 @@ class AuthProvider extends ChangeNotifier {
     final conn = _authService.connectionFor(profileId);
     if (conn == null) return false;
     await conn.connect(apiToken: apiToken);
-    debugPrint('[AuthProvider] reconnect status=${conn.status} error=${conn.error}');
+    debugPrint(
+      '[AuthProvider] reconnect status=${conn.status} error=${conn.error}',
+    );
     if (conn.status == ConnectionStatus.connected) {
       if (conn.profile.refreshToken != null) {
         debugPrint('[AuthProvider] saving refresh token for $profileId');
@@ -119,8 +122,7 @@ class AuthProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════
 
   /// 刷新所有 manager 的 session（静默，不阻塞 UI）。
-  Future<void> refreshAllSessions() =>
-      _authService.refreshAllSessions();
+  Future<void> refreshAllSessions() => _authService.refreshAllSessions();
 
   // ═══════════════════════════════════════════════════════════════════
   //  Internal helpers
@@ -138,11 +140,8 @@ class AuthProvider extends ChangeNotifier {
 
   Future<ServerRef?> getServerRef(String profileId, String agentId) =>
       _authService.getServerRef(profileId, agentId);
-  Future<void> setServerToken(
-    String profileId,
-    String agentId,
-    String token,
-  ) => _authService.setServerToken(profileId, agentId, token);
+  Future<void> setServerToken(String profileId, String agentId, String token) =>
+      _authService.setServerToken(profileId, agentId, token);
   Future<void> forgetServer(String profileId, String agentId) =>
       _authService.forgetServer(profileId, agentId);
 }

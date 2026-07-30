@@ -126,11 +126,7 @@ class SessionApiService {
   /// Get Claude project info (historical sessions) for a given path.
   Future<ClaudeProjectInfo> getClaudeProjects({required String path}) async {
     final ref = await _ensureRef();
-    return conn.transport.getClaudeProjects(
-      ref,
-      path: path,
-      agentId: agentId,
-    );
+    return conn.transport.getClaudeProjects(ref, path: path, agentId: agentId);
   }
 
   /// Get directory shortcuts (favorites + recent).

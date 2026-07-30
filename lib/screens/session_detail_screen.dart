@@ -145,9 +145,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       context: context,
       title: AppStrings.of.sessionKillTitle,
       showRobot: true,
-      content: ThemedText.small(
-        AppStrings.of.sessionKillDesc,
-      ),
+      content: ThemedText.small(AppStrings.of.sessionKillDesc),
       confirmText: AppStrings.of.sessionKillBtn,
       confirmIsDanger: true,
     );
@@ -174,9 +172,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       context: context,
       title: AppStrings.of.sessionDeleteTitle,
       showRobot: true,
-      content: ThemedText.small(
-        AppStrings.of.sessionDeleteDesc,
-      ),
+      content: ThemedText.small(AppStrings.of.sessionDeleteDesc),
       confirmText: AppStrings.of.sessionDeleteBtn,
       confirmIsDanger: true,
     );
@@ -200,10 +196,14 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
 
   String _generateLabel() {
     final chars = 'abcdefghijkmnpqrstuvwxyz23456789';
-    final rnd = List.generate(8, (_) => chars[Random().nextInt(chars.length)]).join();
+    final rnd = List.generate(
+      8,
+      (_) => chars[Random().nextInt(chars.length)],
+    ).join();
     final now = DateTime.now();
     String pad(int n) => n.toString().padLeft(2, '0');
-    final stamp = '${now.year}${pad(now.month)}${pad(now.day)}T${pad(now.hour)}${pad(now.minute)}${pad(now.second)}';
+    final stamp =
+        '${now.year}${pad(now.month)}${pad(now.day)}T${pad(now.hour)}${pad(now.minute)}${pad(now.second)}';
     return '${rnd}_$stamp';
   }
 
@@ -215,7 +215,8 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         : _generateLabel();
 
     // Resume value priority: extra.claudeSessionId > extra.claudeName > label
-    final resumeValue = (_session!.extra?['claudeSessionId'] as String?) ??
+    final resumeValue =
+        (_session!.extra?['claudeSessionId'] as String?) ??
         (_session!.extra?['claudeName'] as String?) ??
         _session!.label;
 
@@ -233,7 +234,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     try {
       final newSession = await _api!.createSession(spec);
       if (mounted) {
-        context.replace('/session/${widget.profileId}/${widget.agentId}/${newSession.id}');
+        context.replace(
+          '/session/${widget.profileId}/${widget.agentId}/${newSession.id}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -266,9 +269,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: color.withAlpha(100), blurRadius: 6),
-        ],
+        boxShadow: [BoxShadow(color: color.withAlpha(100), blurRadius: 6)],
       ),
     );
   }
@@ -283,11 +284,14 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     final isPersistent = _session?.mode == SessionMode.persistent;
     final isClaude = _session?.cmd == 'claude';
     final sessionStatus = _session?.status;
-    final canResume = sessionStatus == SessionStatus.exited && isClaude &&
+    final canResume =
+        sessionStatus == SessionStatus.exited &&
+        isClaude &&
         (_session!.extra?['claudeSessionId'] != null ||
-         _session!.extra?['claudeName'] != null ||
-         _session!.label != null);
-    final title = _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
+            _session!.extra?['claudeName'] != null ||
+            _session!.label != null);
+    final title =
+        _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
 
     return Scaffold(
@@ -344,26 +348,24 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       body: _loading
           ? Center(child: NeonLoading())
           : _error != null
-              ? Center(
-                  child: ThemedText.small(_error!, color: c.danger),
-                )
-              : _session != null && _conn != null
-                  ? isPersistent
-                      ? ClaudeChatView(
-                          key: _chatKey,
-                          serverRef: _conn!.managerRef,
-                          agentId: widget.agentId,
-                          session: _session!,
-                          tokenProvider: () async => _conn!.profile.sessionToken,
-                        )
-                      : PtySessionView(
-                          key: _ptyKey,
-                          serverRef: _conn!.managerRef,
-                          agentId: widget.agentId,
-                          session: _session!,
-                          tokenProvider: () async => _conn!.profile.sessionToken,
-                        )
-                  : Center(child: ThemedText.small(AppStrings.of.sessionNotFound)),
+          ? Center(child: ThemedText.small(_error!, color: c.danger))
+          : _session != null && _conn != null
+          ? isPersistent
+                ? ClaudeChatView(
+                    key: _chatKey,
+                    serverRef: _conn!.managerRef,
+                    agentId: widget.agentId,
+                    session: _session!,
+                    tokenProvider: () async => _conn!.profile.sessionToken,
+                  )
+                : PtySessionView(
+                    key: _ptyKey,
+                    serverRef: _conn!.managerRef,
+                    agentId: widget.agentId,
+                    session: _session!,
+                    tokenProvider: () async => _conn!.profile.sessionToken,
+                  )
+          : Center(child: ThemedText.small(AppStrings.of.sessionNotFound)),
     );
   }
 }

@@ -42,10 +42,10 @@ class AddAgentFormState extends State<AddAgentForm> {
   }
 
   AddAgentFormData get data => AddAgentFormData(
-        _nameController.text.trim(),
-        _urlController.text.trim(),
-        _tokenController.text.trim(),
-      );
+    _nameController.text.trim(),
+    _urlController.text.trim(),
+    _tokenController.text.trim(),
+  );
 
   @override
   Widget build(BuildContext context) {

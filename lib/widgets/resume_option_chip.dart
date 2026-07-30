@@ -133,7 +133,11 @@ class _ResumeOptionChipState extends State<ResumeOptionChip> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.history, size: 13, color: active ? c.primary : c.textSecondary),
+            Icon(
+              Icons.history,
+              size: 13,
+              color: active ? c.primary : c.textSecondary,
+            ),
             const SizedBox(width: 4),
             ThemedText.mono(label, color: active ? c.primary : c.textSecondary),
             if (active) ...[

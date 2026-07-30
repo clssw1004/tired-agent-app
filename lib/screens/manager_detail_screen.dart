@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
@@ -8,6 +7,7 @@ import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_agent_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
+import 'package:tired_agent_app/widgets/agent_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 
@@ -112,7 +112,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           final c = context.appColors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: ThemedText.small(AppStrings.of.agentAdded(formData.name)),
+              content: ThemedText.small(
+                AppStrings.of.agentAdded(formData.name),
+              ),
               backgroundColor: c.backgroundElement,
             ),
           );
@@ -180,7 +182,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
-        title: ThemedText.title(conn?.profile.name ?? AppStrings.of.agentManagerNotFound),
+        title: ThemedText.title(
+          conn?.profile.name ?? AppStrings.of.agentManagerNotFound,
+        ),
         actions: [
           if (conn?.status == ConnectionStatus.connected)
             IconButton(
@@ -196,7 +200,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
 
   Widget _buildBody(ManagerConnection? conn) {
     if (conn == null) {
-      return Center(child: ThemedText.small(AppStrings.of.agentManagerNotFound));
+      return Center(
+        child: ThemedText.small(AppStrings.of.agentManagerNotFound),
+      );
     }
 
     if (_loading) {
@@ -235,7 +241,10 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
             children: [
               Icon(Icons.dns_outlined, size: 64, color: c.textSecondary),
               const SizedBox(height: AppSpacing.three),
-              ThemedText.title(AppStrings.of.agentNoAgents, color: c.textSecondary),
+              ThemedText.title(
+                AppStrings.of.agentNoAgents,
+                color: c.textSecondary,
+              ),
               const SizedBox(height: AppSpacing.one),
               ThemedText.small(
                 AppStrings.of.agentNoAgentsDesc,
@@ -265,7 +274,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         itemCount: _agents.length,
         itemBuilder: (context, index) {
           final agent = _agents[index];
-          return _ManagerAgentCard(
+          return AgentCard(
             agent: agent,
             profileId: widget.profileId,
             onDelete: () => _deleteAgent(agent),
@@ -273,130 +282,5 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         },
       ),
     );
-  }
-}
-
-/// An agent card in the manager detail page.
-class _ManagerAgentCard extends StatelessWidget {
-  final AgentInfo agent;
-  final String profileId;
-  final VoidCallback? onDelete;
-
-  const _ManagerAgentCard({
-    required this.agent,
-    required this.profileId,
-    this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.appColors;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.three),
-      child: GestureDetector(
-        onTap: () => context.push('/profile/$profileId/agent/${agent.id}'),
-        onLongPress: onDelete,
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(AppSpacing.two),
-            border: Border.all(
-              color: c.primary.withAlpha(40),
-              width: 0.5,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.three),
-            child: Row(
-              children: [
-                // Status dot
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: _agentColor(agent.state, c),
-                    shape: BoxShape.circle,
-                    boxShadow: agent.state == AgentState.online
-                        ? [
-                            BoxShadow(
-                              color: c.success.withAlpha(80),
-                              blurRadius: 4,
-                            ),
-                          ]
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.three),
-                // Name + URL
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ThemedText.body(agent.name, color: c.text),
-                      const SizedBox(height: 2),
-                      ThemedText.label(
-                        agent.baseUrl,
-                        color: c.textSecondary,
-                      ),
-                      if (agent.platform != null) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _platformIcon(agent.platform!.os, c),
-                            const SizedBox(width: 4),
-                            ThemedText.mono(
-                              '${agent.platform!.os} · ${agent.platform!.arch}',
-                              color: c.primary.withAlpha(120),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                // Chevron
-                Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: c.textSecondary,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _agentColor(AgentState s, AppColors c) {
-    switch (s) {
-      case AgentState.online:
-        return c.success;
-      case AgentState.offline:
-        return c.danger;
-      case AgentState.pending:
-        return c.textSecondary;
-    }
-  }
-
-  static Widget _platformIcon(String os, AppColors c) {
-    IconData icon;
-    Color color;
-    switch (os) {
-      case 'win32':
-        icon = Icons.window;
-        color = c.primary;
-      case 'darwin':
-        icon = Icons.laptop_mac;
-        color = c.text;
-      case 'linux':
-        icon = Icons.terminal;
-        color = c.warning;
-      default:
-        icon = Icons.devices;
-        color = c.textSecondary;
-    }
-    return Icon(icon, size: 14, color: color.withAlpha(160));
   }
 }

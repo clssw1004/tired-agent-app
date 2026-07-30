@@ -256,10 +256,7 @@ ThemeData buildDarkTheme() {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          side: BorderSide(
-            color: c.primary.withAlpha(80),
-            width: 0.5,
-          ),
+          side: BorderSide(color: c.primary.withAlpha(80), width: 0.5),
         ),
         shadowColor: c.primary.withAlpha(25),
         elevation: 1,
@@ -346,10 +343,7 @@ ThemeData buildLightTheme() {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.two),
-          side: BorderSide(
-            color: c.primary.withAlpha(80),
-            width: 0.5,
-          ),
+          side: BorderSide(color: c.primary.withAlpha(80), width: 0.5),
         ),
         shadowColor: c.primary.withAlpha(25),
         elevation: 1,

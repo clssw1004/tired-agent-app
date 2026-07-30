@@ -24,9 +24,7 @@ class EnhancementRegistry {
     EnhancementPoint point,
     String cmd,
     String? presetId,
-  ) =>
-      _items
-          .where((e) =>
-              e.point == point && e.activation.matches(cmd, presetId))
-          .toList();
+  ) => _items
+      .where((e) => e.point == point && e.activation.matches(cmd, presetId))
+      .toList();
 }

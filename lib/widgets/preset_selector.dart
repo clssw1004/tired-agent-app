@@ -63,18 +63,24 @@ class PresetSelectorState extends State<PresetSelector> {
 
   String? get selectedBuiltinId => _selectedBuiltinId;
 
-  BuiltinPreset? get selectedPreset =>
-      widget.platform == null
-          ? builtinPresets.where((p) => p.id == _selectedBuiltinId).firstOrNull
-          : builtinPresets.where(
-              (p) => (p.platforms == null || p.platforms!.contains(widget.platform)) && p.id == _selectedBuiltinId,
-            ).firstOrNull;
+  BuiltinPreset? get selectedPreset => widget.platform == null
+      ? builtinPresets.where((p) => p.id == _selectedBuiltinId).firstOrNull
+      : builtinPresets
+            .where(
+              (p) =>
+                  (p.platforms == null ||
+                      p.platforms!.contains(widget.platform)) &&
+                  p.id == _selectedBuiltinId,
+            )
+            .firstOrNull;
 
   List<BuiltinPreset> get visibleBuiltinPresets {
     if (widget.platform == null) return builtinPresets;
-    return builtinPresets.where(
-      (p) => p.platforms == null || p.platforms!.contains(widget.platform),
-    ).toList();
+    return builtinPresets
+        .where(
+          (p) => p.platforms == null || p.platforms!.contains(widget.platform),
+        )
+        .toList();
   }
 
   List<UserPreset> get customPresets => _customPresets;
@@ -161,7 +167,8 @@ class PresetSelectorState extends State<PresetSelector> {
   }
 
   bool _listEq(List<String> a, List<String> b) =>
-      a.length == b.length && a.asMap().entries.every((e) => e.value == b[e.key]);
+      a.length == b.length &&
+      a.asMap().entries.every((e) => e.value == b[e.key]);
 
   // ── UI ────────────────────────────────────────────────────────────
 

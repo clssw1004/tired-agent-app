@@ -33,12 +33,11 @@ class PinnedSessionProvider extends ChangeNotifier {
     required String profileId,
     required String agentId,
     required String sessionId,
-  }) =>
-      _service.isPinned(
-        profileId: profileId,
-        agentId: agentId,
-        sessionId: sessionId,
-      );
+  }) => _service.isPinned(
+    profileId: profileId,
+    agentId: agentId,
+    sessionId: sessionId,
+  );
 
   Future<PinnedSession> pin({
     required String profileId,

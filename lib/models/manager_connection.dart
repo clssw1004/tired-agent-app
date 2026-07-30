@@ -27,10 +27,8 @@ enum ConnectionStatus {
 /// Call [connect] after construction to initialize the session, or
 /// [disconnect] to tear down while keeping the [profile] for later reuse.
 class ManagerConnection extends ChangeNotifier {
-  ManagerConnection({
-    required this.profile,
-    HttpSseTransport? transport,
-  }) : _transport = transport;
+  ManagerConnection({required this.profile, HttpSseTransport? transport})
+    : _transport = transport;
 
   /// The underlying profile (persisted).
   final ManagerProfile profile;
@@ -90,8 +88,7 @@ class ManagerConnection extends ChangeNotifier {
   bool get isSessionFresh {
     const windowMs = 5 * 60 * 1000;
     final remaining =
-        profile.sessionExpiresAtMs -
-        DateTime.now().millisecondsSinceEpoch;
+        profile.sessionExpiresAtMs - DateTime.now().millisecondsSinceEpoch;
     return profile.sessionToken != null && remaining > windowMs;
   }
 
@@ -125,7 +122,9 @@ class ManagerConnection extends ChangeNotifier {
     status = ConnectionStatus.connecting;
     error = null;
     notifyListeners();
-    debugPrint('[ManagerConnection] connect(${profile.name}) apiToken=${apiToken != null}');
+    debugPrint(
+      '[ManagerConnection] connect(${profile.name}) apiToken=${apiToken != null}',
+    );
 
     try {
       if (apiToken != null) {
@@ -138,7 +137,9 @@ class ManagerConnection extends ChangeNotifier {
           token: apiToken,
         );
         final result = await transport.login(ref, apiToken);
-        debugPrint('[ManagerConnection] login OK, session=${result.sessionToken.substring(0, 8)}…');
+        debugPrint(
+          '[ManagerConnection] login OK, session=${result.sessionToken.substring(0, 8)}…',
+        );
         profile.refreshToken = result.refreshToken;
         profile.sessionToken = result.sessionToken;
         profile.sessionExpiresAtMs =

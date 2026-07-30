@@ -16,6 +16,7 @@ import 'package:tired_agent_app/enhancements/types.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
 import 'package:tired_agent_app/widgets/directory_picker_field.dart';
 import 'package:tired_agent_app/widgets/directory_picker_modal.dart';
+import 'package:tired_agent_app/widgets/launch_chip.dart';
 import 'package:tired_agent_app/widgets/preset_option_chips.dart';
 import 'package:tired_agent_app/widgets/preset_selector.dart';
 import 'package:tired_agent_app/widgets/resume_option_chip.dart';
@@ -141,9 +142,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   void _onOptionsChanged(Map<String, String?> updated) {
-    setState(() => _optionSelections
-      ..clear()
-      ..addAll(updated));
+    setState(
+      () => _optionSelections
+        ..clear()
+        ..addAll(updated),
+    );
   }
 
   void _onResumeChanged(ResumeSelection? selection) {
@@ -186,7 +189,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       if (conn == null || conn.profile.sessionToken == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppStrings.of.createNotConnected), backgroundColor: c.danger),
+            SnackBar(
+              content: Text(AppStrings.of.createNotConnected),
+              backgroundColor: c.danger,
+            ),
           );
         }
         return;
@@ -203,8 +209,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       final spec = SessionSpec(
         cmd: _cmd.trim(),
         args: finalArgs.isNotEmpty ? finalArgs : null,
-        cwd: _cwdController.text.trim().isNotEmpty ? _cwdController.text.trim() : null,
-        label: _labelController.text.trim().isNotEmpty ? _labelController.text.trim() : _generateDefaultLabel(),
+        cwd: _cwdController.text.trim().isNotEmpty
+            ? _cwdController.text.trim()
+            : null,
+        label: _labelController.text.trim().isNotEmpty
+            ? _labelController.text.trim()
+            : _generateDefaultLabel(),
         cols: 80,
         rows: 24,
         mode: SessionMode.process,
@@ -215,7 +225,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
       }
       for (final e in EnhancementRegistry.forPoint(
-        EnhancementPoint.beforeSubmit, _cmd, _selectedBuiltinId,
+        EnhancementPoint.beforeSubmit,
+        _cmd,
+        _selectedBuiltinId,
       )) {
         finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
       }
@@ -224,7 +236,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
       if (mounted) {
         _presetKey.currentState?.trackRecent(_cmd.trim(), manualArgs);
-        context.replace('/session/${widget.profileId}/${widget.agentId}/${session.id}');
+        context.replace(
+          '/session/${widget.profileId}/${widget.agentId}/${session.id}',
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -283,11 +297,20 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         children: [
           if (_previewCommand.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.four, AppSpacing.four, AppSpacing.four, 0),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.four,
+                AppSpacing.four,
+                AppSpacing.four,
+                0,
+              ),
               child: SessionCommandPreview(
                 cmd: _cmd,
                 commandLine: _previewCommand,
-                actions: _buildLaunchChip(),
+                actions: LaunchChip(
+                  busy: _busy,
+                  disabled: _busy || _cmd.trim().isEmpty,
+                  onTap: _submit,
+                ),
               ),
             ),
           Expanded(
@@ -309,9 +332,18 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
                   sectionHeader(context, AppStrings.of.createCommand),
                   TextField(
-                    controller: TextEditingController.fromValue(TextEditingValue(text: _cmd)),
-                    onChanged: (v) { setState(() => _cmd = v); _updateEnhancements(); },
-                    style: TextStyle(fontFamily: 'monospace', color: c.textCode, fontSize: 14),
+                    controller: TextEditingController.fromValue(
+                      TextEditingValue(text: _cmd),
+                    ),
+                    onChanged: (v) {
+                      setState(() => _cmd = v);
+                      _updateEnhancements();
+                    },
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      color: c.textCode,
+                      fontSize: 14,
+                    ),
                     decoration: neonInputDecoration(context, prefixText: r'$ '),
                   ),
                   const SizedBox(height: AppSpacing.four),
@@ -320,7 +352,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   TextField(
                     controller: _labelController,
                     style: TextStyle(color: c.text, fontSize: 14),
-                    decoration: neonInputDecoration(context, hint: AppStrings.of.createAutoLabel),
+                    decoration: neonInputDecoration(
+                      context,
+                      hint: AppStrings.of.createAutoLabel,
+                    ),
                     enabled: !_busy,
                   ),
                   const SizedBox(height: AppSpacing.four),
@@ -328,19 +363,30 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   sectionHeader(context, AppStrings.of.createWorkingDir),
                   _buildDirectoryPicker(),
                   const SizedBox(height: AppSpacing.two),
-                  ThemedText.mono(AppStrings.of.createTerminalSizeHint, color: c.textSecondary.withAlpha(120)),
+                  ThemedText.mono(
+                    AppStrings.of.createTerminalSizeHint,
+                    color: c.textSecondary.withAlpha(120),
+                  ),
                   const SizedBox(height: AppSpacing.six),
 
                   sectionHeader(context, AppStrings.of.createArguments),
                   TextField(
                     controller: _argsController,
-                    style: TextStyle(fontFamily: 'monospace', color: c.textCode, fontSize: 14),
-                    decoration: neonInputDecoration(context, hint: AppStrings.of.createArgsHint),
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      color: c.textCode,
+                      fontSize: 14,
+                    ),
+                    decoration: neonInputDecoration(
+                      context,
+                      hint: AppStrings.of.createArgsHint,
+                    ),
                     onChanged: (_) => setState(() {}),
                     enabled: !_busy,
                   ),
 
-                  if (_selectedPreset != null && _selectedPreset!.options.isNotEmpty) ...[
+                  if (_selectedPreset != null &&
+                      _selectedPreset!.options.isNotEmpty) ...[
                     const SizedBox(height: AppSpacing.four),
                     sectionHeader(context, AppStrings.of.createOptions),
                     _buildOptionChips(
@@ -364,11 +410,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                       selection: _resumeSelection,
                       onChanged: _onResumeChanged,
                     ),
-                    if (_resumeSelection == null) const SizedBox(height: AppSpacing.six),
+                    if (_resumeSelection == null)
+                      const SizedBox(height: AppSpacing.six),
                   ],
 
                   if (_activeEnhancements.isNotEmpty) ...[
-                    for (final e in _activeEnhancements) e.buildWidget(context, _enhancementCtx),
+                    for (final e in _activeEnhancements)
+                      e.buildWidget(context, _enhancementCtx),
                     const SizedBox(height: AppSpacing.four),
                   ],
                 ],
@@ -376,36 +424,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLaunchChip() {
-    final c = context.appColors;
-    final disabled = _busy || _cmd.trim().isEmpty;
-    return GestureDetector(
-      onTap: disabled ? null : _submit,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: 1),
-        decoration: BoxDecoration(
-          color: c.primary.withAlpha(disabled ? 3 : 10),
-          borderRadius: BorderRadius.circular(AppSpacing.three),
-          border: Border.all(color: c.primary.withAlpha(disabled ? 15 : 60), width: 0.5),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_busy)
-              const SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5))
-            else
-              Icon(Icons.play_arrow, size: 12, color: disabled ? c.textSecondary.withAlpha(60) : c.primary),
-            const SizedBox(width: 3),
-            ThemedText.mono(
-              AppStrings.of.createLaunch,
-              color: disabled ? c.textSecondary.withAlpha(60) : c.primary,
-            ),
-          ],
-        ),
       ),
     );
   }

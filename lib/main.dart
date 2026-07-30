@@ -36,7 +36,8 @@ class TiredAgentApp extends StatefulWidget {
   State<TiredAgentApp> createState() => _TiredAgentAppState();
 }
 
-class _TiredAgentAppState extends State<TiredAgentApp> with WidgetsBindingObserver {
+class _TiredAgentAppState extends State<TiredAgentApp>
+    with WidgetsBindingObserver {
   late final AuthService _authService;
   late final AuthProvider _authProvider;
   late final PinnedSessionProvider _pinnedSessionProvider;
@@ -68,10 +69,7 @@ class _TiredAgentAppState extends State<TiredAgentApp> with WidgetsBindingObserv
             // Tab 0: Managers — multi-manager list
             StatefulShellBranch(
               routes: [
-                GoRoute(
-                  path: '/',
-                  builder: (_, _) => const ServerListScreen(),
-                ),
+                GoRoute(path: '/', builder: (_, _) => const ServerListScreen()),
               ],
             ),
             // Tab 1: Sessions — pinned sessions

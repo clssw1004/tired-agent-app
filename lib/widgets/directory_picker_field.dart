@@ -31,18 +31,11 @@ class DirectoryPickerField extends StatelessWidget {
           color: c.surface,
           borderRadius: BorderRadius.circular(AppSpacing.two),
           border: Border.all(
-            color: hasPath
-                ? c.primary.withAlpha(60)
-                : c.border.withAlpha(60),
+            color: hasPath ? c.primary.withAlpha(60) : c.border.withAlpha(60),
             width: hasPath ? 1 : 0.5,
           ),
           boxShadow: hasPath
-              ? [
-                  BoxShadow(
-                    color: c.primary.withAlpha(10),
-                    blurRadius: 6,
-                  ),
-                ]
+              ? [BoxShadow(color: c.primary.withAlpha(10), blurRadius: 6)]
               : null,
         ),
         child: Row(

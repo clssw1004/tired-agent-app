@@ -51,10 +51,10 @@ class SseClient {
     required ServerRef ref,
     required String sessionId,
     String? agentId,
-  })  : _transport = transport,
-        _ref = ref,
-        _sessionId = sessionId,
-        _agentId = agentId;
+  }) : _transport = transport,
+       _ref = ref,
+       _sessionId = sessionId,
+       _agentId = agentId;
 
   /// Start the SSE lifecycle: fetch history → subscribe to live stream.
   ///

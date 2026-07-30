@@ -482,17 +482,15 @@ class ClaudeProjectSession {
 class ClaudeProjectInfo {
   final String displayPath;
   final List<ClaudeProjectSession> sessions;
-  const ClaudeProjectInfo({
-    required this.displayPath,
-    required this.sessions,
-  });
+  const ClaudeProjectInfo({required this.displayPath, required this.sessions});
 
   factory ClaudeProjectInfo.fromJson(Map<String, dynamic> json) =>
       ClaudeProjectInfo(
         displayPath: json['displayPath'] as String,
         sessions: (json['sessions'] as List<dynamic>)
-            .map((e) =>
-                ClaudeProjectSession.fromJson(e as Map<String, dynamic>))
+            .map(
+              (e) => ClaudeProjectSession.fromJson(e as Map<String, dynamic>),
+            )
             .toList(),
       );
 }

@@ -41,20 +41,13 @@ class ToastOverlay extends StatelessWidget {
                     Expanded(
                       child: Text(
                         toast.message,
-                        style: TextStyle(
-                          color: c.text,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: c.text, fontSize: 14),
                       ),
                     ),
                     GestureDetector(
                       onTap: () =>
                           context.read<ToastProvider>().dismiss(toast.id),
-                      child: Icon(
-                        Icons.close,
-                        color: c.text,
-                        size: 18,
-                      ),
+                      child: Icon(Icons.close, color: c.text, size: 18),
                     ),
                   ],
                 ),

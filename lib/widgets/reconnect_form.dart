@@ -47,7 +47,9 @@ class ReconnectFormState extends State<ReconnectForm> {
         const SizedBox(height: AppSpacing.three),
         TextField(
           controller: _tokenController,
-          decoration: InputDecoration(labelText: AppStrings.of.managersAccessToken),
+          decoration: InputDecoration(
+            labelText: AppStrings.of.managersAccessToken,
+          ),
           obscureText: true,
           autocorrect: false,
         ),

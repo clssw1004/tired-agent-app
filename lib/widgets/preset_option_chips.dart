@@ -43,13 +43,16 @@ class PresetOptionChips extends StatelessWidget {
       spacing: AppSpacing.two,
       runSpacing: AppSpacing.one,
       children: [
-        ...inline.map((opt) => _OptionChip(
-          label: _chipLabel(opt),
-          isActive: selections[opt.id] != null,
-          isToggle: opt.isToggle,
-          onTap: () => _chipTapped(context, opt),
-        )),
-        if (overflow.isNotEmpty) _MoreChip(count: overflow.length, onTap: () => _showAll(context)),
+        ...inline.map(
+          (opt) => _OptionChip(
+            label: _chipLabel(opt),
+            isActive: selections[opt.id] != null,
+            isToggle: opt.isToggle,
+            onTap: () => _chipTapped(context, opt),
+          ),
+        ),
+        if (overflow.isNotEmpty)
+          _MoreChip(count: overflow.length, onTap: () => _showAll(context)),
         if (extra != null) ...extra!,
       ],
     );
@@ -105,7 +108,9 @@ class PresetOptionChips extends StatelessWidget {
             selectedTileColor: c.accent.withAlpha(20),
             title: ThemedText.body(v.label),
             subtitle: v.hint.isNotEmpty ? ThemedText.small(v.hint) : null,
-            trailing: sel ? Icon(Icons.check, color: c.primary, size: 18) : null,
+            trailing: sel
+                ? Icon(Icons.check, color: c.primary, size: 18)
+                : null,
             onTap: () => Navigator.of(context).pop(sel ? null : v.label),
             dense: true,
           );
@@ -140,12 +145,18 @@ class PresetOptionChips extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: ThemedText.body('${preset.emoji} ${preset.label} options', color: c.textSecondary),
+                  child: ThemedText.body(
+                    '${preset.emoji} ${preset.label} options',
+                    color: c.textSecondary,
+                  ),
                 ),
                 Divider(height: 1, color: c.border),
                 Flexible(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: preset.options.map((opt) {
@@ -172,17 +183,21 @@ class PresetOptionChips extends StatelessWidget {
                                 )
                               else
                                 GestureDetector(
-                                  onTap: () => _showValuePicker(ctx, opt, (label) {
-                                    setSheetState(() {
-                                      if (label == null) {
-                                        temp.remove(opt.id);
-                                      } else {
-                                        temp[opt.id] = label;
-                                      }
-                                    });
-                                  }),
+                                  onTap: () =>
+                                      _showValuePicker(ctx, opt, (label) {
+                                        setSheetState(() {
+                                          if (label == null) {
+                                            temp.remove(opt.id);
+                                          } else {
+                                            temp[opt.id] = label;
+                                          }
+                                        });
+                                      }),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: c.backgroundElement,
                                       borderRadius: BorderRadius.circular(4),
@@ -192,9 +207,15 @@ class PresetOptionChips extends StatelessWidget {
                                       children: [
                                         ThemedText.small(
                                           sel ?? 'Select…',
-                                          color: sel != null ? c.text : c.textSecondary,
+                                          color: sel != null
+                                              ? c.text
+                                              : c.textSecondary,
                                         ),
-                                        Icon(Icons.arrow_drop_down, size: 16, color: c.textSecondary),
+                                        Icon(
+                                          Icons.arrow_drop_down,
+                                          size: 16,
+                                          color: c.textSecondary,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -219,7 +240,9 @@ class PresetOptionChips extends StatelessWidget {
                       const SizedBox(width: 8),
                       TextButton(
                         onPressed: () => Navigator.of(ctx).pop(temp),
-                        child: ThemedText.body(AppStrings.of.createOptionsApply),
+                        child: ThemedText.body(
+                          AppStrings.of.createOptionsApply,
+                        ),
                       ),
                     ],
                   ),
@@ -276,10 +299,17 @@ class _OptionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ThemedText.mono(label, color: isActive ? c.primary : c.textSecondary),
+            ThemedText.mono(
+              label,
+              color: isActive ? c.primary : c.textSecondary,
+            ),
             if (!isToggle) ...[
               const SizedBox(width: 2),
-              Icon(Icons.arrow_drop_down, size: 14, color: isActive ? c.primary.withAlpha(180) : c.textSecondary),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 14,
+                color: isActive ? c.primary.withAlpha(180) : c.textSecondary,
+              ),
             ],
           ],
         ),
@@ -300,7 +330,10 @@ class _MoreChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two, vertical: AppSpacing.one),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.two,
+          vertical: AppSpacing.one,
+        ),
         decoration: BoxDecoration(
           color: c.surface,
           borderRadius: BorderRadius.circular(AppSpacing.three),

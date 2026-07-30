@@ -22,20 +22,17 @@ class AuthService {
   // ─── Connections ──────────────────────────────────────────────────────
 
   /// All live connections (read-only).
-  List<ManagerConnection> get connections => List.unmodifiable(
-    _connections.values.toList(),
-  );
+  List<ManagerConnection> get connections =>
+      List.unmodifiable(_connections.values.toList());
 
   /// The stored profiles (read-only).
-  List<ManagerProfile> get profiles => List.unmodifiable(
-    _connections.values.map((c) => c.profile).toList(),
-  );
+  List<ManagerProfile> get profiles =>
+      List.unmodifiable(_connections.values.map((c) => c.profile).toList());
 
   /// Get or create a connection for [profileId].
   ///
   /// The transport is lazily created on first access.
-  ManagerConnection? connectionFor(String profileId) =>
-      _connections[profileId];
+  ManagerConnection? connectionFor(String profileId) => _connections[profileId];
 
   /// Get the transport for [profileId].
   ///
@@ -65,7 +62,8 @@ class AuthService {
   Future<void> connectAll() async {
     await Future.wait(
       _connections.values.map((conn) async {
-        if (conn.profile.refreshToken != null || conn.profile.sessionToken != null) {
+        if (conn.profile.refreshToken != null ||
+            conn.profile.sessionToken != null) {
           await conn.connect();
           await _persistRefreshToken(conn);
         }
@@ -85,7 +83,9 @@ class AuthService {
         await conn.ensureFreshSession();
         await _persistRefreshToken(conn);
       } catch (e) {
-        debugPrint('[AuthService] refreshAllSessions — ${conn.profile.name}: $e');
+        debugPrint(
+          '[AuthService] refreshAllSessions — ${conn.profile.name}: $e',
+        );
       }
     }
   }
@@ -106,8 +106,9 @@ class AuthService {
 
     // Restore refresh tokens from secure storage.
     for (final conn in _connections.values) {
-      conn.profile.refreshToken =
-          await storage.loadManagerRefreshToken(conn.profile.id);
+      conn.profile.refreshToken = await storage.loadManagerRefreshToken(
+        conn.profile.id,
+      );
       debugPrint(
         '[AuthService]  profile=${conn.profile.name} '
         'refreshToken=${conn.profile.refreshToken != null}',
@@ -170,10 +171,7 @@ class AuthService {
   // ─── Agent refs ───────────────────────────────────────────────────────
 
   /// Build a [ServerRef] for the given agent under the given profile.
-  Future<ServerRef?> getServerRef(
-    String profileId,
-    String agentId,
-  ) async {
+  Future<ServerRef?> getServerRef(String profileId, String agentId) async {
     final conn = _connections[profileId];
     if (conn == null) return null;
     final agent = conn.agents.where((a) => a.id == agentId).firstOrNull;
@@ -206,9 +204,7 @@ class AuthService {
   Future<void> forgetServer(String profileId, String agentId) async {
     final conn = _connections[profileId];
     if (conn == null) return;
-    await storage.deleteCredential(
-      'server:${conn.profile.id}:$agentId:token',
-    );
+    await storage.deleteCredential('server:${conn.profile.id}:$agentId:token');
   }
 
   // ─── Internals ────────────────────────────────────────────────────────

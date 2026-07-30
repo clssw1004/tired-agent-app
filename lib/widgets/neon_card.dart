@@ -46,10 +46,7 @@ class NeonCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
               border: hasBorder
                   ? Border.all(color: borderColor!, width: 1)
-                  : Border.all(
-                      color: c.border.withAlpha(60),
-                      width: 0.5,
-                    ),
+                  : Border.all(color: c.border.withAlpha(60), width: 0.5),
               boxShadow: glow && hasBorder
                   ? [
                       BoxShadow(
