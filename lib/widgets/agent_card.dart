@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -17,6 +16,9 @@ class AgentCard extends StatelessWidget {
   /// Profile ID used for navigation to [profileId]/agent/{agent.id}.
   final String profileId;
 
+  /// Called when the card is tapped (navigate to sessions list).
+  final VoidCallback? onTap;
+
   /// Called when the edit button is tapped.
   final VoidCallback? onEdit;
 
@@ -27,6 +29,7 @@ class AgentCard extends StatelessWidget {
     super.key,
     required this.agent,
     required this.profileId,
+    this.onTap,
     this.onEdit,
     this.onDelete,
   });
@@ -37,7 +40,7 @@ class AgentCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.three),
       child: GestureDetector(
-        onTap: () => context.push('/profile/$profileId/agent/${agent.id}'),
+        onTap: onTap,
         onLongPress: onDelete,
         child: Container(
           decoration: BoxDecoration(

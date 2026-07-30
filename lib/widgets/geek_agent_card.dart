@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
@@ -8,6 +7,7 @@ import 'package:tired_agent_app/widgets/themed_text.dart';
 class GeekAgentCard extends StatelessWidget {
   final AgentInfo agent;
   final String profileId;
+  final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -15,6 +15,7 @@ class GeekAgentCard extends StatelessWidget {
     super.key,
     required this.agent,
     required this.profileId,
+    this.onTap,
     this.onEdit,
     this.onDelete,
   });
@@ -37,7 +38,7 @@ class GeekAgentCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.two),
       child: GestureDetector(
-        onTap: () => context.push('/profile/$profileId/agent/${agent.id}'),
+        onTap: onTap,
         onLongPress: onDelete,
         child: Container(
           decoration: BoxDecoration(
