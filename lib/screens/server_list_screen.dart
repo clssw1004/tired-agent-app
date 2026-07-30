@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_manager_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/geek_manager_card.dart';
 import 'package:tired_agent_app/widgets/manager_card.dart';
 import 'package:tired_agent_app/widgets/reconnect_form.dart';
 
@@ -75,6 +77,7 @@ class ServerListScreen extends StatelessWidget {
   // ── Manager list ────────────────────────────────────────────────────
 
   Widget _buildManagerList(BuildContext context, AuthProvider auth) {
+    final geek = context.watch<AppSettingsProvider>().themeFlavor == ThemeFlavor.minimal;
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.four,
@@ -85,11 +88,17 @@ class ServerListScreen extends StatelessWidget {
       itemCount: auth.connections.length,
       itemBuilder: (context, index) {
         final conn = auth.connections[index];
-        return ManagerCard(
-          connection: conn,
-          onTap: () => _onTapCard(context, auth, conn),
-          onDelete: () => _deleteManager(context, auth, conn),
-        );
+        return geek
+            ? GeekManagerCard(
+                connection: conn,
+                onTap: () => _onTapCard(context, auth, conn),
+                onDelete: () => _deleteManager(context, auth, conn),
+              )
+            : ManagerCard(
+                connection: conn,
+                onTap: () => _onTapCard(context, auth, conn),
+                onDelete: () => _deleteManager(context, auth, conn),
+              );
       },
     );
   }

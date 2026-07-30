@@ -6,11 +6,13 @@ import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/label_form_field.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
+import 'package:tired_agent_app/widgets/geek_session_card.dart';
 import 'package:tired_agent_app/widgets/session_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
@@ -527,6 +529,35 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                   itemBuilder: (context, index) {
                     final session = _visible[index];
                     final pinService = context.watch<PinnedSessionProvider>();
+                    final geek = context.watch<AppSettingsProvider>().themeFlavor == ThemeFlavor.minimal;
+                    if (geek) {
+                      return GeekSessionCard(
+                        session: session,
+                        isPinned: pinService.isPinned(
+                          profileId: widget.profileId,
+                          agentId: widget.agentId,
+                          sessionId: session.id,
+                        ),
+                        onPin: () => _onPin(session),
+                        onKill: session.status != SessionStatus.exited
+                            ? () => _requestKill(session.id)
+                            : null,
+                        onDelete: session.status == SessionStatus.exited
+                            ? () => _requestDelete(session.id)
+                            : null,
+                        onResume:
+                            (session.status == SessionStatus.exited &&
+                                session.cmd == 'claude' &&
+                                (session.extra?['claudeSessionId'] != null ||
+                                    session.extra?['claudeName'] != null ||
+                                    session.label != null))
+                                ? () => _requestResume(session)
+                                : null,
+                        onTap: () => context.push(
+                          '/session/${widget.profileId}/${widget.agentId}/${session.id}',
+                        ),
+                      );
+                    }
                     return SessionCard(
                       session: session,
                       isPinned: pinService.isPinned(
