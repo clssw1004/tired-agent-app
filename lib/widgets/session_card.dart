@@ -81,18 +81,20 @@ class SessionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.one),
-          // Subtitle: cmd args · pid/exit
+          // Subtitle: cmd args · pid/exit · uptime
           ThemedText.mono(
             () {
               final cmd = [session.cmd, ...session.args].join(' ');
+              final uptime = session.status == SessionStatus.exited
+                  ? session.exitedAt != null
+                      ? '${_timeSince(session.exitedAt!)} ago'
+                      : ''
+                  : 'up ${_timeSince(session.createdAt)}';
               if (session.status == SessionStatus.exited) {
                 final exitInfo = 'exit ${session.exitCode ?? '?'}';
-                final ago = session.exitedAt != null
-                    ? ' · ${_timeSince(session.exitedAt!)}'
-                    : '';
-                return '$cmd · $exitInfo$ago';
+                return '$cmd · $exitInfo · $uptime';
               }
-              return '$cmd · pid ${session.pid ?? '?'}';
+              return '$cmd · pid ${session.pid ?? '?'} · $uptime';
             }(),
             color: c.textSecondary,
             maxLines: 2,
