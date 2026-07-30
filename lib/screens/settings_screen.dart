@@ -27,8 +27,8 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
-          // ── Theme ─────────────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsTheme),
+          // ── Theme mode ─────────────────────────────────────────
+          SectionHeader(label: '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsMode}'),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
             label: AppStrings.of.settingsThemeDark,
@@ -41,19 +41,25 @@ class SettingsScreen extends StatelessWidget {
             selected: settings.themeMode == ThemeMode.light,
             onTap: () => settings.setThemeMode(ThemeMode.light),
           ),
+          const SizedBox(height: AppSpacing.one),
+          _ThemeTile(
+            label: AppStrings.of.settingsThemeSystem,
+            selected: settings.themeMode == ThemeMode.system,
+            onTap: () => settings.setThemeMode(ThemeMode.system),
+          ),
           const SizedBox(height: AppSpacing.four),
 
-          // ── Theme flavor ────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsTheme),
+          // ── Theme style ─────────────────────────────────────────
+          SectionHeader(label: '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsStyle}'),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
-            label: '赛博朋克',
+            label: AppStrings.of.settingsStyleCyberpunk,
             selected: settings.themeFlavor == ThemeFlavor.cyberpunk,
             onTap: () => settings.setThemeFlavor(ThemeFlavor.cyberpunk),
           ),
           const SizedBox(height: AppSpacing.one),
           _ThemeTile(
-            label: '极简极客',
+            label: AppStrings.of.settingsStyleMinimal,
             selected: settings.themeFlavor == ThemeFlavor.minimal,
             onTap: () => settings.setThemeFlavor(ThemeFlavor.minimal),
           ),
