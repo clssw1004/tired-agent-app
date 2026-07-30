@@ -113,16 +113,31 @@ class PtySessionViewState extends State<PtySessionView>
   String _pendingOutput = '';
   bool _outputScheduled = false;
 
+  /// Cross-flush dedup: if the last flush was a lone \r, skip the next
+  /// one. IME Enter often double-fires across separate microtasks.
+  bool _lastFlushWasCr = false;
+
   void _flushOutput() {
     _outputScheduled = false;
     if (_pendingOutput.isEmpty) return;
     // Dedup Enter sequences from mobile IME: the IME commit + xterm2 key event
-    // produce either \n\r or \r\n instead of a single \r.
+    // produce \r\n, \n\r, or \r\r instead of a single \r.
     final normalized = _pendingOutput
         .replaceAll('\r\n', '\r')
-        .replaceAll('\n\r', '\r');
+        .replaceAll('\n\r', '\r')
+        .replaceAll('\r\r', '\r');
     _pendingOutput = '';
     if (normalized.isEmpty) return;
+
+    // Cross-flush dedup: a lone \r right after another lone \r is a
+    // duplicate Enter from IME, not a second intentional press.
+    final isCr = normalized == '\r';
+    if (isCr && _lastFlushWasCr) {
+      _lastFlushWasCr = false; // consume the duplicate
+      return;
+    }
+    _lastFlushWasCr = isCr;
+
     final bytes = utf8.encode(normalized);
     _transport.sendInput(
       widget.serverRef,
