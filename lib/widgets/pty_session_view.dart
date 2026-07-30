@@ -35,7 +35,8 @@ class PtySessionView extends StatefulWidget {
   PtySessionViewState createState() => PtySessionViewState();
 }
 
-class PtySessionViewState extends State<PtySessionView> {
+class PtySessionViewState extends State<PtySessionView>
+    with SingleTickerProviderStateMixin {
   /// Must be initialized after [initState] when we can access [AppSettingsProvider].
   late final Terminal _terminal;
   late final HttpSseTransport _transport;
@@ -53,6 +54,13 @@ class PtySessionViewState extends State<PtySessionView> {
   /// Timestamp of the last pointer-down event, for double-tap detection.
   DateTime? _lastTapDown;
 
+  /// Animation for the pulsing reconnect dot.
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+
+  /// Tracks the previous status to detect reconnection success.
+  SseConnectionStatus _prevStatus = SseConnectionStatus.disconnected;
+
   /// Public getter so [SessionDetailScreen] can read the status.
   SseConnectionStatus get connectionStatus => _sseClient.status;
 
@@ -69,6 +77,13 @@ class PtySessionViewState extends State<PtySessionView> {
       ref: widget.serverRef,
       sessionId: widget.session.id,
       agentId: widget.agentId,
+    );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     final bufferSize = context.read<AppSettingsProvider>().terminalBufferSize;
     _terminal = Terminal(maxLines: bufferSize);
@@ -156,6 +171,7 @@ class PtySessionViewState extends State<PtySessionView> {
           _terminal.write(
             '\r\n\x1b[33m[${AppStrings.of.ptySessionExited}]\x1b[0m\r\n',
           );
+          _pulseController.stop();
           if (mounted) setState(() {});
         }
       }
@@ -164,7 +180,12 @@ class PtySessionViewState extends State<PtySessionView> {
         if (mounted) setState(() {});
       }
       ..onHeartbeat = () {
-        // Status transitions handled by SseClient internally.
+        // Reconnection success → smooth transition to connected.
+        if (_sseClient.status == SseConnectionStatus.connected &&
+            _prevStatus == SseConnectionStatus.reconnecting) {
+          _pulseController.stop();
+          _prevStatus = SseConnectionStatus.connected;
+        }
         if (mounted) setState(() {});
       };
 
@@ -195,13 +216,16 @@ class PtySessionViewState extends State<PtySessionView> {
   /// Public — called from [SessionDetailScreen] via GlobalKey to
   /// resubscribe the SSE stream without re-fetching history.
   void reconnect() {
+    _prevStatus = _sseClient.status;
     _sseClient.reconnect();
+    _pulseController.repeat(reverse: true);
     if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     _sseClient.close();
+    _pulseController.dispose();
     _terminalFocusNode.dispose();
     _modifierState.dispose();
     super.dispose();
@@ -209,56 +233,93 @@ class PtySessionViewState extends State<PtySessionView> {
 
   // ── Status banner ─────────────────────────────────────────────────
 
-  /// Thin colored bar shown below the AppBar.
+  /// Animated status banner — slides in/out with pulsing reconnect dot.
   Widget _statusBanner() {
     final c = context.appColors;
     final bool visible;
     final Color color;
     final String label;
+    final bool isReconnecting;
 
     switch (_sseClient.status) {
       case SseConnectionStatus.connected:
         visible = false;
         color = c.success;
         label = '';
+        isReconnecting = false;
       case SseConnectionStatus.reconnecting:
         visible = true;
         color = c.warning;
         label = AppStrings.of.ptyReconnecting;
+        isReconnecting = true;
       case SseConnectionStatus.disconnected:
         visible = true;
         color = c.textSecondary;
         label = _sseClient.sessionExited
             ? AppStrings.of.ptySessionExited
             : AppStrings.of.ptyDisconnected;
+        isReconnecting = false;
     }
 
-    if (!visible) return const SizedBox.shrink();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.three,
-        vertical: AppSpacing.one,
-      ),
-      color: color.withAlpha(25),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: color.withAlpha(120), blurRadius: 6),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.two),
-          ThemedText.mono(label, color: color),
-        ],
+    return AnimatedSlide(
+      offset: visible ? Offset.zero : const Offset(0, -2),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: AnimatedOpacity(
+        opacity: visible ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 250),
+        child: visible
+            ? Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.three,
+                  vertical: AppSpacing.one,
+                ),
+                color: color.withAlpha(25),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Pulsing status dot
+                    isReconnecting
+                        ? AnimatedBuilder(
+                            animation: _pulseAnimation,
+                            builder: (_, _) => Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: color.withAlpha(
+                                      (_pulseAnimation.value * 120).toInt(),
+                                    ),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withAlpha(120),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                          ),
+                    const SizedBox(width: AppSpacing.two),
+                    ThemedText.mono(label, color: color),
+                  ],
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }
