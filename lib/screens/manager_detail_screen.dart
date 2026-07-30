@@ -3,11 +3,13 @@ import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/add_agent_form.dart';
 import 'package:tired_agent_app/widgets/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/agent_card.dart';
+import 'package:tired_agent_app/widgets/geek_agent_card.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 
@@ -270,11 +272,18 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         itemCount: _agents.length,
         itemBuilder: (context, index) {
           final agent = _agents[index];
-          return AgentCard(
-            agent: agent,
-            profileId: widget.profileId,
-            onDelete: () => _deleteAgent(agent),
-          );
+          final geek = context.watch<AppSettingsProvider>().themeFlavor == ThemeFlavor.minimal;
+          return geek
+              ? GeekAgentCard(
+                  agent: agent,
+                  profileId: widget.profileId,
+                  onDelete: () => _deleteAgent(agent),
+                )
+              : AgentCard(
+                  agent: agent,
+                  profileId: widget.profileId,
+                  onDelete: () => _deleteAgent(agent),
+                );
         },
       ),
     );
