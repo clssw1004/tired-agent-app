@@ -3,10 +3,9 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
-/// Geek-mode text-only card for an agent.
+/// Geek-mode text-only card — 终端风格纯文字排版。
 class GeekAgentCard extends StatelessWidget {
   final AgentInfo agent;
-  final String profileId;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -14,7 +13,6 @@ class GeekAgentCard extends StatelessWidget {
   const GeekAgentCard({
     super.key,
     required this.agent,
-    required this.profileId,
     this.onTap,
     this.onEdit,
     this.onDelete,
@@ -35,55 +33,29 @@ class GeekAgentCard extends StatelessWidget {
       AgentState.pending => c.textSecondary,
     };
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.two),
-      child: GestureDetector(
-        onTap: onTap,
-        onLongPress: onDelete,
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(2),
-            border: Border.all(color: c.border.withAlpha(60), width: 0.5),
-          ),
-          padding: const EdgeInsets.all(AppSpacing.two),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Name + status
-                    Row(
-                      children: [
-                        ThemedText.mono(agent.name, color: c.text),
-                        const SizedBox(width: 4),
-                        ThemedText( _statusLabel(agent.state), fontSize: 11, fontFamily: 'monospace', color: statusColor),
-                      ],
-                    ),
-                    // URL
-                    ThemedText(agent.baseUrl, fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    // Platform
-                    if (agent.platform != null)
-                      ThemedText('${agent.platform!.os} ${agent.platform!.arch}', fontSize: 11, fontFamily: 'monospace', color: c.primary.withAlpha(120)),
-                  ],
-                ),
-              ),
-              // Actions
-              if (onEdit != null)
-                GestureDetector(
-                  onTap: onEdit,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: c.textSecondary.withAlpha(50), width: 0.5),
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                    child: ThemedText('edit', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
-                  ),
-                ),
-            ],
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onDelete,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                ThemedText.mono(agent.name, color: c.text),
+                const SizedBox(width: 6),
+                ThemedText(_statusLabel(agent.state), fontSize: 11, fontFamily: 'monospace', color: statusColor),
+                const Spacer(),
+                if (onEdit != null)
+                  ThemedText('[edit]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+              ],
+            ),
+            ThemedText('│ ${agent.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+            if (agent.platform != null)
+              ThemedText('│ ${agent.platform!.os} ${agent.platform!.arch}', fontSize: 11, fontFamily: 'monospace', color: c.primary.withAlpha(120)),
+          ],
         ),
       ),
     );

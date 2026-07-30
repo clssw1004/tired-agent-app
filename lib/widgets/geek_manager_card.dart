@@ -5,7 +5,7 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
-/// Geek-mode text-only card for a manager connection.
+/// Geek-mode text-only card — 终端风格纯文字排版。
 class GeekManagerCard extends StatelessWidget {
   final ManagerConnection connection;
   final VoidCallback? onTap;
@@ -51,57 +51,36 @@ class GeekManagerCard extends StatelessWidget {
       ConnectionStatus.idle => c.textSecondary,
     };
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.two),
-      child: GestureDetector(
-        onTap: onTap,
-        onLongPress: onDelete,
-        child: Container(
-          decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(2),
-            border: Border.all(color: c.border.withAlpha(60), width: 0.5),
-          ),
-          padding: const EdgeInsets.all(AppSpacing.two),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Name + status ──────────────────────────────────
-              Row(
-                children: [
-                  ThemedText.mono(profile.name, color: c.text),
-                  const SizedBox(width: AppSpacing.one),
-                  ThemedText(_statusLabel(connStatus), fontSize: 11, fontFamily: 'monospace', color: statusColor),
-                  if (connection.error != null)
-                    Flexible(
-                      child: ThemedText( ' !${connection.error}', fontSize: 11, fontFamily: 'monospace', color: c.danger, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ),
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onDelete,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                ThemedText.mono(profile.name, color: c.text),
+                const SizedBox(width: 6),
+                ThemedText(_statusLabel(connStatus), fontSize: 11, fontFamily: 'monospace', color: statusColor),
+                if (connection.error != null) ...[
+                  const SizedBox(width: 4),
+                  ThemedText('!${connection.error}', fontSize: 11, fontFamily: 'monospace', color: c.danger, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
-              ),
-              // ── URL ────────────────────────────────────────────
-              ThemedText(profile.baseUrl, fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-              // ── Agent counts + last used ───────────────────────
-              if (hasAgentInfo || profile.lastUsedMs > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Row(
-                    children: [
-                      if (hasAgentInfo)
-                        ThemedText(
-                          pendingAgents > 0
-                              ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
-                              : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents),
-                          fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
-                      if (profile.lastUsedMs > 0) ...[
-                        if (hasAgentInfo)
-                          const SizedBox(width: AppSpacing.two),
-                        ThemedText(_timeSince(profile.lastUsedMs), fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
-                      ],
-                    ],
-                  ),
-                ),
-            ],
-          ),
+              ],
+            ),
+            ThemedText('│ ${profile.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+            if (hasAgentInfo || profile.lastUsedMs > 0)
+              ThemedText(
+                '│ ${hasAgentInfo
+                  ? pendingAgents > 0
+                      ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
+                      : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents)
+                  : ''}${hasAgentInfo && profile.lastUsedMs > 0 ? '  |  ' : ''}${profile.lastUsedMs > 0 ? _timeSince(profile.lastUsedMs) : ''}',
+                fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+          ],
         ),
       ),
     );

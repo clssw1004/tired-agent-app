@@ -278,7 +278,6 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
           return geek
               ? GeekAgentCard(
                   agent: agent,
-                  profileId: widget.profileId,
                   onTap: () => context.push('/profile/${widget.profileId}/agent/$agentId'),
                   onDelete: () => _deleteAgent(agent),
                 )
