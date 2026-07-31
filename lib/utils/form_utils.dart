@@ -9,11 +9,13 @@ Widget sectionHeader(BuildContext context, String label) =>
 /// Shared [InputDecoration] for form text fields — 按当前主题风格分发。
 InputDecoration neonInputDecoration(
   BuildContext context, {
+  String? label,
   String? hint,
   String? prefixText,
 }) =>
     context.appComponents.buildInputDecoration(
       context,
+      label: label,
       hint: hint,
       prefixText: prefixText,
     );

@@ -7,10 +7,16 @@ class GeekInputDecorationImpl extends InputDecorationContract {
   const GeekInputDecorationImpl();
 
   @override
-  InputDecoration build(BuildContext context, {String? hint, String? prefixText}) {
+  InputDecoration build(BuildContext context, {String? label, String? hint, String? prefixText}) {
     final c = context.appColors;
     return InputDecoration(
       isDense: true,
+      labelText: label,
+      labelStyle: TextStyle(
+        fontFamily: 'monospace',
+        color: c.textSecondary,
+        fontSize: 12,
+      ),
       hintText: hint,
       prefixText: prefixText,
       prefixStyle: TextStyle(

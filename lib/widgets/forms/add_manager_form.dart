@@ -54,43 +54,48 @@ class AddManagerFormState extends State<AddManagerForm> {
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextField(
-            controller: _nameController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelName,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
+          // ── Row1: name | token 两列并排 ─────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  controller: _nameController,
+                  decoration: context.appComponents.buildInputDecoration(
+                    context,
+                    label: AppStrings.of.labelName,
+                  ),
+                  autocorrect: false,
+                ),
               ),
-            ),
-            autocorrect: false,
+              const SizedBox(width: AppSpacing.two),
+              Expanded(
+                flex: 4,
+                child: TextField(
+                  controller: _tokenController,
+                  decoration: context.appComponents.buildInputDecoration(
+                    context,
+                    label: AppStrings.of.managersAccessToken,
+                  ),
+                  obscureText: true,
+                  autocorrect: false,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.three),
+          const SizedBox(height: AppSpacing.two),
+          // ── Row2: url 独占一行 ─────────────────────────────
           TextField(
             controller: _urlController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelManagerUrl,
-              hintText: AppStrings.of.managerUrlHint,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelManagerUrl,
+              hint: AppStrings.of.managerUrlHint,
             ),
             keyboardType: TextInputType.url,
-            autocorrect: false,
-          ),
-          const SizedBox(height: AppSpacing.three),
-          TextField(
-            controller: _tokenController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.managersAccessToken,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
-            ),
-            obscureText: true,
             autocorrect: false,
           ),
         ],

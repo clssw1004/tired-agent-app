@@ -7,10 +7,11 @@ class MaterialInputDecorationImpl extends InputDecorationContract {
   const MaterialInputDecorationImpl();
 
   @override
-  InputDecoration build(BuildContext context, {String? hint, String? prefixText}) {
+  InputDecoration build(BuildContext context, {String? label, String? hint, String? prefixText}) {
     final scheme = Theme.of(context).colorScheme;
     return InputDecoration(
       isDense: true,
+      labelText: label,
       hintText: hint,
       prefixText: prefixText,
       prefixStyle: TextStyle(
