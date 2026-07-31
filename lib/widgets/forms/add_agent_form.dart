@@ -54,39 +54,16 @@ class AddAgentFormState extends State<AddAgentForm> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Row1: name | token 两列并排 ─────────────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: TextField(
-                  controller: _nameController,
-                  decoration: context.appComponents.buildInputDecoration(
-                    context,
-                    label: AppStrings.of.labelAgentName,
-                    hint: AppStrings.of.agentNameHint,
-                  ),
-                  autocorrect: false,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.two),
-              Expanded(
-                flex: 4,
-                child: TextField(
-                  controller: _tokenController,
-                  decoration: context.appComponents.buildInputDecoration(
-                    context,
-                    label: AppStrings.of.labelAgentToken,
-                  ),
-                  obscureText: true,
-                  autocorrect: false,
-                ),
-              ),
-            ],
+          TextField(
+            controller: _nameController,
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelAgentName,
+              hint: AppStrings.of.agentNameHint,
+            ),
+            autocorrect: false,
           ),
           const SizedBox(height: AppSpacing.two),
-          // ── Row2: url 独占一行 ─────────────────────────────
           TextField(
             controller: _urlController,
             decoration: context.appComponents.buildInputDecoration(
@@ -95,6 +72,16 @@ class AddAgentFormState extends State<AddAgentForm> {
               hint: AppStrings.of.agentUrlHint,
             ),
             keyboardType: TextInputType.url,
+            autocorrect: false,
+          ),
+          const SizedBox(height: AppSpacing.two),
+          TextField(
+            controller: _tokenController,
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelAgentToken,
+            ),
+            obscureText: true,
             autocorrect: false,
           ),
         ],

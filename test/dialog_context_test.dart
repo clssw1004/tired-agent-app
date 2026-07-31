@@ -61,7 +61,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('t'), findsOneWidget, reason: '对话框应打开');
 
-      await tester.tap(find.text('ok'));
+      await tester.tap(find.textContaining('ok'));
       await tester.pumpAndSettle();
 
       expect(find.text('t'), findsNothing, reason: '对话框应关闭');

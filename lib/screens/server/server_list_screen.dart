@@ -23,17 +23,18 @@ class ServerListScreen extends StatelessWidget {
       backgroundColor: c.background,
       appBar: AppBar(
         title: ThemedText.title(AppStrings.of.managersTitle),
+        actions: [
+          IconButton(
+            tooltip: AppStrings.of.managersAdd,
+            icon: const Icon(Icons.add),
+            onPressed: () => _showAddManager(context, auth),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Container(color: c.primary),
         ),
       ),
-      floatingActionButton: auth.connections.isEmpty
-          ? null
-          : FloatingActionButton(
-              onPressed: () => _showAddManager(context, auth),
-              child: const Icon(Icons.add),
-            ),
       body: Column(
         children: [
           Expanded(
@@ -111,7 +112,7 @@ class ServerListScreen extends StatelessWidget {
     final formData = await NeonDialog.show<AddManagerFormData?>(
       context: context,
       title: AppStrings.of.managersAdd,
-      maxWidth: 480,
+      maxWidth: 560,
       content: AddManagerForm(
         key: formKey,
         initialName: AppStrings.of.managersDefaultName(

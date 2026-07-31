@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/dialog/contract.dart';
 
 /// 极简极客风格对话框：纯 [AlertDialog] + 等宽标题，无描边/发光/机器人图标。
@@ -87,15 +88,30 @@ class GeekDialogImpl extends DialogContract {
     final c = context.appColors;
     return AlertDialog(
       backgroundColor: c.surface,
-      constraints: maxWidth != null ? BoxConstraints(maxWidth: maxWidth) : null,
-      title: Text(
-        title,
-        style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w600),
+      constraints:
+          maxWidth != null ? BoxConstraints(maxWidth: maxWidth) : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: c.border, width: 1),
+      ),
+      titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+      title: Row(
+        children: [
+          ThemedText.mono('> ', color: c.primary),
+          Expanded(
+            child: ThemedText.mono(
+              title,
+              fontWeight: FontWeight.w600,
+              color: c.text,
+            ),
+          ),
+        ],
       ),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 480),
         child: SingleChildScrollView(child: content),
       ),
+      contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       actions: actions.map((action) {
         final Color color;
         if (action.color != null) {
@@ -107,15 +123,20 @@ class GeekDialogImpl extends DialogContract {
         } else {
           color = c.textSecondary;
         }
-        return TextButton(
-          onPressed: () => action.onPressed(context),
-          style: TextButton.styleFrom(foregroundColor: color),
-          child: Text(
-            action.label,
-            style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w500),
+        return Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: GestureDetector(
+            onTap: () => action.onPressed(context),
+            behavior: HitTestBehavior.opaque,
+            child: ThemedText.mono(
+              '[${action.label}]',
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
         );
       }).toList(),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
     );
   }
 }
