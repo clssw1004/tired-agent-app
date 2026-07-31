@@ -8,8 +8,8 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
 
 /// 赛博朋克风格 Manager 卡片：状态徽章 + 长按删除。
-class CyberpunkManagerCard extends ManagerCardContract {
-  const CyberpunkManagerCard();
+class NeonManagerCard extends ManagerCardContract {
+  const NeonManagerCard();
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;

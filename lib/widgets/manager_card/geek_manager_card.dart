@@ -7,8 +7,8 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
 
 /// 极简极客风格 Manager 卡片 — 纯终端排版，删除以 [delete] 文字按钮展示（免长按）。
-class MinimalManagerCard extends ManagerCardContract {
-  const MinimalManagerCard();
+class GeekManagerCard extends ManagerCardContract {
+  const GeekManagerCard();
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;

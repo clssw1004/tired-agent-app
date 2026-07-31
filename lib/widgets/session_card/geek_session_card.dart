@@ -5,8 +5,8 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/session_card/contract.dart';
 
 /// 极简极客风格 Session 卡片 — 纯终端排版，所有操作以文字按钮展示（免长按）。
-class MinimalSessionCard extends SessionCardContract {
-  const MinimalSessionCard();
+class GeekSessionCard extends SessionCardContract {
+  const GeekSessionCard();
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;

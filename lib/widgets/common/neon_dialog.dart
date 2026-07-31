@@ -20,7 +20,7 @@ class NeonDialogAction<T> {
   });
 }
 
-/// A reusable cyberpunk-styled dialog with neon borders, optional robot icon,
+/// A reusable neon-styled dialog with neon borders, optional robot icon,
 /// and consistent title styling.
 class NeonDialog {
   NeonDialog._();

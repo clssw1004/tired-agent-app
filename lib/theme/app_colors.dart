@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Cyberpunk 霓虹青紫风颜色体系 — ThemeExtension
+/// Neon 霓虹青紫风颜色体系 — ThemeExtension
 ///
 /// 通过 `Theme.of(context).extension<AppColors>()!` 或
 /// `context.appColors`（需 `import 'theme.dart'`）访问。
@@ -92,7 +92,7 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   // ── 极简极客主题 — 暗色 ──────────────────────────────────
-  static const minimalDark = AppColors(
+  static const geekDark = AppColors(
     background: Color(0xFF0C0C0C),
     surface: Color(0xFF141414),
     surfaceAlt: Color(0xFF1C1C1C),
@@ -110,7 +110,7 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   // ── 极简极客主题 — 亮色 ──────────────────────────────────
-  static const minimalLight = AppColors(
+  static const geekLight = AppColors(
     background: Color(0xFFEEEEEE),
     surface: Color(0xFFF5F5F5),
     surfaceAlt: Color(0xFFE0E0E0),

@@ -7,7 +7,7 @@ import 'package:tired_agent_app/theme/app_components.dart';
 ///
 /// 用 [ColorScheme.fromSeed]（seed #6750A4 官方紫）生成完整 tonal palette，
 /// 组件主题全部走 MD3 默认（Card/FilledButton/TextButton/IconButton/Dialog 等），
-/// 不套用 cyberpunk 的 neon 组件主题覆盖。
+/// 不套用 neon 的组件主题覆盖。
 ThemeData buildMd3DarkTheme() => _buildMd3(Brightness.dark);
 
 ThemeData buildMd3LightTheme() => _buildMd3(Brightness.light);

@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
-import 'package:tired_agent_app/widgets/agent_card/cyberpunk_agent_card.dart';
+import 'package:tired_agent_app/widgets/agent_card/neon_agent_card.dart';
 import 'package:tired_agent_app/widgets/agent_card/material_agent_card.dart';
-import 'package:tired_agent_app/widgets/agent_card/minimal_agent_card.dart';
+import 'package:tired_agent_app/widgets/agent_card/geek_agent_card.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
-import 'package:tired_agent_app/widgets/manager_card/cyberpunk_manager_card.dart';
+import 'package:tired_agent_app/widgets/manager_card/neon_manager_card.dart';
 import 'package:tired_agent_app/widgets/manager_card/material_manager_card.dart';
-import 'package:tired_agent_app/widgets/manager_card/minimal_manager_card.dart';
+import 'package:tired_agent_app/widgets/manager_card/geek_manager_card.dart';
 import 'package:tired_agent_app/widgets/session_card/contract.dart';
-import 'package:tired_agent_app/widgets/session_card/cyberpunk_session_card.dart';
+import 'package:tired_agent_app/widgets/session_card/neon_session_card.dart';
 import 'package:tired_agent_app/widgets/session_card/material_session_card.dart';
-import 'package:tired_agent_app/widgets/session_card/minimal_session_card.dart';
+import 'package:tired_agent_app/widgets/session_card/geek_session_card.dart';
 
 /// 按风格分发组件的工厂（ThemeExtension 载体）。
 ///
-/// 每份主题注册一套 [AppComponents]（如 [cyberpunk] / [minimal]），
+/// 每份主题注册一套 [AppComponents]（如 [neon] / [geek]），
 /// 页面通过 `context.appComponents.buildXxxCard(context, data)` 获取组件，
 /// 事件副作用由页面构造 data 时注入，组件只负责布局与交互触发方式。
 ///
@@ -27,24 +27,24 @@ class AppComponents extends ThemeExtension<AppComponents> {
   final AgentCardContract? agentCard;
 
   /// 增强来源：该风格基于哪个底层风格做增强。未实现组件沿此链逐级回落。
-  /// 例：新风格只实现 sessionCard 并 `base: minimal` → manager/agent 回落 minimal。
+  /// 例：新风格只实现 sessionCard 并 `base: geek` → manager/agent 回落 geek。
   final AppComponents? base;
 
   const AppComponents({this.sessionCard, this.managerCard, this.agentCard, this.base});
 
-  /// 系统默认兜底（链终点）：全量实现、无 base（cyberpunk 最完整且基于主题色）。
-  static const AppComponents systemFallback = AppComponents.cyberpunk;
+  /// 系统默认兜底（链终点）：全量实现、无 base（neon 最完整且基于主题色）。
+  static const AppComponents systemFallback = AppComponents.neon;
 
-  static const AppComponents cyberpunk = AppComponents(
-    sessionCard: CyberpunkSessionCard(),
-    managerCard: CyberpunkManagerCard(),
-    agentCard: CyberpunkAgentCard(),
+  static const AppComponents neon = AppComponents(
+    sessionCard: NeonSessionCard(),
+    managerCard: NeonManagerCard(),
+    agentCard: NeonAgentCard(),
   );
 
-  static const AppComponents minimal = AppComponents(
-    sessionCard: MinimalSessionCard(),
-    managerCard: MinimalManagerCard(),
-    agentCard: MinimalAgentCard(),
+  static const AppComponents geek = AppComponents(
+    sessionCard: GeekSessionCard(),
+    managerCard: GeekManagerCard(),
+    agentCard: GeekAgentCard(),
   );
 
   /// Material Design 3 风格 — 原生 M3 组件。
@@ -54,10 +54,10 @@ class AppComponents extends ThemeExtension<AppComponents> {
     agentCard: MD3AgentCard(),
   );
 
-  // 基于某风格增强的新风格（示例）：只实现部分，未实现回落 base（此处 minimal）
-  // static const AppComponents minimalEnhanced = AppComponents(
+  // 基于某风格增强的新风格（示例）：只实现部分，未实现回落 base（此处 geek）
+  // static const AppComponents geekEnhanced = AppComponents(
   //   sessionCard: XxxSessionCard(),
-  //   base: minimal,
+  //   base: geek,
   // );
 
   /// 第一层兜底：沿 [base] 链向上找第一个非空实现；走完仍为空则第二层系统默认。

@@ -5,6 +5,6 @@ library;
 export 'theme/app_colors.dart';
 export 'theme/app_components.dart';
 export 'theme/dark_theme.dart';
+export 'theme/geek_theme.dart';
 export 'theme/light_theme.dart';
 export 'theme/md3_theme.dart';
-export 'theme/minimal_theme.dart';
