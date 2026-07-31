@@ -3,7 +3,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
-/// Geek-mode text-only card — 终端风格纯文字排版。
+/// Geek-mode 纯终端风格卡片 — 填满宽度。
 class GeekAgentCard extends StatelessWidget {
   final AgentInfo agent;
   final VoidCallback? onTap;
@@ -36,20 +36,27 @@ class GeekAgentCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onDelete,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
-                ThemedText.mono(agent.name, color: c.text),
+                Expanded(
+                  child: ThemedText.mono(agent.name, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
                 const SizedBox(width: 6),
                 ThemedText(_statusLabel(agent.state), fontSize: 11, fontFamily: 'monospace', color: statusColor),
-                const Spacer(),
-                if (onEdit != null)
+                if (onEdit != null) ...[
+                  const SizedBox(width: 6),
                   ThemedText('[edit]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+                ],
               ],
             ),
             ThemedText('│ ${agent.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
