@@ -7,8 +7,8 @@ import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// 赛博朋克风格 Agent 卡片：状态点 + 图标按钮 + 长按删除。
-class CyberpunkAgentCard extends AgentCardContract {
-  const CyberpunkAgentCard();
+class NeonAgentCard extends AgentCardContract {
+  const NeonAgentCard();
 
   @override
   Widget build(BuildContext context, AgentCardData data) {

@@ -8,8 +8,8 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/session_card/contract.dart';
 
 /// 赛博朋克风格 Session 卡片：图标按钮 + 长按删除。
-class CyberpunkSessionCard extends SessionCardContract {
-  const CyberpunkSessionCard();
+class NeonSessionCard extends SessionCardContract {
+  const NeonSessionCard();
 
   String _timeSince(int ts) {
     final s = DateTime.now().millisecondsSinceEpoch - ts;

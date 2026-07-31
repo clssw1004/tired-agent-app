@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme/app_colors.dart';
 import 'package:tired_agent_app/theme/app_components.dart';
 
-ThemeData buildLightTheme() {
+ThemeData buildNeonLightTheme() {
   final c = AppColors.light;
   return ThemeData(
     useMaterial3: true,
@@ -40,7 +40,7 @@ ThemeData buildLightTheme() {
     ),
     cardColor: c.surface,
     dividerColor: c.border,
-    extensions: [AppColors.light, AppComponents.cyberpunk],
+    extensions: [AppColors.light, AppComponents.neon],
     textTheme: TextTheme(
       bodyLarge: TextStyle(color: c.text, fontSize: 16),
       bodyMedium: TextStyle(color: c.text, fontSize: 14),

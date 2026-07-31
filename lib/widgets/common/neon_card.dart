@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme.dart';
 
-/// Cyberpunk 风格暗色卡片容器。
+/// Neon 风格暗色卡片容器。
 /// 默认无边框（surface 背景），传入 [borderColor] 显示霓虹边框。
 /// [glow] 为 true 时启用 boxShadow 发光效果。
 class NeonCard extends StatelessWidget {

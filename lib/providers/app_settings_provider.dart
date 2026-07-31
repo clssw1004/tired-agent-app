@@ -6,8 +6,8 @@ import 'package:tired_agent_app/utils/terminal_themes.dart';
 
 /// 主题风格枚举
 enum ThemeFlavor {
-  cyberpunk,
-  minimal,
+  neon,
+  geek,
   material,
 }
 
@@ -26,7 +26,7 @@ const List<int> kTerminalBufferPresets = [
 /// 提供运行时切换和持久化能力，切换后立即生效无需重启。
 class AppSettingsProvider extends ChangeNotifier {
   AppSettingsProvider()
-    : _themeFlavor = ThemeFlavor.cyberpunk,
+    : _themeFlavor = ThemeFlavor.neon,
       _themeMode = ThemeMode.dark,
       _locale = const Locale('zh'),
       _terminalBufferSize = kDefaultBufferSize,
@@ -69,9 +69,12 @@ class AppSettingsProvider extends ChangeNotifier {
     final flavorStr = prefs.getString(_kThemeFlavor);
     if (flavorStr != null) {
       _themeFlavor = switch (flavorStr) {
-        'minimal' => ThemeFlavor.minimal,
+        'neon' => ThemeFlavor.neon,
+        'cyberpunk' => ThemeFlavor.neon, // 旧值迁移
+        'geek' => ThemeFlavor.geek,
+        'minimal' => ThemeFlavor.geek, // 旧值迁移
         'material' => ThemeFlavor.material,
-        _ => ThemeFlavor.cyberpunk,
+        _ => ThemeFlavor.neon,
       };
     }
 

@@ -173,14 +173,14 @@ class _TiredAgentAppState extends State<TiredAgentApp>
           return MaterialApp.router(
             title: 'TiredAgent',
             theme: switch (settings.themeFlavor) {
-              ThemeFlavor.minimal => buildMinimalLightTheme(),
+              ThemeFlavor.geek => buildGeekLightTheme(),
               ThemeFlavor.material => buildMd3LightTheme(),
-              _ => buildLightTheme(),
+              _ => buildNeonLightTheme(),
             },
             darkTheme: switch (settings.themeFlavor) {
-              ThemeFlavor.minimal => buildMinimalDarkTheme(),
+              ThemeFlavor.geek => buildGeekDarkTheme(),
               ThemeFlavor.material => buildMd3DarkTheme(),
-              _ => buildDarkTheme(),
+              _ => buildNeonDarkTheme(),
             },
             themeMode: settings.themeMode,
             locale: settings.locale,

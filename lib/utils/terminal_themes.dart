@@ -17,7 +17,7 @@ enum TerminalThemePreset {
   /// Dracula 流行深色主题。
   dracula,
 
-  /// 霓虹青紫风 — 匹配 App 的 cyberpunk 设计语言。
+  /// 霓虹青紫风 — 匹配 App 的 neon 设计语言。
   neon,
 }
 
@@ -160,7 +160,7 @@ class TerminalThemes {
 
     // ── Neon（霓虹青紫风） ──────────────────────────────────────────
     //
-    // 配色灵感来自 App 的 cyberpunk 设计语言：
+    // 配色灵感来自 App 的 neon 设计语言：
     //   - 背景极黑 (#0A0A0F)  → 浮光效果
     //   - 青 (#00F0FF)       → 主色调（primary）
     //   - 品红 (#FF00FF)     → 强调色（secondary）

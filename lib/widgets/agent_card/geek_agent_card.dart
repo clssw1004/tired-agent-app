@@ -5,8 +5,8 @@ import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// 极简极客风格 Agent 卡片 — 纯终端排版，编辑/删除以 [edit]/[delete] 文字按钮展示（免长按）。
-class MinimalAgentCard extends AgentCardContract {
-  const MinimalAgentCard();
+class GeekAgentCard extends AgentCardContract {
+  const GeekAgentCard();
 
   String _statusLabel(AgentState s) => switch (s) {
     AgentState.online => '+online',

@@ -64,7 +64,7 @@ ThemeData _buildTheme(AppColors c, Brightness brightness) {
     ),
     cardColor: c.surface,
     dividerColor: c.border,
-    extensions: [c, AppComponents.minimal],
+    extensions: [c, AppComponents.geek],
     textTheme: TextTheme(
       bodyLarge: TextStyle(color: c.text, fontSize: 16),
       bodyMedium: TextStyle(color: c.text, fontSize: 14),
@@ -153,8 +153,8 @@ ThemeData _buildTheme(AppColors c, Brightness brightness) {
   );
 }
 
-ThemeData buildMinimalDarkTheme() =>
-    _buildTheme(AppColors.minimalDark, Brightness.dark);
+ThemeData buildGeekDarkTheme() =>
+    _buildTheme(AppColors.geekDark, Brightness.dark);
 
-ThemeData buildMinimalLightTheme() =>
-    _buildTheme(AppColors.minimalLight, Brightness.light);
+ThemeData buildGeekLightTheme() =>
+    _buildTheme(AppColors.geekLight, Brightness.light);
