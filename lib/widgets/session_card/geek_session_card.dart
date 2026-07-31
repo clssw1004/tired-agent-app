@@ -5,6 +5,9 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/session_card/contract.dart';
 
 /// 极简极客风格 Session 卡片 — 纯终端排版，所有操作以文字按钮展示（免长按）。
+///
+/// 布局采用"对齐网格"：提示符 `>`/`│` 与正文统一 12px monospace，垂直对齐；
+/// cmd/pid/uptime 合并单行，减少右对齐点，排版更整洁。
 class GeekSessionCard extends SessionCardContract {
   const GeekSessionCard();
 
@@ -39,6 +42,16 @@ class GeekSessionCard extends SessionCardContract {
       SessionStatus.exited => c.textSecondary,
     };
 
+    // ── 合并信息行（cmd · pid/exit · uptime）────────────────────
+    final cmd = [session.cmd, ...session.args].join(' ');
+    final meta = session.status == SessionStatus.exited
+        ? 'exit=${session.exitCode ?? '?'}'
+        : 'pid=${session.pid ?? '?'}';
+    final up = session.status == SessionStatus.exited
+        ? (session.exitedAt != null ? 'ago=${_timeSince(session.exitedAt!)}' : '')
+        : 'up=${_timeSince(session.createdAt)}';
+    final cmdLine = up.isEmpty ? '│ $cmd · $meta' : '│ $cmd · $meta · $up';
+
     return GestureDetector(
       onTap: data.onTap,
       child: Container(
@@ -50,7 +63,7 @@ class GeekSessionCard extends SessionCardContract {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Label (left) + status (right) ────────────────────
+            // ── Row1: > label + [mode] + *pin + status ───────────
             Row(
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
@@ -58,39 +71,26 @@ class GeekSessionCard extends SessionCardContract {
                   child: ThemedText.mono(session.label ?? session.cmd, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
                 if (session.mode != null) ...[
-                  ThemedText('[${session.mode!.name}]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
-                  const SizedBox(width: 6),
+                  ThemedText('[${session.mode!.name}]', fontSize: 12, fontFamily: 'monospace', color: c.textSecondary),
+                  const SizedBox(width: 8),
                 ],
-                if (data.isPinned)
-                  ThemedText('*pin ', fontSize: 11, fontFamily: 'monospace', color: c.primary),
-                ThemedText(_statusLabel(session.status), fontSize: 11, fontFamily: 'monospace', color: statusColor),
+                if (data.isPinned) ...[
+                  ThemedText('*pin', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                  const SizedBox(width: 8),
+                ],
+                ThemedText(_statusLabel(session.status), fontSize: 12, fontFamily: 'monospace', color: statusColor),
               ],
             ),
-            // ── cmd (left) + uptime (right) ──────────────────────
-            Row(
-              children: [
-                Expanded(
-                  child: ThemedText(
-                    '│ ${() {
-                      final cmd = [session.cmd, ...session.args].join(' ');
-                      if (session.status == SessionStatus.exited) {
-                        return '$cmd  exit=${session.exitCode ?? '?'}';
-                      }
-                      return '$cmd  pid=${session.pid ?? '?'}';
-                    }()}',
-                    fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 2, overflow: TextOverflow.ellipsis),
-                ),
-                const SizedBox(width: 8),
-                ThemedText(
-                  session.status == SessionStatus.exited
-                      ? session.exitedAt != null ? 'ago=${_timeSince(session.exitedAt!)}' : ''
-                      : 'up=${_timeSince(session.createdAt)}',
-                  fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
-              ],
+            // ── Row2: cmd · pid/exit · uptime ────────────────────
+            ThemedText(
+              cmdLine,
+              fontSize: 12, fontFamily: 'monospace', color: c.textSecondary,
+              maxLines: 2, overflow: TextOverflow.ellipsis,
             ),
+            // ── Row3: cwd ────────────────────────────────────────
             if (session.cwd != null && session.cwd!.isNotEmpty)
-              ThemedText('│ ${session.cwd!}', fontSize: 11, fontFamily: 'monospace', color: c.primary.withAlpha(140), maxLines: 1, overflow: TextOverflow.ellipsis),
-            // ── Actions: 可点击文字按钮（免长按）───────────────
+              ThemedText('│ ${session.cwd!}', fontSize: 12, fontFamily: 'monospace', color: c.primary.withAlpha(140), maxLines: 1, overflow: TextOverflow.ellipsis),
+            // ── Row4: Actions（可点击文字按钮，免长按）──────────
             if (data.onPin != null || data.onKill != null || data.onDelete != null || canResume)
               Padding(
                 padding: const EdgeInsets.only(top: 2),

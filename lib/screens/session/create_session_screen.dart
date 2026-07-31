@@ -21,7 +21,6 @@ import 'package:tired_agent_app/widgets/session/preset_option_chips.dart';
 import 'package:tired_agent_app/widgets/session/preset_selector.dart';
 import 'package:tired_agent_app/widgets/session/resume_option_chip.dart';
 import 'package:tired_agent_app/widgets/session/resume_session_dialog.dart';
-import 'package:tired_agent_app/widgets/session/session_command_preview.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 const _labelChars = 'abcdefghijkmnpqrstuvwxyz23456789';
@@ -303,7 +302,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 AppSpacing.four,
                 0,
               ),
-              child: SessionCommandPreview(
+              child: context.appComponents.buildCommandPreview(
+                context,
                 cmd: _cmd,
                 commandLine: _previewCommand,
                 actions: LaunchChip(

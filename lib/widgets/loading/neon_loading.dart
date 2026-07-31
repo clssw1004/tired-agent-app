@@ -1,26 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/loading/contract.dart';
 
-enum NeonLoadingMode { spinner, pulse, dots }
+/// 赛博朋克风格加载指示：spinner / 发光 pulse / 等宽 dots。
+class NeonLoadingImpl extends LoadingContract {
+  const NeonLoadingImpl();
 
-class NeonLoading extends StatefulWidget {
-  final NeonLoadingMode mode;
+  @override
+  Widget build(
+    BuildContext context, {
+    double size = 24,
+    Color? color,
+    LoadingMode mode = LoadingMode.spinner,
+  }) {
+    return _NeonLoadingAnimation(size: size, color: color, mode: mode);
+  }
+}
+
+class _NeonLoadingAnimation extends StatefulWidget {
+  final LoadingMode mode;
   final double size;
   final Color? color;
 
-  const NeonLoading({
-    super.key,
-    this.mode = NeonLoadingMode.spinner,
+  const _NeonLoadingAnimation({
+    this.mode = LoadingMode.spinner,
     this.size = 24,
     this.color,
   });
 
   @override
-  State<NeonLoading> createState() => _NeonLoadingState();
+  State<_NeonLoadingAnimation> createState() => _NeonLoadingState();
 }
 
-class _NeonLoadingState extends State<NeonLoading>
+class _NeonLoadingState extends State<_NeonLoadingAnimation>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -43,9 +56,9 @@ class _NeonLoadingState extends State<NeonLoading>
   Widget build(BuildContext context) {
     final ac = widget.color ?? context.appColors.primary;
     return switch (widget.mode) {
-      NeonLoadingMode.spinner => _buildSpinner(ac),
-      NeonLoadingMode.pulse => _buildPulse(ac),
-      NeonLoadingMode.dots => _buildDots(ac),
+      LoadingMode.spinner => _buildSpinner(ac),
+      LoadingMode.pulse => _buildPulse(ac),
+      LoadingMode.dots => _buildDots(ac),
     };
   }
 

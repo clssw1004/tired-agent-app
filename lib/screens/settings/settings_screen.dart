@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/theme.dart';
-import 'package:tired_agent_app/widgets/common/section_header.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 
@@ -28,7 +27,7 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── Theme mode ─────────────────────────────────────────
-          SectionHeader(label: '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsMode}'),
+          context.appComponents.buildSectionHeader(context, '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsMode}'),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
             label: AppStrings.of.settingsThemeDark,
@@ -50,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── Theme style ─────────────────────────────────────────
-          SectionHeader(label: '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsStyle}'),
+          context.appComponents.buildSectionHeader(context, '${AppStrings.of.settingsTheme} — ${AppStrings.of.settingsStyle}'),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
             label: 'neon',
@@ -72,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── Language ─────────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsLanguage),
+          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsLanguage),
           const SizedBox(height: AppSpacing.two),
           _ThemeTile(
             label: AppStrings.of.settingsLanguageZh,
@@ -88,7 +87,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── Terminal (navigates to dedicated page) ───────────────
-          SectionHeader(label: AppStrings.of.settingsTerminal),
+          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsTerminal),
           const SizedBox(height: AppSpacing.two),
           _NavigationTile(
             label: AppStrings.of.settingsTerminal,
@@ -97,7 +96,7 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── About ────────────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsAbout),
+          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsAbout),
           const SizedBox(height: AppSpacing.two),
           _InfoTile(label: AppStrings.of.settingsApp, value: 'TiredAgent'),
           const SizedBox(height: AppSpacing.one),

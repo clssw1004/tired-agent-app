@@ -6,7 +6,6 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/terminal_themes.dart';
 import 'package:tired_agent_app/widgets/forms/buffer_size_tile.dart';
-import 'package:tired_agent_app/widgets/common/section_header.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// Terminal settings screen — buffer size and future xterm/PTY options.
@@ -30,7 +29,7 @@ class TerminalSettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── Buffer size ──────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsBufferSize),
+          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsBufferSize),
           const SizedBox(height: AppSpacing.two),
           BufferSizeTile(
             currentSize: settings.terminalBufferSize,
@@ -39,7 +38,7 @@ class TerminalSettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── Terminal Theme ────────────────────────────────────────
-          SectionHeader(label: AppStrings.of.settingsTerminalTheme),
+          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsTerminalTheme),
           const SizedBox(height: AppSpacing.two),
           ...List.generate(TerminalThemePreset.values.length, (i) {
             final preset = TerminalThemePreset.values[i];

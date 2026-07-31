@@ -5,6 +5,8 @@ import 'package:tired_agent_app/widgets/session_card/contract.dart';
 
 /// Material Design 3 风格 Session 卡片 — 原生 M3 组件（Card/InkWell/FilledButton），
 /// 删除交互为滑动删除（Dismissible endToStart）。
+///
+/// 布局紧凑：Card margin 收紧、subtitle 与 cwd 合并、操作按钮 compact，卡片更宽更扁。
 class MD3SessionCard extends SessionCardContract {
   const MD3SessionCard();
 
@@ -30,21 +32,26 @@ class MD3SessionCard extends SessionCardContract {
             session.extra?['claudeName'] != null ||
             session.label != null);
 
+    // ── 合并信息行（cmd · pid/exit · up · /cwd）────────────────
     final cmd = [session.cmd, ...session.args].join(' ');
-    final uptime = session.status == SessionStatus.exited
+    final meta = session.status == SessionStatus.exited
+        ? 'exit ${session.exitCode ?? '?'}'
+        : 'pid ${session.pid ?? '?'}';
+    final up = session.status == SessionStatus.exited
         ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
         : 'up ${_timeSince(session.createdAt)}';
+    final cwd = session.cwd != null && session.cwd!.isNotEmpty ? ' · ${session.cwd!}' : '';
     final subtitle = session.status == SessionStatus.exited
-        ? '$cmd · exit ${session.exitCode ?? '?'}${uptime.isEmpty ? '' : ' · $uptime'}'
-        : '$cmd · pid ${session.pid ?? '?'} · $uptime';
+        ? '$cmd · $meta${up.isEmpty ? '' : ' · $up'}$cwd'
+        : '$cmd · $meta · $up$cwd';
 
     final card = Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: data.onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -68,43 +75,24 @@ class MD3SessionCard extends SessionCardContract {
                         color: data.isPinned ? scheme.primary : scheme.onSurfaceVariant,
                       ),
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     ),
                   const SizedBox(width: 8),
                   _StatusChip(status: session.status, scheme: scheme),
                 ],
               ),
-              const SizedBox(height: 4),
-              // cmd · pid/exit · uptime
+              const SizedBox(height: 2),
+              // cmd · pid/exit · up · /cwd
               Text(
                 subtitle,
                 style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              // cwd
-              if (session.cwd != null && session.cwd!.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.folder_outlined, size: 14, color: scheme.primary.withAlpha(140)),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        session.cwd!,
-                        style: textTheme.bodySmall?.copyWith(color: scheme.primary.withAlpha(180)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              // Actions: kill / resume（M3 按钮）
+              // Actions: kill / resume（compact 按钮）
               if ((data.onKill != null && session.status != SessionStatus.exited) || canResume)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: 2),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -113,12 +101,22 @@ class MD3SessionCard extends SessionCardContract {
                           onPressed: data.onKill,
                           icon: const Icon(Icons.stop, size: 16),
                           label: const Text('kill'),
+                          style: TextButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            minimumSize: const Size(0, 32),
+                          ),
                         ),
                       if (canResume)
                         FilledButton.tonalIcon(
                           onPressed: data.onResume,
                           icon: const Icon(Icons.play_arrow, size: 16),
                           label: const Text('resume'),
+                          style: FilledButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            minimumSize: const Size(0, 32),
+                          ),
                         ),
                     ],
                   ),

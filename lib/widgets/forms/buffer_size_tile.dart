@@ -4,6 +4,7 @@ import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/dialog/contract.dart';
 
 /// Sentinel value used by the buffer-size dropdown's "Custom…" item.
 const _customSentinel = -1;
@@ -107,7 +108,8 @@ class BufferSizeTile extends StatelessWidget {
 /// Uses its own [StatefulWidget] for safe [TextEditingController] lifecycle
 /// management (per CLAUDE.md guideline: controller in initState/dispose).
 ///
-/// Renders its own dialog UI (styled to match [NeonDialog]).
+/// Reuses the dialog factory's shell (styled per current theme flavor) —
+/// the neon look was a hand-copied clone of [NeonDialog], now merged here.
 class BufferSizeCustomDialog extends StatefulWidget {
   final int initialValue;
   final ValueChanged<int> onSave;
@@ -137,7 +139,7 @@ class _BufferSizeCustomDialogState extends State<BufferSizeCustomDialog> {
     super.dispose();
   }
 
-  void _confirm() {
+  void _confirm(BuildContext context) {
     final text = _ctrl.text.trim();
     final size = int.tryParse(text);
     if (size == null || size < 200 || size > 50000) {
@@ -156,157 +158,53 @@ class _BufferSizeCustomDialogState extends State<BufferSizeCustomDialog> {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.primary.withAlpha(50), width: 0.5),
-          boxShadow: [
-            BoxShadow(
-              color: c.primary.withAlpha(15),
-              blurRadius: 16,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Title bar ──────────────────────────────────────────
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: c.border.withAlpha(120),
-                    width: 0.5,
-                  ),
-                ),
+    return context.appComponents.dialogOrFallback.shell<int>(
+      context,
+      title: AppStrings.of.settingsBufferSize,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ThemedText(
+            AppStrings.of.settingsBufferSizeHint,
+            color: c.textSecondary,
+            fontSize: 13,
+          ),
+          const SizedBox(height: AppSpacing.two),
+          TextField(
+            controller: _ctrl,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            style: TextStyle(color: c.text, fontSize: 14),
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
               ),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Icon(Icons.smart_toy, color: c.primary, size: 22),
-                  ),
-                  Expanded(
-                    child: Text(
-                      AppStrings.of.settingsBufferSize,
-                      style: TextStyle(
-                        color: c.text,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                ],
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: c.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: c.primary),
               ),
             ),
-
-            // ── Content body ──────────────────────────────────────
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ThemedText(
-                      AppStrings.of.settingsBufferSizeHint,
-                      color: c.textSecondary,
-                      fontSize: 13,
-                    ),
-                    const SizedBox(height: AppSpacing.two),
-                    TextField(
-                      controller: _ctrl,
-                      keyboardType: TextInputType.number,
-                      autofocus: true,
-                      style: TextStyle(color: c.text, fontSize: 14),
-                      decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: c.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: c.primary),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Action buttons ────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      foregroundColor: c.textSecondary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                    ),
-                    child: Text(
-                      AppStrings.of.cancel,
-                      style: TextStyle(
-                        color: c.textSecondary,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: _confirm,
-                    style: TextButton.styleFrom(
-                      foregroundColor: c.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        side: BorderSide(
-                          color: c.primary.withAlpha(50),
-                          width: 0.5,
-                        ),
-                      ),
-                      backgroundColor: c.primary.withAlpha(8),
-                    ),
-                    child: Text(
-                      AppStrings.of.confirm,
-                      style: TextStyle(
-                        color: c.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      actions: [
+        DialogAction<int>(
+          label: AppStrings.of.cancel,
+          onPressed: (ctx) => Navigator.of(ctx).pop(),
+        ),
+        DialogAction<int>(
+          label: AppStrings.of.confirm,
+          isPrimary: true,
+          onPressed: _confirm,
+        ),
+      ],
     );
   }
 }

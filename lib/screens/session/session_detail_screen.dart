@@ -13,7 +13,6 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/terminal_themes.dart';
 import 'package:tired_agent_app/widgets/shell/claude_chat_view.dart';
 import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
-import 'package:tired_agent_app/widgets/common/neon_loading.dart';
 import 'package:tired_agent_app/widgets/shell/pty_session_view.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
@@ -346,7 +345,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         ),
       ),
       body: _loading
-          ? Center(child: NeonLoading())
+          ? Center(child: context.appComponents.buildLoading(context))
           : _error != null
           ? Center(child: ThemedText.small(_error!, color: c.danger))
           : _session != null && _conn != null
