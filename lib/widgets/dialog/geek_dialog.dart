@@ -58,8 +58,8 @@ class GeekDialogImpl extends DialogContract {
   }) {
     return showDialog<T>(
       context: context,
-      builder: (_) => shell<T>(
-        context,
+      builder: (dialogContext) => shell<T>(
+        dialogContext,
         title: title,
         content: content,
         icon: icon,

@@ -53,7 +53,7 @@ class PresetOptionChips extends StatelessWidget {
         ),
         if (overflow.isNotEmpty)
           _MoreChip(count: overflow.length, onTap: () => _showAll(context)),
-        if (extra != null) ...extra!,
+        ...?extra,
       ],
     );
   }
@@ -103,16 +103,18 @@ class PresetOptionChips extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: opt.values.map((v) {
           final sel = v.label == current;
-          return ListTile(
-            selected: sel,
-            selectedTileColor: c.accent.withAlpha(20),
-            title: ThemedText.body(v.label),
-            subtitle: v.hint.isNotEmpty ? ThemedText.small(v.hint) : null,
-            trailing: sel
-                ? Icon(Icons.check, color: c.primary, size: 18)
-                : null,
-            onTap: () => Navigator.of(context).pop(sel ? null : v.label),
-            dense: true,
+          return Builder(
+            builder: (itemCtx) => ListTile(
+              selected: sel,
+              selectedTileColor: c.accent.withAlpha(20),
+              title: ThemedText.body(v.label),
+              subtitle: v.hint.isNotEmpty ? ThemedText.small(v.hint) : null,
+              trailing: sel
+                  ? Icon(Icons.check, color: c.primary, size: 18)
+                  : null,
+              onTap: () => Navigator.of(itemCtx).pop(sel ? null : v.label),
+              dense: true,
+            ),
           );
         }).toList(),
       ),
