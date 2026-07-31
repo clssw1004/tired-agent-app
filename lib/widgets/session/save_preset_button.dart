@@ -9,7 +9,7 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 /// A compact save button that opens a dialog to save the current command
 /// as a custom preset. The resulting [UserPreset] is reported via
 /// [onSaved], and the caller is responsible for persisting the list.
-class SavePresetButton extends StatelessWidget {
+class SavePresetButton extends StatefulWidget {
   final String cmd;
   final String argsText;
 
@@ -24,8 +24,27 @@ class SavePresetButton extends StatelessWidget {
     required this.onSaved,
   });
 
-  Future<void> _onTap(BuildContext context) async {
-    final labelCtrl = TextEditingController(text: cmd);
+  @override
+  State<SavePresetButton> createState() => _SavePresetButtonState();
+}
+
+class _SavePresetButtonState extends State<SavePresetButton> {
+  late final TextEditingController _labelCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _labelCtrl = TextEditingController(text: widget.cmd);
+  }
+
+  @override
+  void dispose() {
+    _labelCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onTap() async {
+    _labelCtrl.text = widget.cmd;
     final result = await NeonDialog.show<UserPreset>(
       context: context,
       title: AppStrings.of.createSaveAsPreset,
@@ -35,7 +54,7 @@ class SavePresetButton extends StatelessWidget {
         children: [
           ThemedText.small(AppStrings.of.createPresetName),
           TextField(
-            controller: labelCtrl,
+            controller: _labelCtrl,
             autofocus: true,
             decoration: const InputDecoration(isDense: true),
           ),
@@ -50,9 +69,9 @@ class SavePresetButton extends StatelessWidget {
           label: AppStrings.of.createSave,
           isPrimary: true,
           onPressed: (ctx) {
-            final label = labelCtrl.text.trim();
+            final label = _labelCtrl.text.trim();
             if (label.isEmpty) return;
-            final manualArgs = argsText
+            final manualArgs = widget.argsText
                 .trim()
                 .split(RegExp(r'\s+'))
                 .where((s) => s.isNotEmpty)
@@ -61,7 +80,7 @@ class SavePresetButton extends StatelessWidget {
               UserPreset(
                 id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
                 label: label,
-                cmd: cmd.trim(),
+                cmd: widget.cmd.trim(),
                 args: manualArgs,
                 emoji: '⚡',
               ),
@@ -71,7 +90,7 @@ class SavePresetButton extends StatelessWidget {
       ],
     );
     if (result != null && context.mounted) {
-      onSaved(result);
+      widget.onSaved(result);
     }
   }
 
@@ -79,7 +98,7 @@ class SavePresetButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.appColors;
     return GestureDetector(
-      onTap: () => _onTap(context),
+      onTap: _onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.two,
