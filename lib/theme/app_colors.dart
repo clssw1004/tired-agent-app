@@ -127,9 +127,29 @@ class AppColors extends ThemeExtension<AppColors> {
     textCode: Color(0xFF008844),
   );
 
+  /// 从 Material 3 ColorScheme 派生 AppColors（seed #6750A4 tonal palette）。
+  ///
+  /// `ColorScheme.fromSeed` 非 const，故用 factory 在构建 ThemeData 时派生，
+  /// 保证 [AppColors] token 与 `ThemeData.colorScheme` 同一来源、完全一致。
+  factory AppColors.md3(ColorScheme s) => AppColors(
+    background: s.surface,
+    surface: s.surfaceContainerLow, // 卡片
+    surfaceAlt: s.surfaceContainerHighest, // 输入框/选中态
+    border: s.outlineVariant,
+    borderGlow: s.outline,
+    primary: s.primary,
+    secondary: s.secondary,
+    purple: s.tertiary,
+    success: const Color(0xFF4CAF50), // MD3 无 success token，语义绿固定
+    warning: const Color(0xFFFF9800), // 语义橙固定
+    danger: s.error,
+    text: s.onSurface,
+    textSecondary: s.onSurfaceVariant,
+    textCode: s.onSurfaceVariant,
+  );
+
   @override
-  AppColors copyWith({
-    Color? background,
+  AppColors copyWith({    Color? background,
     Color? surface,
     Color? surfaceAlt,
     Color? border,

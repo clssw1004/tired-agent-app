@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme/app_colors.dart';
+import 'package:tired_agent_app/theme/app_components.dart';
 
 ThemeData _buildTheme(AppColors c, Brightness brightness) {
   final colorScheme = brightness == Brightness.dark
@@ -63,7 +64,7 @@ ThemeData _buildTheme(AppColors c, Brightness brightness) {
     ),
     cardColor: c.surface,
     dividerColor: c.border,
-    extensions: [c],
+    extensions: [c, AppComponents.minimal],
     textTheme: TextTheme(
       bodyLarge: TextStyle(color: c.text, fontSize: 16),
       bodyMedium: TextStyle(color: c.text, fontSize: 14),
