@@ -3,6 +3,7 @@ import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
 
@@ -62,7 +63,7 @@ class GeekManagerCard extends ManagerCardContract {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.two),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+          border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +73,15 @@ class GeekManagerCard extends ManagerCardContract {
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
                 Flexible(
-                  child: ThemedText.mono(profile.name, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: ThemedText(
+                    profile.name,
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                    color: c.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const Spacer(),
                 ThemedText(_statusLabel(connStatus), fontSize: 12, fontFamily: 'monospace', color: statusColor),
@@ -95,10 +104,7 @@ class GeekManagerCard extends ManagerCardContract {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  GestureDetector(
-                    onTap: data.onDelete,
-                    child: ThemedText('[delete]', fontSize: 11, fontFamily: 'monospace', color: c.danger),
-                  ),
+                  GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
                 ],
               ),
           ],

@@ -27,8 +27,14 @@ class MD3AgentCard extends AgentCardContract {
     final subtitle = platform.isEmpty ? agent.baseUrl : '${agent.baseUrl} · $platform';
 
     return Card(
+      elevation: 0,
+      color: scheme.surfaceContainerLow,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: scheme.outlineVariant),
+      ),
       child: ListTile(
         onTap: data.onTap,
         visualDensity: VisualDensity.compact,

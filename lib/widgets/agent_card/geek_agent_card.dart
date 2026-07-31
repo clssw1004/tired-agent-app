@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
+import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// 极简极客风格 Agent 卡片 — 纯终端排版，编辑/删除以 [edit]/[delete] 文字按钮展示（免长按）。
@@ -37,7 +38,7 @@ class GeekAgentCard extends AgentCardContract {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+          border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,23 +48,25 @@ class GeekAgentCard extends AgentCardContract {
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
                 Expanded(
-                  child: ThemedText.mono(agent.name, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: ThemedText(
+                    agent.name,
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                    color: c.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 ThemedText(_statusLabel(agent.state), fontSize: 12, fontFamily: 'monospace', color: statusColor),
                 if (data.onEdit != null) ...[
                   const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: data.onEdit,
-                    child: ThemedText('[edit]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
-                  ),
+                  GeekActionButton(label: 'edit', onTap: data.onEdit!, color: c.textSecondary),
                 ],
                 if (data.onDelete != null) ...[
                   const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: data.onDelete,
-                    child: ThemedText('[delete]', fontSize: 11, fontFamily: 'monospace', color: c.danger),
-                  ),
+                  GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
                 ],
               ],
             ),
