@@ -14,6 +14,7 @@ import 'package:tired_agent_app/screens/session/server_sessions_screen.dart';
 import 'package:tired_agent_app/screens/session/session_detail_screen.dart';
 import 'package:tired_agent_app/screens/settings/settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/terminal_settings_screen.dart';
+import 'package:tired_agent_app/screens/settings/theme_settings_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -134,6 +135,13 @@ class _TiredAgentAppState extends State<TiredAgentApp>
         GoRoute(
           path: '/settings/terminal',
           builder: (_, _) => const TerminalSettingsScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+
+        // ── Theme settings (full-screen) ─────────────────────────
+        GoRoute(
+          path: '/settings/theme',
+          builder: (_, _) => const ThemeSettingsScreen(),
           parentNavigatorKey: _rootNavigatorKey,
         ),
       ],

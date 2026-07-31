@@ -28,6 +28,12 @@ class ServerListScreen extends StatelessWidget {
           child: Container(color: c.primary),
         ),
       ),
+      floatingActionButton: auth.connections.isEmpty
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _showAddManager(context, auth),
+              child: const Icon(Icons.add),
+            ),
       body: Column(
         children: [
           Expanded(
