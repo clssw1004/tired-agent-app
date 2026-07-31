@@ -35,7 +35,6 @@ class GeekAgentCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onDelete,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
@@ -54,14 +53,32 @@ class GeekAgentCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 ThemedText(_statusLabel(agent.state), fontSize: 11, fontFamily: 'monospace', color: statusColor),
                 if (onEdit != null) ...[
-                  const SizedBox(width: 6),
-                  ThemedText('[edit]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onEdit,
+                    child: ThemedText('[edit]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+                  ),
+                ],
+                if (onDelete != null) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: ThemedText('[delete]', fontSize: 11, fontFamily: 'monospace', color: c.danger),
+                  ),
                 ],
               ],
             ),
-            ThemedText('│ ${agent.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (agent.platform != null)
-              ThemedText('│ ${agent.platform!.os} ${agent.platform!.arch}', fontSize: 11, fontFamily: 'monospace', color: c.primary.withAlpha(120)),
+            Row(
+              children: [
+                Expanded(
+                  child: ThemedText('│ ${agent.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                if (agent.platform != null) ...[
+                  const SizedBox(width: 8),
+                  ThemedText('${agent.platform!.os} ${agent.platform!.arch}', fontSize: 11, fontFamily: 'monospace', color: c.primary.withAlpha(120)),
+                ],
+              ],
+            ),
           ],
         ),
       ),

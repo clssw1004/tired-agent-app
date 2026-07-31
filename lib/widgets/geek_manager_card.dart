@@ -53,7 +53,6 @@ class GeekManagerCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onDelete,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.two),
@@ -63,29 +62,53 @@ class GeekManagerCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Name (left) + status (right) ─────────────────────
             Row(
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
-                ThemedText.mono(profile.name, color: c.text),
-                const SizedBox(width: 6),
+                Flexible(
+                  child: ThemedText.mono(profile.name, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                const Spacer(),
                 ThemedText(_statusLabel(connStatus), fontSize: 11, fontFamily: 'monospace', color: statusColor),
                 if (connection.error != null) ...[
-                  const SizedBox(width: 4),
-                  Expanded(
+                  const SizedBox(width: 6),
+                  Flexible(
                     child: ThemedText('!${connection.error}', fontSize: 11, fontFamily: 'monospace', color: c.danger, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ],
             ),
-            ThemedText('│ ${profile.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (hasAgentInfo || profile.lastUsedMs > 0)
+            // ── URL (left) + last used (right) ───────────────────
+            Row(
+              children: [
+                Flexible(
+                  child: ThemedText('│ ${profile.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                if (profile.lastUsedMs > 0) ...[
+                  const Spacer(),
+                  ThemedText(_timeSince(profile.lastUsedMs), fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+                ],
+              ],
+            ),
+            // ── Agent counts ─────────────────────────────────────
+            if (hasAgentInfo)
               ThemedText(
-                '│ ${hasAgentInfo
-                  ? pendingAgents > 0
-                      ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
-                      : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents)
-                  : ''}${hasAgentInfo && profile.lastUsedMs > 0 ? '  |  ' : ''}${profile.lastUsedMs > 0 ? _timeSince(profile.lastUsedMs) : ''}',
+                '│ ${pendingAgents > 0
+                    ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
+                    : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents)}',
                 fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),
+            // ── Actions (right-aligned) ──────────────────────────
+            if (onDelete != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: onDelete,
+                    child: ThemedText('[delete]', fontSize: 11, fontFamily: 'monospace', color: c.danger),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
