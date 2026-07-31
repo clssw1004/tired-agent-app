@@ -45,6 +45,10 @@ class PtySessionViewState extends State<PtySessionView>
 
   /// Toggle the system keyboard (IME) on/off.
   late final FocusNode _terminalFocusNode;
+
+  /// Directly drives the IME input connection via xterm2's [TerminalViewState],
+  /// bypassing the focus-node keyboard-token dance that caused hide/show races.
+  final GlobalKey<TerminalViewState> _terminalViewKey = GlobalKey();
   bool _keyboardExpanded = false;
 
   /// When true, the system soft keyboard (IME) won't pop up on tap.
@@ -212,24 +216,26 @@ class PtySessionViewState extends State<PtySessionView>
     if (mounted) setState(() {});
   }
 
-  /// Toggle the system keyboard (IME) on/off.
-  /// [extraState] is called inside the same [setState] for any additional changes.
-  void _toggleIme({VoidCallback? extraState}) {
+  /// Toggle the system keyboard (IME) on/off. Only affects the IME; the
+  /// extended keyboard panel ([_keyboardExpanded]) is untouched.
+  void _toggleIme() {
     final wasHidden = _hardwareKeyboardOnly;
     setState(() {
       _hardwareKeyboardOnly = !_hardwareKeyboardOnly;
-      extraState?.call();
     });
-    if (wasHidden) {
-      // Showing IME: unfocus now to consume any stale keyboard token,
-      // then generate a fresh one after the frame rebuild.
-      _terminalFocusNode.unfocus();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _terminalFocusNode.requestFocus();
-      });
-    } else {
-      _terminalFocusNode.unfocus();
-    }
+    // After the frame swaps CustomKeyboardListener ↔ CustomTextEdit, drive the
+    // input connection directly. Old code did unfocus→refocus, which closed and
+    // reopened the connection in the same frame — Android's IME hide/show race
+    // intermittently left the keyboard shown without a viewInsets change, so the
+    // terminal never shrank and the keyboard covered it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (wasHidden) {
+        _terminalViewKey.currentState?.requestKeyboard();
+      } else {
+        _terminalViewKey.currentState?.closeKeyboard();
+      }
+    });
   }
 
   /// Public — called from [SessionDetailScreen] via GlobalKey to
@@ -348,6 +354,9 @@ class PtySessionViewState extends State<PtySessionView>
     final c = context.appColors;
     final terminalTheme = context.watch<AppSettingsProvider>().terminalTheme;
     return Scaffold(
+      // SessionDetailScreen 的外层 Scaffold 已按 viewInsets 收缩 body，
+      // 内层再 shrink 会双重收缩（终端下方多出整块键盘高度）。
+      resizeToAvoidBottomInset: false,
       backgroundColor: c.background,
       body: SafeArea(
         child: Column(
@@ -372,6 +381,7 @@ class PtySessionViewState extends State<PtySessionView>
                   behavior: const PtyScrollBehavior(),
                   child: TerminalView(
                     _terminal,
+                    key: _terminalViewKey,
                     theme: terminalTheme,
                     autofocus: false,
                     hardwareKeyboardOnly: _hardwareKeyboardOnly,
@@ -389,8 +399,7 @@ class PtySessionViewState extends State<PtySessionView>
               imeActive: !_hardwareKeyboardOnly,
               onToggle: () =>
                   setState(() => _keyboardExpanded = !_keyboardExpanded),
-              onToggleIme: () =>
-                  _toggleIme(extraState: () => _keyboardExpanded = false),
+              onToggleIme: _toggleIme,
               onSendBytes: (bytes) => _transport.sendInput(
                 widget.serverRef,
                 widget.session.id,
