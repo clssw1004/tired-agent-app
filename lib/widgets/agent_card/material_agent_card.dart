@@ -5,6 +5,8 @@ import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 
 /// Material Design 3 风格 Agent 卡片 — 原生 M3 ListTile，编辑/删除用 IconButton。
+///
+/// 布局紧凑：Card margin 收紧、ListTile compact、platform 并入 baseUrl 行。
 class MD3AgentCard extends AgentCardContract {
   const MD3AgentCard();
 
@@ -20,11 +22,16 @@ class MD3AgentCard extends AgentCardContract {
       AgentState.pending => scheme.onSurfaceVariant,
     };
 
+    // ── 合并信息行（baseUrl · platform）────────────────────────
+    final platform = agent.platform != null ? '${agent.platform!.os} · ${agent.platform!.arch}' : '';
+    final subtitle = platform.isEmpty ? agent.baseUrl : '${agent.baseUrl} · $platform';
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
       child: ListTile(
         onTap: data.onTap,
+        visualDensity: VisualDensity.compact,
         leading: Container(
           width: 10,
           height: 10,
@@ -36,24 +43,11 @@ class MD3AgentCard extends AgentCardContract {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              agent.baseUrl,
-              style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (agent.platform != null)
-              Text(
-                '${agent.platform!.os} · ${agent.platform!.arch}',
-                style: theme.textTheme.bodySmall?.copyWith(color: scheme.primary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
+        subtitle: Text(
+          subtitle,
+          style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

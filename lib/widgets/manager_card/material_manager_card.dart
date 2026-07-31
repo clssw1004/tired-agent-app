@@ -6,6 +6,8 @@ import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
 
 /// Material Design 3 风格 Manager 卡片 — 原生 M3 Card + InkWell，删除用 TextButton。
+///
+/// 布局紧凑：Card margin 收紧、url/agent 统计/lastUsed 合并单行、delete compact。
 class MD3ManagerCard extends ManagerCardContract {
   const MD3ManagerCard();
 
@@ -31,40 +33,39 @@ class MD3ManagerCard extends ManagerCardContract {
     final onlineAgents = agents.where((a) => a.state == AgentState.online).length;
     final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
     final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
-    final hasAgentInfo = totalAgents > 0;
+
+    // ── 合并信息行（url · agent 统计 · last used）─────────────
+    final parts = <String>[
+      profile.baseUrl,
+      if (totalAgents > 0)
+        pendingAgents > 0
+            ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
+            : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents),
+      if (profile.lastUsedMs > 0) _timeSince(profile.lastUsedMs),
+    ];
+    final infoLine = parts.join(' · ');
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: data.onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Status dot + name/url + status label + error
+              // Status dot + name + status label + error
               Row(
                 children: [
                   _StatusDot(status: connStatus, scheme: scheme),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profile.name,
-                          style: textTheme.titleMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          profile.baseUrl,
-                          style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                    child: Text(
+                      profile.name,
+                      style: textTheme.titleMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   _StatusLabel(status: connStatus, scheme: scheme),
@@ -73,38 +74,25 @@ class MD3ManagerCard extends ManagerCardContract {
                       onPressed: () => _showError(context, connection),
                       icon: Icon(Icons.error_outline, size: 18, color: scheme.error),
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     ),
                 ],
               ),
-              // Agent summary + last used
-              if (hasAgentInfo || profile.lastUsedMs > 0)
+              // url · agent 统计 · last used（合并单行）
+              if (infoLine.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Row(
-                    children: [
-                      if (hasAgentInfo)
-                        Expanded(
-                          child: Text(
-                            pendingAgents > 0
-                                ? AppStrings.of.managerAgentCountsWithPending(
-                                    totalAgents, onlineAgents, offlineAgents, pendingAgents)
-                                : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents),
-                            style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                          ),
-                        ),
-                      if (profile.lastUsedMs > 0)
-                        Text(
-                          _timeSince(profile.lastUsedMs),
-                          style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-                    ],
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    infoLine,
+                    style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              // Delete
+              // Delete（compact）
               if (data.onDelete != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: 2),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -112,6 +100,11 @@ class MD3ManagerCard extends ManagerCardContract {
                         onPressed: data.onDelete,
                         icon: const Icon(Icons.delete_outline, size: 16),
                         label: const Text('delete'),
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          minimumSize: const Size(0, 32),
+                        ),
                       ),
                     ],
                   ),

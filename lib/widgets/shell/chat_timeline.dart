@@ -76,7 +76,10 @@ class _MessageBubble extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.85,
           ),
-          child: ThemedText.body(text),
+          child: ThemedText.body(
+            text,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
         ),
       ),
       ContentText(:final text) => Align(

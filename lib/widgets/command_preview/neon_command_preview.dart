@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/command_preview/contract.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
-/// Terminal-style command preview with traffic-light title bar.
-/// Optionally shows [actions] in the title bar's trailing slot (e.g. a
-/// launch button).
-class SessionCommandPreview extends StatelessWidget {
-  final String cmd;
-  final String commandLine;
-  final Widget? actions;
-
-  const SessionCommandPreview({
-    super.key,
-    required this.cmd,
-    required this.commandLine,
-    this.actions,
-  });
+/// 赛博朋克风格命令预览：终端窗拟物 + 红绿灯标题栏 + 主色描边/发光。
+class NeonCommandPreview extends CommandPreviewContract {
+  const NeonCommandPreview();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context, {
+    required String cmd,
+    required String commandLine,
+    Widget? actions,
+  }) {
     final c = context.appColors;
     return Container(
       width: double.infinity,

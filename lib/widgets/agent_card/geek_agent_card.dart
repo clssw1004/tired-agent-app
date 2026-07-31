@@ -5,6 +5,9 @@ import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// 极简极客风格 Agent 卡片 — 纯终端排版，编辑/删除以 [edit]/[delete] 文字按钮展示（免长按）。
+///
+/// 布局采用"对齐网格"：提示符统一 12px monospace 垂直对齐；
+/// url/platform 合并单行，去掉右分离，排版更整洁。
 class GeekAgentCard extends AgentCardContract {
   const GeekAgentCard();
 
@@ -24,6 +27,10 @@ class GeekAgentCard extends AgentCardContract {
       AgentState.pending => c.textSecondary,
     };
 
+    // ── 合并信息行（url · platform）────────────────────────────
+    final platform = agent.platform != null ? '${agent.platform!.os} · ${agent.platform!.arch}' : '';
+    final urlLine = platform.isEmpty ? '│ ${agent.baseUrl}' : '│ ${agent.baseUrl} · $platform';
+
     return GestureDetector(
       onTap: data.onTap,
       child: Container(
@@ -35,14 +42,15 @@ class GeekAgentCard extends AgentCardContract {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Row1: > name + status + [edit] + [delete] ───────
             Row(
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
                 Expanded(
                   child: ThemedText.mono(agent.name, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
-                const SizedBox(width: 6),
-                ThemedText(_statusLabel(agent.state), fontSize: 11, fontFamily: 'monospace', color: statusColor),
+                const SizedBox(width: 8),
+                ThemedText(_statusLabel(agent.state), fontSize: 12, fontFamily: 'monospace', color: statusColor),
                 if (data.onEdit != null) ...[
                   const SizedBox(width: 8),
                   GestureDetector(
@@ -59,17 +67,8 @@ class GeekAgentCard extends AgentCardContract {
                 ],
               ],
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: ThemedText('│ ${agent.baseUrl}', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
-                if (agent.platform != null) ...[
-                  const SizedBox(width: 8),
-                  ThemedText('${agent.platform!.os} ${agent.platform!.arch}', fontSize: 11, fontFamily: 'monospace', color: c.primary.withAlpha(120)),
-                ],
-              ],
-            ),
+            // ── Row2: url · platform ────────────────────────────
+            ThemedText(urlLine, fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),

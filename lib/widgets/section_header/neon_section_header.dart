@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/section_header/contract.dart';
 
-/// 节标题：左侧 3px 霓虹竖条 + 等宽大写文字。
-class SectionHeader extends StatelessWidget {
-  final String label;
-  final Color? color;
-
-  const SectionHeader({super.key, required this.label, this.color});
+/// 赛博朋克风格节标题：3px 发光竖条 + 等宽大写文字。
+class NeonSectionHeader extends SectionHeaderContract {
+  const NeonSectionHeader();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, String label, {Color? color}) {
     final c = context.appColors;
     final barColor = color ?? c.primary;
     return Row(
