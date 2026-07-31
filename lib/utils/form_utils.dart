@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme.dart';
-import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// Neon section header: monospace uppercase label + primary accent line.
 Widget sectionHeader(BuildContext context, String label) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme/app_colors.dart';
+import 'package:tired_agent_app/theme/app_components.dart';
 
 ThemeData buildLightTheme() {
   final c = AppColors.light;
@@ -39,7 +40,7 @@ ThemeData buildLightTheme() {
     ),
     cardColor: c.surface,
     dividerColor: c.border,
-    extensions: [AppColors.light],
+    extensions: [AppColors.light, AppComponents.cyberpunk],
     textTheme: TextTheme(
       bodyLarge: TextStyle(color: c.text, fontSize: 16),
       bodyMedium: TextStyle(color: c.text, fontSize: 14),

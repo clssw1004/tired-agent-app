@@ -8,6 +8,7 @@ import 'package:tired_agent_app/utils/terminal_themes.dart';
 enum ThemeFlavor {
   cyberpunk,
   minimal,
+  material,
 }
 
 /// 终端缓冲区大小预设选项（行数）
@@ -69,6 +70,7 @@ class AppSettingsProvider extends ChangeNotifier {
     if (flavorStr != null) {
       _themeFlavor = switch (flavorStr) {
         'minimal' => ThemeFlavor.minimal,
+        'material' => ThemeFlavor.material,
         _ => ThemeFlavor.cyberpunk,
       };
     }

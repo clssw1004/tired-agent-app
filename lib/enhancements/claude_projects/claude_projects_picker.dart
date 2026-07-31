@@ -7,7 +7,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
-import 'package:tired_agent_app/widgets/themed_text.dart';
+import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
 
 /// Callback when a session is selected in the picker.
@@ -74,17 +74,19 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
       if (conn == null || conn.profile.sessionToken == null) return;
       final api = SessionApiService(conn: conn, agentId: widget.agentId);
       final info = await api.getClaudeProjects(path: widget.cwd);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _info = info;
           _loading = false;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = e.toString();
           _loading = false;
         });
+      }
     }
   }
 
@@ -189,8 +191,9 @@ class _ClaudeProjectsPickerState extends State<ClaudeProjectsPicker> {
                     setState(() {
                       _selectedSessionId = selected ? null : s.sessionId;
                     });
-                    if (!selected)
+                    if (!selected) {
                       widget.onSelected(s.sessionId, s.displayName);
+                    }
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 150),

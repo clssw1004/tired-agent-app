@@ -6,19 +6,19 @@ import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
-import 'package:tired_agent_app/screens/create_session_screen.dart';
-import 'package:tired_agent_app/screens/manager_detail_screen.dart';
-import 'package:tired_agent_app/screens/pinned_sessions_screen.dart';
-import 'package:tired_agent_app/screens/server_list_screen.dart';
-import 'package:tired_agent_app/screens/server_sessions_screen.dart';
-import 'package:tired_agent_app/screens/session_detail_screen.dart';
-import 'package:tired_agent_app/screens/settings_screen.dart';
-import 'package:tired_agent_app/screens/terminal_settings_screen.dart';
+import 'package:tired_agent_app/screens/session/create_session_screen.dart';
+import 'package:tired_agent_app/screens/server/manager_detail_screen.dart';
+import 'package:tired_agent_app/screens/session/pinned_sessions_screen.dart';
+import 'package:tired_agent_app/screens/server/server_list_screen.dart';
+import 'package:tired_agent_app/screens/session/server_sessions_screen.dart';
+import 'package:tired_agent_app/screens/session/session_detail_screen.dart';
+import 'package:tired_agent_app/screens/settings/settings_screen.dart';
+import 'package:tired_agent_app/screens/settings/terminal_settings_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
-import 'package:tired_agent_app/widgets/main_shell.dart';
+import 'package:tired_agent_app/widgets/shell/main_shell.dart';
 import 'package:tired_agent_app/enhancements/enhancement.dart';
 import 'package:tired_agent_app/enhancements/claude_projects/claude_projects_enhancement.dart';
 import 'generated/l10n/app_localizations.dart';
@@ -174,10 +174,12 @@ class _TiredAgentAppState extends State<TiredAgentApp>
             title: 'TiredAgent',
             theme: switch (settings.themeFlavor) {
               ThemeFlavor.minimal => buildMinimalLightTheme(),
+              ThemeFlavor.material => buildMd3LightTheme(),
               _ => buildLightTheme(),
             },
             darkTheme: switch (settings.themeFlavor) {
               ThemeFlavor.minimal => buildMinimalDarkTheme(),
+              ThemeFlavor.material => buildMd3DarkTheme(),
               _ => buildDarkTheme(),
             },
             themeMode: settings.themeMode,
