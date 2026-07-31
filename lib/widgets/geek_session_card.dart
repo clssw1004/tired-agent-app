@@ -3,7 +3,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
-/// Geek-mode text-only card — 终端风格纯文字排版。
+/// Geek-mode 纯终端风格卡片 — 填满宽度。
 class GeekSessionCard extends StatelessWidget {
   final Session session;
   final VoidCallback onTap;
@@ -54,18 +54,24 @@ class GeekSessionCard extends StatelessWidget {
       SessionStatus.exited => c.textSecondary,
     };
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: GestureDetector(
-        onTap: onTap,
-        onLongPress: onDelete,
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onDelete,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
-                ThemedText.mono(session.label ?? session.cmd, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Expanded(
+                  child: ThemedText.mono(session.label ?? session.cmd, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
                 if (session.mode != null) ...[
                   const SizedBox(width: 4),
                   ThemedText('[${session.mode!.name}]', fontSize: 11, fontFamily: 'monospace', color: c.textSecondary),

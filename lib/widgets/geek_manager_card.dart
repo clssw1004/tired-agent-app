@@ -5,7 +5,7 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/themed_text.dart';
 
-/// Geek-mode text-only card — 终端风格纯文字排版。
+/// Geek-mode 纯终端风格卡片 — 填满宽度。
 class GeekManagerCard extends StatelessWidget {
   final ManagerConnection connection;
   final VoidCallback? onTap;
@@ -54,8 +54,12 @@ class GeekManagerCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onDelete,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.two),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -67,7 +71,9 @@ class GeekManagerCard extends StatelessWidget {
                 ThemedText(_statusLabel(connStatus), fontSize: 11, fontFamily: 'monospace', color: statusColor),
                 if (connection.error != null) ...[
                   const SizedBox(width: 4),
-                  ThemedText('!${connection.error}', fontSize: 11, fontFamily: 'monospace', color: c.danger, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Expanded(
+                    child: ThemedText('!${connection.error}', fontSize: 11, fontFamily: 'monospace', color: c.danger, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ],
             ),
