@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/session_card/contract.dart';
 
@@ -58,7 +59,7 @@ class GeekSessionCard extends SessionCardContract {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+          border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +69,15 @@ class GeekSessionCard extends SessionCardContract {
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
                 Expanded(
-                  child: ThemedText.mono(session.label ?? session.cmd, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: ThemedText(
+                    session.label ?? session.cmd,
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                    color: c.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 if (session.mode != null) ...[
                   ThemedText('[${session.mode!.name}]', fontSize: 12, fontFamily: 'monospace', color: c.textSecondary),
@@ -84,7 +93,7 @@ class GeekSessionCard extends SessionCardContract {
             // ── Row2: cmd · pid/exit · uptime ────────────────────
             ThemedText(
               cmdLine,
-              fontSize: 12, fontFamily: 'monospace', color: c.textSecondary,
+              fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, height: 1.5,
               maxLines: 2, overflow: TextOverflow.ellipsis,
             ),
             // ── Row3: cwd ────────────────────────────────────────
@@ -98,13 +107,13 @@ class GeekSessionCard extends SessionCardContract {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     if (data.onPin != null)
-                      _TermBtn(data.isPinned ? '*unpin' : '*pin', onTap: data.onPin!, color: c.primary),
+                      GeekActionButton(label: data.isPinned ? '*unpin' : '*pin', onTap: data.onPin!, color: c.primary),
                     if (data.onKill != null && session.status != SessionStatus.exited)
-                      _TermBtn('kill', onTap: data.onKill!, color: c.danger),
+                      GeekActionButton(label: 'kill', onTap: data.onKill!, color: c.danger),
                     if (session.status == SessionStatus.exited && data.onDelete != null)
-                      _TermBtn('delete', onTap: data.onDelete!, color: c.danger),
+                      GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
                     if (canResume)
-                      _TermBtn('resume', onTap: data.onResume!, color: c.success),
+                      GeekActionButton(label: 'resume', onTap: data.onResume!, color: c.success),
                   ],
                 ),
               ),
@@ -115,22 +124,3 @@ class GeekSessionCard extends SessionCardContract {
   }
 }
 
-/// 终端风格的可点击文字按钮。
-class _TermBtn extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-  final Color color;
-
-  const _TermBtn(this.label, {required this.onTap, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        child: ThemedText(label, fontSize: 11, fontFamily: 'monospace', color: color),
-      ),
-    );
-  }
-}

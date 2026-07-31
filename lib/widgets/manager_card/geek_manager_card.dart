@@ -3,6 +3,7 @@ import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
 
@@ -62,28 +63,44 @@ class GeekManagerCard extends ManagerCardContract {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.two),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.border.withAlpha(40), width: 0.5)),
+          border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Row1: > name + status(+error) ───────────────────
+            // ── Row1: > name + status ──────────────────────────
             Row(
               children: [
                 ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
                 Flexible(
-                  child: ThemedText.mono(profile.name, color: c.text, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: ThemedText(
+                    profile.name,
+                    fontSize: 13,
+                    fontFamily: 'monospace',
+                    fontWeight: FontWeight.w600,
+                    color: c.text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const Spacer(),
                 ThemedText(_statusLabel(connStatus), fontSize: 12, fontFamily: 'monospace', color: statusColor),
-                if (connection.error != null) ...[
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: ThemedText('!${connection.error}', fontSize: 12, fontFamily: 'monospace', color: c.danger, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ),
-                ],
               ],
             ),
+            // ── 异常行（断链时独立展示，不挤在状态行）────────
+            if (connection.error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: ThemedText(
+                  '! ${connection.error}',
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  color: c.danger,
+                  height: 1.5,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             // ── Row2: url · last used ───────────────────────────
             if (urlLine.isNotEmpty)
               ThemedText(urlLine, fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -95,10 +112,7 @@ class GeekManagerCard extends ManagerCardContract {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  GestureDetector(
-                    onTap: data.onDelete,
-                    child: ThemedText('[delete]', fontSize: 11, fontFamily: 'monospace', color: c.danger),
-                  ),
+                  GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
                 ],
               ),
           ],

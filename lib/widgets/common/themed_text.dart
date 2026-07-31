@@ -15,6 +15,7 @@ class ThemedText extends StatelessWidget {
   final int? maxLines;
   final TextOverflow? overflow;
   final String? fontFamily;
+  final double? height;
 
   const ThemedText(
     this.data, {
@@ -26,6 +27,7 @@ class ThemedText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.fontFamily,
+    this.height,
   });
 
   factory ThemedText.body(
@@ -112,6 +114,7 @@ class ThemedText extends StatelessWidget {
         fontSize: fontSize ?? 14,
         fontWeight: fontWeight,
         fontFamily: fontFamily,
+        height: height,
       ),
     );
   }

@@ -46,12 +46,18 @@ class MD3ManagerCard extends ManagerCardContract {
     final infoLine = parts.join(' · ');
 
     return Card(
+      elevation: 0,
+      color: scheme.surfaceContainerLow,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: scheme.outlineVariant),
+      ),
       child: InkWell(
         onTap: data.onTap,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -85,7 +91,7 @@ class MD3ManagerCard extends ManagerCardContract {
                   child: Text(
                     infoLine,
                     style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

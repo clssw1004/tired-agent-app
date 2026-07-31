@@ -66,7 +66,7 @@ class AppColors extends ThemeExtension<AppColors> {
     danger: Color(0xFFFF003C), // 霓虹红
     // ── 文字色板 ──────────────────────────────────────────────
     text: Color(0xFFE8E8F0),
-    textSecondary: Color(0xFF7878A0),
+    textSecondary: Color(0xFF8181AC),
     textCode: Color(0xFFB8B8C0),
   );
 
@@ -87,7 +87,7 @@ class AppColors extends ThemeExtension<AppColors> {
     danger: Color(0xFF7A3A3A), // 红灰
     // ── 文字色板 ──────────────────────────────────────────────
     text: Color(0xFF2E2C2E), // 深灰文字
-    textSecondary: Color(0xFF7A7878), // 中灰色
+    textSecondary: Color(0xFF666464), // 中灰色
     textCode: Color(0xFF3E3C3E), // 深灰代码
   );
 
@@ -98,15 +98,15 @@ class AppColors extends ThemeExtension<AppColors> {
     surfaceAlt: Color(0xFF1C1C1C),
     border: Color(0xFF282828),
     borderGlow: Color(0xFF333333),
-    primary: Color(0xFF00CC66), // 终端绿
-    secondary: Color(0xFF5588CC), // 靛蓝
+    primary: Color(0xFF6A8CA3), // 柔和钢蓝（替代终端绿）
+    secondary: Color(0xFF6E88AD), // 柔和靛蓝
     purple: Color(0xFF7958D9),
     success: Color(0xFF00CC66),
     warning: Color(0xFFFF9900),
     danger: Color(0xFFE64545),
     text: Color(0xFFD4D4D4),
-    textSecondary: Color(0xFF6A6A6A),
-    textCode: Color(0xFF00CC66),
+    textSecondary: Color(0xFF858585),
+    textCode: Color(0xFF8494A8),
   );
 
   // ── 极简极客主题 — 亮色 ──────────────────────────────────
@@ -116,15 +116,15 @@ class AppColors extends ThemeExtension<AppColors> {
     surfaceAlt: Color(0xFFE0E0E0),
     border: Color(0xFFCCCCCC),
     borderGlow: Color(0xFFBBBBBB),
-    primary: Color(0xFF008844), // 终端绿（白底可读）
+    primary: Color(0xFF44607A), // 柔和石板蓝
     secondary: Color(0xFF335577),
     purple: Color(0xFF5544AA),
     success: Color(0xFF008844),
-    warning: Color(0xFFAA7722),
-    danger: Color(0xFFCC3333),
+    warning: Color(0xFF8A5E10),
+    danger: Color(0xFFB02828),
     text: Color(0xFF1C1C1C),
     textSecondary: Color(0xFF666666),
-    textCode: Color(0xFF008844),
+    textCode: Color(0xFF556274),
   );
 
   /// 从 Material 3 ColorScheme 派生 AppColors（seed #6750A4 tonal palette）。
@@ -140,8 +140,13 @@ class AppColors extends ThemeExtension<AppColors> {
     primary: s.primary,
     secondary: s.secondary,
     purple: s.tertiary,
-    success: const Color(0xFF4CAF50), // MD3 无 success token，语义绿固定
-    warning: const Color(0xFFFF9800), // 语义橙固定
+    // MD3 无 success/warning token，按亮度取可读变体
+    success: s.brightness == Brightness.dark
+        ? const Color(0xFF66BB6A)
+        : const Color(0xFF2E7D32),
+    warning: s.brightness == Brightness.dark
+        ? const Color(0xFFFFA726)
+        : const Color(0xFFC73E00),
     danger: s.error,
     text: s.onSurface,
     textSecondary: s.onSurfaceVariant,
