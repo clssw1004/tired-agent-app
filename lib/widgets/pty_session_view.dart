@@ -113,30 +113,34 @@ class PtySessionViewState extends State<PtySessionView>
   String _pendingOutput = '';
   bool _outputScheduled = false;
 
-  /// Cross-flush dedup: if the last flush was a lone \r, skip the next
-  /// one. IME Enter often double-fires across separate microtasks.
-  bool _lastFlushWasCr = false;
+  /// Cross-flush dedup: if the last flush ended with \r, skip the next standalone
+  /// \r. IME Enter often double-fires: the IME commit (text possibly with \n)
+  /// + the key event \r arrive in separate microtask flushes.
+  bool _lastFlushEndedWithCr = false;
 
   void _flushOutput() {
     _outputScheduled = false;
     if (_pendingOutput.isEmpty) return;
     // Dedup Enter sequences from mobile IME: the IME commit + xterm2 key event
-    // produce \r\n, \n\r, or \r\r instead of a single \r.
+    // produce \r\n, \n\r, \r\r, or standalone \n instead of a single \r.
+    // Order matters: multi-char patterns first, standalone \n last.
     final normalized = _pendingOutput
         .replaceAll('\r\n', '\r')
         .replaceAll('\n\r', '\r')
-        .replaceAll('\r\r', '\r');
+        .replaceAll('\r\r', '\r')
+        .replaceAll('\n', '\r');
     _pendingOutput = '';
     if (normalized.isEmpty) return;
 
-    // Cross-flush dedup: a lone \r right after another lone \r is a
-    // duplicate Enter from IME, not a second intentional press.
+    // Cross-flush dedup: a lone \r right after a flush that ended with \r
+    // is a duplicate Enter from IME, not a second intentional press.
     final isCr = normalized == '\r';
-    if (isCr && _lastFlushWasCr) {
-      _lastFlushWasCr = false; // consume the duplicate
+    final endsWithCr = isCr || normalized.endsWith('\r');
+    if (isCr && _lastFlushEndedWithCr) {
+      _lastFlushEndedWithCr = false; // consume the duplicate
       return;
     }
-    _lastFlushWasCr = isCr;
+    _lastFlushEndedWithCr = endsWithCr;
 
     final bytes = utf8.encode(normalized);
     _transport.sendInput(
