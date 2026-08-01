@@ -2,6 +2,10 @@
 
 [English](README.md) · [中文](README.zh-CN.md)
 
+[![Flutter](https://img.shields.io/badge/Flutter-3.41.6-blue?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Windows%20%7C%20Linux-green)](https://github.com/clssw1004/tired-agent-app)
+[![Backend](https://img.shields.io/badge/backend-tired--agent-orange)](https://github.com/clssw1004/tired-agent)
+
 tiredAgentMobile — tired-agent 的 Flutter 客户端（Android / Windows / Linux）。
 
 连接 tired-agent Manager 服务，管理 Agent、会话与终端，并提供 Claude 聊天界面。

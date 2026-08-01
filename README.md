@@ -2,6 +2,10 @@
 
 [English](README.md) · [中文](README.zh-CN.md)
 
+[![Flutter](https://img.shields.io/badge/Flutter-3.41.6-blue?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20Windows%20%7C%20Linux-green)](https://github.com/clssw1004/tired-agent-app)
+[![Backend](https://img.shields.io/badge/backend-tired--agent-orange)](https://github.com/clssw1004/tired-agent)
+
 tiredAgentMobile — a Flutter client for tired-agent (Android / Windows / Linux).
 
 Connect to a tired-agent Manager service to manage agents, sessions and terminals, with a built-in Claude chat interface.
