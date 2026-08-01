@@ -22,9 +22,8 @@ class GeekActionButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        child: ThemedText(
+        child: ThemedText.mono(
           '[$label]',
-          fontFamily: 'monospace',
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: color,

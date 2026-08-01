@@ -46,12 +46,11 @@ class GeekAgentCard extends AgentCardContract {
             // ── Row1: > name + status + [edit] + [delete] ───────
             Row(
               children: [
-                ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                ThemedText.mono('> ', color: c.primary),
                 Expanded(
-                  child: ThemedText(
+                  child: ThemedText.mono(
                     agent.name,
                     fontSize: 13,
-                    fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,
                     color: c.text,
                     maxLines: 1,
@@ -59,7 +58,7 @@ class GeekAgentCard extends AgentCardContract {
                   ),
                 ),
                 const SizedBox(width: 8),
-                ThemedText(_statusLabel(agent.state), fontSize: 12, fontFamily: 'monospace', color: statusColor),
+                ThemedText.mono(_statusLabel(agent.state), color: statusColor),
                 if (data.onEdit != null) ...[
                   const SizedBox(width: 8),
                   GeekActionButton(label: 'edit', onTap: data.onEdit!, color: c.textSecondary),
@@ -71,7 +70,7 @@ class GeekAgentCard extends AgentCardContract {
               ],
             ),
             // ── Row2: url · platform ────────────────────────────
-            ThemedText(urlLine, fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ThemedText.mono(urlLine, color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),

@@ -67,12 +67,11 @@ class GeekSessionCard extends SessionCardContract {
             // ── Row1: > label + [mode] + *pin + status ───────────
             Row(
               children: [
-                ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                ThemedText.mono('> ', color: c.primary),
                 Expanded(
-                  child: ThemedText(
+                  child: ThemedText.mono(
                     session.label ?? session.cmd,
                     fontSize: 13,
-                    fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,
                     color: c.text,
                     maxLines: 1,
@@ -80,25 +79,32 @@ class GeekSessionCard extends SessionCardContract {
                   ),
                 ),
                 if (session.mode != null) ...[
-                  ThemedText('[${session.mode!.name}]', fontSize: 12, fontFamily: 'monospace', color: c.textSecondary),
+                  ThemedText.mono('[${session.mode!.name}]', color: c.textSecondary),
                   const SizedBox(width: 8),
                 ],
                 if (data.isPinned) ...[
-                  ThemedText('*pin', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                  ThemedText.mono('*pin', color: c.primary),
                   const SizedBox(width: 8),
                 ],
-                ThemedText(_statusLabel(session.status), fontSize: 12, fontFamily: 'monospace', color: statusColor),
+                ThemedText.mono(_statusLabel(session.status), color: statusColor),
               ],
             ),
             // ── Row2: cmd · pid/exit · uptime ────────────────────
-            ThemedText(
+            ThemedText.mono(
               cmdLine,
-              fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, height: 1.5,
-              maxLines: 2, overflow: TextOverflow.ellipsis,
+              color: c.textSecondary,
+              height: 1.5,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             // ── Row3: cwd ────────────────────────────────────────
             if (session.cwd != null && session.cwd!.isNotEmpty)
-              ThemedText('│ ${session.cwd!}', fontSize: 12, fontFamily: 'monospace', color: c.primary.withAlpha(140), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ThemedText.mono(
+                '│ ${session.cwd!}',
+                color: c.primary.withAlpha(140),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             // ── Row4: Actions（可点击文字按钮，免长按）──────────
             if (data.onPin != null || data.onKill != null || data.onDelete != null || canResume)
               Padding(
