@@ -48,7 +48,7 @@ class MD3SessionCard extends SessionCardContract {
     final card = Card(
       elevation: 0,
       color: scheme.surfaceContainerLow,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -92,7 +92,7 @@ class MD3SessionCard extends SessionCardContract {
               Text(
                 subtitle,
                 style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               // Actions: kill / resume（compact 按钮）

@@ -6,6 +6,7 @@ abstract class InputDecorationContract {
 
   InputDecoration build(
     BuildContext context, {
+    String? label,
     String? hint,
     String? prefixText,
   });

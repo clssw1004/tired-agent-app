@@ -23,6 +23,18 @@ ThemeData _buildMd3(Brightness b) {
     brightness: b,
     colorScheme: scheme,
     scaffoldBackgroundColor: scheme.surface,
+    // 与 neon/geek 保持相近视觉尺度，避免切 material 后整 UI 放大
+    visualDensity: VisualDensity.compact,
+    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    textTheme: TextTheme(
+      bodyLarge: const TextStyle(fontSize: 16),
+      bodyMedium: const TextStyle(fontSize: 14),
+      bodySmall: const TextStyle(fontSize: 12),
+      labelLarge: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      labelSmall: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      titleMedium: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      titleLarge: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       foregroundColor: scheme.onSurface,

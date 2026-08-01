@@ -32,6 +32,10 @@ import 'package:tired_agent_app/widgets/session_card/contract.dart';
 import 'package:tired_agent_app/widgets/session_card/neon_session_card.dart';
 import 'package:tired_agent_app/widgets/session_card/material_session_card.dart';
 import 'package:tired_agent_app/widgets/session_card/geek_session_card.dart';
+import 'package:tired_agent_app/widgets/settings_tile/contract.dart';
+import 'package:tired_agent_app/widgets/settings_tile/geek_settings_tile.dart';
+import 'package:tired_agent_app/widgets/settings_tile/material_settings_tile.dart';
+import 'package:tired_agent_app/widgets/settings_tile/neon_settings_tile.dart';
 
 /// 按风格分发组件的工厂（ThemeExtension 载体）。
 ///
@@ -50,6 +54,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
   final LoadingContract? loading;
   final CommandPreviewContract? commandPreview;
   final InputDecorationContract? inputDecoration;
+  final SettingsTileContract? settingsTile;
 
   /// 增强来源：该风格基于哪个底层风格做增强。未实现组件沿此链逐级回落。
   /// 例：新风格只实现 sessionCard 并 `base: geek` → manager/agent 回落 geek。
@@ -64,6 +69,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
     this.loading,
     this.commandPreview,
     this.inputDecoration,
+    this.settingsTile,
     this.base,
   });
 
@@ -79,6 +85,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
     loading: NeonLoadingImpl(),
     commandPreview: NeonCommandPreview(),
     inputDecoration: NeonInputDecorationImpl(),
+    settingsTile: NeonSettingsTile(),
   );
 
   static const AppComponents geek = AppComponents(
@@ -90,6 +97,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
     loading: GeekLoadingImpl(),
     commandPreview: GeekCommandPreview(),
     inputDecoration: GeekInputDecorationImpl(),
+    settingsTile: GeekSettingsTile(),
   );
 
   /// Material Design 3 风格 — 原生 M3 组件。
@@ -102,6 +110,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
     loading: MaterialLoadingImpl(),
     commandPreview: MaterialCommandPreview(),
     inputDecoration: MaterialInputDecorationImpl(),
+    settingsTile: MaterialSettingsTile(),
   );
 
   // 基于某风格增强的新风格（示例）：只实现部分，未实现回落 base（此处 geek）
@@ -183,6 +192,15 @@ class AppComponents extends ThemeExtension<AppComponents> {
     return systemFallback.inputDecoration!;
   }
 
+  SettingsTileContract get settingsTileOrFallback {
+    AppComponents? c = this;
+    while (c != null) {
+      if (c.settingsTile != null) return c.settingsTile!;
+      c = c.base;
+    }
+    return systemFallback.settingsTile!;
+  }
+
   /// 统一渲染入口：页面只用它，不接触可空字段、不写空断言。
   Widget buildSessionCard(BuildContext context, SessionCardData data) =>
       sessionCardOrFallback.build(context, data);
@@ -219,10 +237,19 @@ class AppComponents extends ThemeExtension<AppComponents> {
 
   InputDecoration buildInputDecoration(
     BuildContext context, {
+    String? label,
     String? hint,
     String? prefixText,
   }) =>
-      inputDecorationOrFallback.build(context, hint: hint, prefixText: prefixText);
+      inputDecorationOrFallback.build(
+        context,
+        label: label,
+        hint: hint,
+        prefixText: prefixText,
+      );
+
+  Widget buildSettingsTile(BuildContext context, SettingsTileData data) =>
+      settingsTileOrFallback.build(context, data);
 
   @override
   AppComponents copyWith({
@@ -234,6 +261,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
     LoadingContract? loading,
     CommandPreviewContract? commandPreview,
     InputDecorationContract? inputDecoration,
+    SettingsTileContract? settingsTile,
     AppComponents? base,
   }) =>
       AppComponents(
@@ -245,6 +273,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
         loading: loading ?? this.loading,
         commandPreview: commandPreview ?? this.commandPreview,
         inputDecoration: inputDecoration ?? this.inputDecoration,
+        settingsTile: settingsTile ?? this.settingsTile,
         base: base ?? this.base,
       );
 
@@ -261,6 +290,7 @@ class AppComponents extends ThemeExtension<AppComponents> {
               loading: t < 0.5 ? loading : other.loading,
               commandPreview: t < 0.5 ? commandPreview : other.commandPreview,
               inputDecoration: t < 0.5 ? inputDecoration : other.inputDecoration,
+              settingsTile: t < 0.5 ? settingsTile : other.settingsTile,
               base: t < 0.5 ? base : other.base,
             );
 }

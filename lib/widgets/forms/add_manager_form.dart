@@ -54,41 +54,33 @@ class AddManagerFormState extends State<AddManagerForm> {
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(
             controller: _nameController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelName,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelName,
             ),
             autocorrect: false,
           ),
-          const SizedBox(height: AppSpacing.three),
+          const SizedBox(height: AppSpacing.two),
           TextField(
             controller: _urlController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelManagerUrl,
-              hintText: AppStrings.of.managerUrlHint,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelManagerUrl,
+              hint: AppStrings.of.managerUrlHint,
             ),
             keyboardType: TextInputType.url,
             autocorrect: false,
           ),
-          const SizedBox(height: AppSpacing.three),
+          const SizedBox(height: AppSpacing.two),
           TextField(
             controller: _tokenController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.managersAccessToken,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.managersAccessToken,
             ),
             obscureText: true,
             autocorrect: false,

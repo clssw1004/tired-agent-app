@@ -52,42 +52,34 @@ class AddAgentFormState extends State<AddAgentForm> {
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(
             controller: _nameController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelAgentName,
-              hintText: AppStrings.of.agentNameHint,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelAgentName,
+              hint: AppStrings.of.agentNameHint,
             ),
             autocorrect: false,
           ),
-          const SizedBox(height: AppSpacing.three),
+          const SizedBox(height: AppSpacing.two),
           TextField(
             controller: _urlController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelAgentUrl,
-              hintText: AppStrings.of.agentUrlHint,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelAgentUrl,
+              hint: AppStrings.of.agentUrlHint,
             ),
             keyboardType: TextInputType.url,
             autocorrect: false,
           ),
-          const SizedBox(height: AppSpacing.three),
+          const SizedBox(height: AppSpacing.two),
           TextField(
             controller: _tokenController,
-            decoration: InputDecoration(
-              labelText: AppStrings.of.labelAgentToken,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.three,
-                vertical: AppSpacing.three,
-              ),
+            decoration: context.appComponents.buildInputDecoration(
+              context,
+              label: AppStrings.of.labelAgentToken,
             ),
             obscureText: true,
             autocorrect: false,
