@@ -34,16 +34,16 @@ class MD3ManagerCard extends ManagerCardContract {
     final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
     final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
 
-    // ── 合并信息行（url · agent 统计 · last used）─────────────
-    final parts = <String>[
-      profile.baseUrl,
+    // ── 拆分信息行：url 主行 + agent 统计 · last used 次行 ──
+    final url = profile.baseUrl;
+    final statsParts = <String>[
       if (totalAgents > 0)
         pendingAgents > 0
             ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
             : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents),
       if (profile.lastUsedMs > 0) _timeSince(profile.lastUsedMs),
     ];
-    final infoLine = parts.join(' · ');
+    final statsLine = statsParts.join(' · ');
 
     return Card(
       elevation: 0,
@@ -84,14 +84,24 @@ class MD3ManagerCard extends ManagerCardContract {
                     ),
                 ],
               ),
-              // url · agent 统计 · last used（合并单行）
-              if (infoLine.isNotEmpty)
+              // url（主行）
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  url,
+                  style: textTheme.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // agent 统计 · last used（次行）
+              if (statsLine.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
-                    infoLine,
+                    statsLine,
                     style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

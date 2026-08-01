@@ -22,9 +22,8 @@ class MD3AgentCard extends AgentCardContract {
       AgentState.pending => scheme.onSurfaceVariant,
     };
 
-    // ── 合并信息行（baseUrl · platform）────────────────────────
+    // ── 拆分信息行：baseUrl 主行 + platform 次行 ─────────────
     final platform = agent.platform != null ? '${agent.platform!.os} · ${agent.platform!.arch}' : '';
-    final subtitle = platform.isEmpty ? agent.baseUrl : '${agent.baseUrl} · $platform';
 
     return Card(
       elevation: 0,
@@ -51,11 +50,27 @@ class MD3AgentCard extends AgentCardContract {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(
-          subtitle,
-          style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              agent.baseUrl,
+              style: theme.textTheme.bodySmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (platform.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Text(
+                  platform,
+                  style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
