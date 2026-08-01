@@ -112,30 +112,33 @@ class GeekDialogImpl extends DialogContract {
         child: SingleChildScrollView(child: content),
       ),
       contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      actions: actions.map((action) {
-        final Color color;
-        if (action.color != null) {
-          color = action.color!;
-        } else if (action.isDanger) {
-          color = c.danger;
-        } else if (action.isPrimary) {
-          color = c.primary;
-        } else {
-          color = c.textSecondary;
-        }
-        return Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: GestureDetector(
-            onTap: () => action.onPressed(context),
-            behavior: HitTestBehavior.opaque,
-            child: ThemedText.mono(
-              '[${action.label}]',
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        );
-      }).toList(),
+      actions: [
+        for (var i = 0; i < actions.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.two),
+          () {
+            final action = actions[i];
+            final Color color;
+            if (action.color != null) {
+              color = action.color!;
+            } else if (action.isDanger) {
+              color = c.danger;
+            } else if (action.isPrimary) {
+              color = c.primary;
+            } else {
+              color = c.textSecondary;
+            }
+            return GestureDetector(
+              onTap: () => action.onPressed(context),
+              behavior: HitTestBehavior.opaque,
+              child: ThemedText.mono(
+                '[${action.label}]',
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            );
+          }(),
+        ],
+      ],
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
     );
   }
