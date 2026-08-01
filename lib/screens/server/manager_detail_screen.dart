@@ -131,6 +131,72 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     }
   }
 
+  Future<void> _showEditAgent(AgentInfo agent) async {
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null || conn.status != ConnectionStatus.connected) return;
+
+    final formKey = GlobalKey<AddAgentFormState>();
+
+    final formData = await NeonDialog.show<AddAgentFormData?>(
+      context: context,
+      title: AppStrings.of.agentEditTitle,
+      content: AddAgentForm(
+        key: formKey,
+        initialName: agent.name,
+        initialUrl: agent.baseUrl,
+      ),
+      actions: [
+        NeonDialogAction(
+          label: AppStrings.of.cancel,
+          onPressed: (ctx) => Navigator.of(ctx).pop(null),
+        ),
+        NeonDialogAction(
+          label: AppStrings.of.agentSave,
+          isPrimary: true,
+          onPressed: (ctx) {
+            final data = formKey.currentState?.data;
+            if (data != null && data.name.isNotEmpty && data.url.isNotEmpty) {
+              Navigator.of(ctx).pop(data);
+            }
+          },
+        ),
+      ],
+    );
+
+    if (formData != null && mounted) {
+      try {
+        await conn.transport.updateAgent(
+          conn.managerRef,
+          agent.id,
+          name: formData.name,
+          baseUrl: formData.url,
+          token: formData.token.isEmpty ? null : formData.token,
+        );
+        await _loadAgents();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: ThemedText.small(
+                AppStrings.of.agentUpdated(formData.name),
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          final c = context.appColors;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppStrings.of.agentUpdateFailed(e.toString())),
+              backgroundColor: c.danger,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _deleteAgent(AgentInfo agent) async {
     final confirmed = await NeonDialog.showConfirm(
       context: context,
@@ -276,6 +342,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
             AgentCardData(
               agent: agent,
               onTap: () => context.push('/profile/${widget.profileId}/agent/$agentId'),
+              onEdit: () => _showEditAgent(agent),
               onDelete: () => _deleteAgent(agent),
             ),
           );

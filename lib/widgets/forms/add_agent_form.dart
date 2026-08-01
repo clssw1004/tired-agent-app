@@ -14,7 +14,16 @@ class AddAgentFormData {
 /// Stateful form widget that owns its [TextEditingController]s and disposes
 /// them in sync with the dialog's widget tree lifecycle.
 class AddAgentForm extends StatefulWidget {
-  const AddAgentForm({super.key});
+  final String? initialName;
+  final String? initialUrl;
+  final String? initialToken;
+
+  const AddAgentForm({
+    super.key,
+    this.initialName,
+    this.initialUrl,
+    this.initialToken,
+  });
 
   @override
   AddAgentFormState createState() => AddAgentFormState();
@@ -28,9 +37,9 @@ class AddAgentFormState extends State<AddAgentForm> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
-    _urlController = TextEditingController();
-    _tokenController = TextEditingController();
+    _nameController = TextEditingController(text: widget.initialName ?? '');
+    _urlController = TextEditingController(text: widget.initialUrl ?? '');
+    _tokenController = TextEditingController(text: widget.initialToken ?? '');
   }
 
   @override
