@@ -273,11 +273,19 @@ Future<void> _refresh() async {
 ## Release
 
 1. 更新版本号（`pubspec.yaml` → `version`）
-2. 打 tag `mobile-v<version>`
-3. `flutter build apk --release`（Android）/ `flutter build ios --release`（iOS）
-4. 提交到 Play Console / App Store Connect
+2. 打 tag `v<version>`（与 GitHub Actions `.github/workflows/flutter_build.yml` 的 `tags: ["v*"]` 匹配）
+3. push tag → CI 自动构建 windows / linux / android + 创建 GitHub Release
+4. 本地手动构建：`flutter build apk --release`（Android）/ `flutter build ios --release`（iOS，需 macOS）
 
-Android 和 iOS 版本号**独立管理**（在 `android/app/build.gradle` 的 `versionCode` / `versionName` 和 `ios/Runner/Info.plist` 字段）
+Android 版本号在 `android/app/build.gradle.kts` 的 `versionCode` / `versionName`，iOS 在 `ios/Runner/Info.plist`，版本号**独立管理**。
+
+## CI / Android 签名
+
+`main` 分支的 `.github/workflows/flutter_build.yml` 在 tag push 时并行构建三平台。Android release 通过 `secrets.KEYSTORE_BASE64` 注入 `android/app/tired-agent.keystore`，再把密码/别名写入 `android/key.properties`（两个文件已 `.gitignore`）。
+
+GitHub 需配置 4 个 Secret：`KEYSTORE_BASE64` / `KEYSTORE_PASSWORD` / `KEY_PASSWORD` / `KEY_ALIAS`。详见 `README.md` 的「GitHub Secrets 配置」章节。
+
+build.gradle.kts 的 release buildType 会先检测 `key.properties` 是否存在，存在则用 release 签名，否则回退 debug（方便本地未配签名的调试）。
 
 ## 参考链接
 
