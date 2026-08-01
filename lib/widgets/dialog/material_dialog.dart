@@ -8,7 +8,7 @@ class MaterialDialogImpl extends DialogContract {
   const MaterialDialogImpl();
 
   @override
-  double get defaultMaxWidth => 560;
+  double get defaultMaxWidth => 640;
 
   @override
   Future<bool?> showConfirm(

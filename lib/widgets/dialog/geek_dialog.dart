@@ -10,7 +10,7 @@ class GeekDialogImpl extends DialogContract {
   const GeekDialogImpl();
 
   @override
-  double get defaultMaxWidth => 560;
+  double get defaultMaxWidth => 640;
 
   @override
   Future<bool?> showConfirm(

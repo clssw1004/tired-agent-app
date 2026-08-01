@@ -9,7 +9,7 @@ class NeonDialogImpl extends DialogContract {
   const NeonDialogImpl();
 
   @override
-  double get defaultMaxWidth => 560;
+  double get defaultMaxWidth => 640;
 
   @override
   Future<bool?> showConfirm(
