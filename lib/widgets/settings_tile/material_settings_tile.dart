@@ -11,6 +11,10 @@ class MaterialSettingsTile extends SettingsTileContract {
     final scheme = Theme.of(context).colorScheme;
     return ListTile(
       onTap: data.onTap,
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      minTileHeight: 48,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       tileColor: data.selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
       leading: data.selected
