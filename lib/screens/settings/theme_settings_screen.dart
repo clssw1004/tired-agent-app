@@ -51,7 +51,7 @@ class ThemeSettingsScreen extends StatelessWidget {
           context.appComponents.buildSettingsTile(
             context,
             SettingsTileData(
-              label: 'Material 3',
+              label: 'material-3',
               selected: settings.themeFlavor == ThemeFlavor.material,
               onTap: () => settings.setThemeFlavor(ThemeFlavor.material),
             ),

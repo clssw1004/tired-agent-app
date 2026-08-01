@@ -67,28 +67,8 @@ class NeonSessionCard extends SessionCardContract {
             ],
           ),
           const SizedBox(height: AppSpacing.one),
-          // Subtitle: cmd args · pid/exit · uptime
-          ThemedText.mono(
-            () {
-              final cmd = [session.cmd, ...session.args].join(' ');
-              final uptime = session.status == SessionStatus.exited
-                  ? session.exitedAt != null
-                      ? '${_timeSince(session.exitedAt!)} ago'
-                      : ''
-                  : 'up ${_timeSince(session.createdAt)}';
-              if (session.status == SessionStatus.exited) {
-                final exitInfo = 'exit ${session.exitCode ?? '?'}';
-                return '$cmd · $exitInfo · $uptime';
-              }
-              return '$cmd · pid ${session.pid ?? '?'} · $uptime';
-            }(),
-            color: c.textSecondary,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          // Working directory
+          // Working directory（第一行）
           if (session.cwd != null && session.cwd!.isNotEmpty) ...[
-            const SizedBox(height: 2),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -109,6 +89,25 @@ class NeonSessionCard extends SessionCardContract {
               ],
             ),
           ],
+          // Subtitle: cmd args · pid/exit · uptime
+          ThemedText.mono(
+            () {
+              final cmd = [session.cmd, ...session.args].join(' ');
+              final uptime = session.status == SessionStatus.exited
+                  ? session.exitedAt != null
+                      ? '${_timeSince(session.exitedAt!)} ago'
+                      : ''
+                  : 'up ${_timeSince(session.createdAt)}';
+              if (session.status == SessionStatus.exited) {
+                final exitInfo = 'exit ${session.exitCode ?? '?'}';
+                return '$cmd · $exitInfo · $uptime';
+              }
+              return '$cmd · pid ${session.pid ?? '?'} · $uptime';
+            }(),
+            color: c.textSecondary,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           // Mode badge + action buttons
           if (session.mode != null) ...[
             const SizedBox(height: AppSpacing.two),

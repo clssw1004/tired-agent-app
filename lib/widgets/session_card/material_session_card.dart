@@ -6,7 +6,7 @@ import 'package:tired_agent_app/widgets/session_card/contract.dart';
 /// Material Design 3 风格 Session 卡片 — 原生 M3 组件（Card/InkWell/FilledButton），
 /// 删除交互为滑动删除（Dismissible endToStart）。
 ///
-/// 布局紧凑：Card margin 收紧、subtitle 与 cwd 合并、操作按钮 compact，卡片更宽更扁。
+/// 布局紧凑：Card margin 收紧、cmd/meta/cwd 三行分摊，操作按钮 compact，卡片更宽更扁。
 class MD3SessionCard extends SessionCardContract {
   const MD3SessionCard();
 
@@ -40,11 +40,11 @@ class MD3SessionCard extends SessionCardContract {
     final up = session.status == SessionStatus.exited
         ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
         : 'up ${_timeSince(session.createdAt)}';
-    final cwd = session.cwd != null && session.cwd!.isNotEmpty ? ' · ${session.cwd!}' : '';
-    // 主行：完整命令；次行：pid/exit · up · /cwd，分行展示避免长串挤在一起换行
+    // 三行独立：cmd / pid/exit · up / /cwd
+    final cwd = session.cwd != null && session.cwd!.isNotEmpty ? session.cwd! : '';
     final metaLine = session.status == SessionStatus.exited
-        ? '$meta${up.isEmpty ? '' : ' · $up'}$cwd'
-        : '$meta · $up$cwd';
+        ? (up.isEmpty ? meta : '$meta · $up')
+        : '$meta · $up';
 
     final card = Card(
       elevation: 0,
@@ -89,15 +89,25 @@ class MD3SessionCard extends SessionCardContract {
                 ],
               ),
               const SizedBox(height: 4),
+              // /cwd（第一行紧接标签）
+              if (cwd.isNotEmpty)
+                Text(
+                  cwd,
+                  style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               // cmd（主行）
-              Text(
-                cmd,
-                style: textTheme.bodyMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  cmd,
+                  style: textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const SizedBox(height: 2),
-              // pid/exit · up · /cwd（次行）
+              // pid/exit · up（次行）
               Text(
                 metaLine,
                 style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
