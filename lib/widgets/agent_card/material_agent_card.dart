@@ -37,7 +37,9 @@ class MD3AgentCard extends AgentCardContract {
       ),
       child: ListTile(
         onTap: data.onTap,
+        dense: true,
         visualDensity: VisualDensity.compact,
+        minTileHeight: 44,
         leading: Container(
           width: 10,
           height: 10,
@@ -52,7 +54,7 @@ class MD3AgentCard extends AgentCardContract {
         subtitle: Text(
           subtitle,
           style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
         trailing: Row(
