@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
@@ -75,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.four),
 
-          // ── About ────────────────────────────────────────────
+          // ── About（version/build 同步自 pubspec.yaml）────────
           context.appComponents.buildSectionHeader(context, AppStrings.of.settingsAbout),
           const SizedBox(height: AppSpacing.two),
           context.appComponents.buildSettingsTile(
@@ -83,13 +84,41 @@ class SettingsScreen extends StatelessWidget {
             SettingsTileData(label: AppStrings.of.settingsApp, value: 'TiredAgent'),
           ),
           const SizedBox(height: AppSpacing.one),
-          context.appComponents.buildSettingsTile(
-            context,
-            SettingsTileData(label: AppStrings.of.settingsVersion, value: '1.0.0'),
-          ),
+          const _AppVersionTile(),
           const SizedBox(height: AppSpacing.four),
         ],
       ),
+    );
+  }
+}
+
+/// 关于区版本/build tile：从 pubspec.yaml（通过 native versionName/versionCode）
+/// 读运行时版本号，构建号单独一行展示，避免升级时遗漏同步。
+class _AppVersionTile extends StatelessWidget {
+  const _AppVersionTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final version = snapshot.data?.version ?? '—';
+        final build = snapshot.data?.buildNumber ?? '—';
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            context.appComponents.buildSettingsTile(
+              context,
+              SettingsTileData(label: AppStrings.of.settingsVersion, value: version),
+            ),
+            const SizedBox(height: AppSpacing.one),
+            context.appComponents.buildSettingsTile(
+              context,
+              SettingsTileData(label: AppStrings.of.aboutBuildNumber, value: build),
+            ),
+          ],
+        );
+      },
     );
   }
 }
