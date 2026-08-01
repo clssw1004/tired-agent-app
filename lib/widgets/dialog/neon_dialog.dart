@@ -133,7 +133,7 @@ class _NeonDialogContent<T> extends StatelessWidget {
       elevation: 0,
       insetPadding:
           insetPadding ??
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       child: Container(
         constraints: BoxConstraints(maxWidth: maxWidth ?? 400),
         decoration: BoxDecoration(

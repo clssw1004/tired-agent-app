@@ -90,7 +90,7 @@ class MaterialDialogImpl extends DialogContract {
     return AlertDialog(
       insetPadding:
           insetPadding ??
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       constraints: BoxConstraints(
         minWidth: 280,
         maxWidth: maxWidth ?? defaultMaxWidth,

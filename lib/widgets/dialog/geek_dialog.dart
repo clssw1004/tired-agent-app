@@ -93,7 +93,7 @@ class GeekDialogImpl extends DialogContract {
       backgroundColor: c.surface,
       insetPadding:
           insetPadding ??
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       constraints: BoxConstraints(maxWidth: maxWidth ?? defaultMaxWidth),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),
