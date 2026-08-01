@@ -1,54 +1,56 @@
 # tired_agent_app
 
-tiredAgentMobile — tired-agent 的 Flutter 客户端（Android / Windows / Linux）。
+[English](README.md) · [中文](README.zh-CN.md)
 
-连接 tired-agent Manager 服务，管理 Agent、会话与终端，并提供 Claude 聊天界面。
+tiredAgentMobile — a Flutter client for tired-agent (Android / Windows / Linux).
 
-## 后端
+Connect to a tired-agent Manager service to manage agents, sessions and terminals, with a built-in Claude chat interface.
 
-本项目是 [tired-agent](https://github.com/clssw1004/tired-agent) 的前端客户端。后端以 TypeScript 实现 Manager / Agent 服务，协议定义见 [@tired-agent/protocol](https://www.npmjs.com/package/@tired-agent/protocol)，Dart 端镜像位于 `lib/protocol/`。
+## Backend
 
-## 快速开始
+This project is the frontend client of [tired-agent](https://github.com/clssw1004/tired-agent). The backend implements the Manager / Agent services in TypeScript; the protocol is defined in [@tired-agent/protocol](https://www.npmjs.com/package/@tired-agent/protocol) and mirrored in Dart under `lib/protocol/`.
+
+## Getting Started
 
 ```bash
 flutter pub get
-flutter run          # 连接设备/模拟器启动
-flutter test         # 运行测试
+flutter run          # launch on device / emulator
+flutter test         # run tests
 ```
 
-## 界面预览
+## Screenshots
 
-### 管理器与 Agent
-
-| | |
-|---|---|
-| ![添加 Manager](screenshots/add-manager.png) 添加 Manager | ![管理器列表](screenshots/manager-list.png) 管理器与 Agent 列表 |
-
-### 会话与终端
+### Managers & Agents
 
 | | |
 |---|---|
-| ![新建会话](screenshots/session-create.png) 新建会话 | ![会话列表](screenshots/session-list.png) 会话列表 |
+| ![Add Manager](screenshots/add-manager.png) Add Manager | ![Manager list](screenshots/manager-list.png) Managers and agents |
 
-### Claude 聊天
-
-| | |
-|---|---|
-| ![Claude 会话](screenshots/claude-session-hello.png) Claude 会话 | ![Claude 会话](screenshots/claude-session-1.png) Claude 会话 |
-| ![会话恢复](screenshots/claude-resume.png) 历史会话恢复 | ![扩展键盘](screenshots/claude-extension-keyboard.png) Claude 扩展键盘 |
-
-### 设置
+### Sessions & Terminal
 
 | | |
 |---|---|
-| ![设置页](screenshots/settings.png) 设置 | ![主题设置](screenshots/theme.png) 主题设置 |
+| ![New session](screenshots/session-create.png) New session | ![Session list](screenshots/session-list.png) Sessions |
 
-## 目录结构
+### Claude Chat
 
-| 模块 | 说明 |
+| | |
 |---|---|
-| `screens/` | 页面层（go_router 路由） |
-| `providers/` | 状态管理层（Provider + ChangeNotifier） |
-| `protocol/` | 协议层 Dart 镜像（手写自 TypeScript） |
-| `renderer/` | ClaudeRenderer NDJSON 解析引擎 |
-| `widgets/pty_session_view.dart` | WebView + xterm.js + 自定义键盘 bridge |
+| ![Claude session](screenshots/claude-session-hello.png) Claude session | ![Claude session](screenshots/claude-session-1.png) Claude session |
+| ![Session resume](screenshots/claude-resume.png) Resume history | ![Extension keyboard](screenshots/claude-extension-keyboard.png) Claude extension keyboard |
+
+### Settings
+
+| | |
+|---|---|
+| ![Settings](screenshots/settings.png) Settings | ![Theme](screenshots/theme.png) Theme |
+
+## Structure
+
+| Module | Description |
+|---|---|
+| `screens/` | UI layer (go_router routes) |
+| `providers/` | State management (Provider + ChangeNotifier) |
+| `protocol/` | Dart mirror of the protocol (hand-written from TypeScript) |
+| `renderer/` | ClaudeRenderer NDJSON parsing engine |
+| `widgets/pty_session_view.dart` | WebView + xterm.js + custom keyboard bridge |
