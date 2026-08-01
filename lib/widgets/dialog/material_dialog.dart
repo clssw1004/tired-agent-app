@@ -8,6 +8,9 @@ class MaterialDialogImpl extends DialogContract {
   const MaterialDialogImpl();
 
   @override
+  double get defaultMaxWidth => 560;
+
+  @override
   Future<bool?> showConfirm(
     BuildContext context, {
     required String title,
@@ -85,6 +88,10 @@ class MaterialDialogImpl extends DialogContract {
   }) {
     final scheme = Theme.of(context).colorScheme;
     return AlertDialog(
+      constraints: BoxConstraints(
+        minWidth: 280,
+        maxWidth: maxWidth ?? defaultMaxWidth,
+      ),
       icon: icon != null ? Icon(icon, color: scheme.primary) : null,
       title: Text(title),
       content: ConstrainedBox(

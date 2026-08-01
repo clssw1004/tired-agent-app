@@ -10,6 +10,9 @@ class GeekDialogImpl extends DialogContract {
   const GeekDialogImpl();
 
   @override
+  double get defaultMaxWidth => 560;
+
+  @override
   Future<bool?> showConfirm(
     BuildContext context, {
     required String title,
@@ -88,8 +91,7 @@ class GeekDialogImpl extends DialogContract {
     final c = context.appColors;
     return AlertDialog(
       backgroundColor: c.surface,
-      constraints:
-          maxWidth != null ? BoxConstraints(maxWidth: maxWidth) : null,
+      constraints: BoxConstraints(maxWidth: maxWidth ?? defaultMaxWidth),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),
         side: BorderSide(color: c.border, width: 1),

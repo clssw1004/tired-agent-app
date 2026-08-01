@@ -9,6 +9,9 @@ class NeonDialogImpl extends DialogContract {
   const NeonDialogImpl();
 
   @override
+  double get defaultMaxWidth => 560;
+
+  @override
   Future<bool?> showConfirm(
     BuildContext context, {
     required String title,
@@ -90,7 +93,7 @@ class NeonDialogImpl extends DialogContract {
       icon: icon,
       emoji: emoji,
       showRobot: showRobot,
-      maxWidth: maxWidth,
+      maxWidth: maxWidth ?? defaultMaxWidth,
       insetPadding: insetPadding,
       actions: actions,
     );

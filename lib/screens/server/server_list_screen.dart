@@ -112,7 +112,6 @@ class ServerListScreen extends StatelessWidget {
     final formData = await NeonDialog.show<AddManagerFormData?>(
       context: context,
       title: AppStrings.of.managersAdd,
-      maxWidth: 560,
       content: AddManagerForm(
         key: formKey,
         initialName: AppStrings.of.managersDefaultName(
@@ -171,7 +170,6 @@ class ServerListScreen extends StatelessWidget {
     final result = await NeonDialog.show<String?>(
       context: context,
       title: '${AppStrings.of.reconnectLabel} ${conn.profile.name}',
-      maxWidth: 380,
       showRobot: true,
       content: ReconnectForm(key: formKey),
       actions: [

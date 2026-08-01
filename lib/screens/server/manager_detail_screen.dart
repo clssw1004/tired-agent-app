@@ -77,7 +77,6 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     final formData = await NeonDialog.show<AddAgentFormData?>(
       context: context,
       title: AppStrings.of.agentAddTitle,
-      maxWidth: 560,
       content: AddAgentForm(key: formKey),
       actions: [
         NeonDialogAction(
