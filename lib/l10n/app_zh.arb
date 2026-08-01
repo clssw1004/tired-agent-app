@@ -203,6 +203,7 @@
   "createAutoLabel": "留空自动生成",
   "createTerminalSizeHint": "会话启动后终端大小自动匹配",
   "createNotConnected": "未连接",
+  "createFailed": "创建会话失败",
   "createSectionRecent": "最近使用",
   "createSectionCustom": "自定义",
   "createArgsHint": "--no-input  --verbose",
