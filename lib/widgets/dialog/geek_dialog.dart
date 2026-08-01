@@ -91,6 +91,9 @@ class GeekDialogImpl extends DialogContract {
     final c = context.appColors;
     return AlertDialog(
       backgroundColor: c.surface,
+      insetPadding:
+          insetPadding ??
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       constraints: BoxConstraints(maxWidth: maxWidth ?? defaultMaxWidth),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4),

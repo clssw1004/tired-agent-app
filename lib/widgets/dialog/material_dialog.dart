@@ -88,6 +88,9 @@ class MaterialDialogImpl extends DialogContract {
   }) {
     final scheme = Theme.of(context).colorScheme;
     return AlertDialog(
+      insetPadding:
+          insetPadding ??
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       constraints: BoxConstraints(
         minWidth: 280,
         maxWidth: maxWidth ?? defaultMaxWidth,
