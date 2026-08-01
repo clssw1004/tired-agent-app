@@ -13,12 +13,31 @@ class TransportException implements Exception {
   String toString() => 'TransportException($statusCode): $message';
 }
 
+/// Thrown when a session no longer exists on the server (HTTP 404 NOT_FOUND).
+///
+/// Signals a permanent exit — the caller must NOT attempt to reconnect.
+class SessionNotFoundException extends TransportException {
+  final String code;
+
+  SessionNotFoundException(
+    super.message, {
+    int? statusCode,
+    this.code = 'NOT_FOUND',
+  }) : super(statusCode: statusCode ?? 404);
+}
+
 // ─── Subscription ───────────────────────────────────────────────────────
 
 /// Opaque handle that the caller uses to tear down an SSE subscription.
 class Subscription {
   final void Function() close;
-  Subscription({required this.close});
+
+  /// Reconnect the underlying stream from its current byte offset without
+  /// creating a new [Subscription]. Used for manual reconnects (e.g. app
+  /// resume) so the transport keeps ownership of the resume position.
+  final void Function()? resubscribe;
+
+  Subscription({required this.close, this.resubscribe});
 }
 
 // ─── SubscribeHandlers ──────────────────────────────────────────────────
@@ -33,11 +52,20 @@ class SubscribeHandlers {
   /// Useful for detecting connection liveness without waiting for data.
   final void Function()? onHeartbeat;
 
+  /// Called when an SSE connection is (re)established successfully.
+  /// Drives connection-status UI instead of optimistic flagging.
+  final void Function()? onConnected;
+
+  /// Called when the connection is lost and reconnect backoff begins.
+  final void Function()? onReconnecting;
+
   SubscribeHandlers({
     required this.onChunk,
     required this.onState,
     required this.onError,
     this.onHeartbeat,
+    this.onConnected,
+    this.onReconnecting,
   });
 }
 
@@ -58,13 +86,6 @@ abstract class Transport {
   Future<DirectoryListing> listDirectories(
     ServerRef ref, {
     String? path,
-    String? agentId,
-  });
-
-  /// Get Claude project info for a given path.
-  Future<ClaudeProjectInfo> getClaudeProjects(
-    ServerRef ref, {
-    required String path,
     String? agentId,
   });
 
@@ -172,4 +193,8 @@ abstract class Transport {
 
   /// Check whether the current session is still valid.
   Future<bool> checkSession(ServerRef ref);
+
+  /// Release all resources held by this transport, closing any active
+  /// SSE subscriptions and cancelling pending reconnect timers.
+  void dispose();
 }

@@ -41,7 +41,7 @@ class DialogAction<T> {
 /// 对话框风格契约：各风格实现定义对话框的视觉壳（标题栏 + 内容 + 操作栏）。
 ///
 /// [show] / [showConfirm] 直接弹出；[shell] 返回壳 widget，供带自定义状态内容的
-/// 对话框（如 BufferSizeCustomDialog、ResumeSessionDialog）复用壳、自行管理内容与返回。
+/// 对话框（如 BufferSizeCustomDialog）复用壳、自行管理内容与返回。
 abstract class DialogContract {
   const DialogContract();
 

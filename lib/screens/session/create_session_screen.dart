@@ -10,17 +10,12 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/form_utils.dart';
 import 'package:tired_agent_app/utils/session_presets.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
-import 'package:tired_agent_app/enhancements/enhancement.dart';
-import 'package:tired_agent_app/enhancements/enhancement_context.dart';
-import 'package:tired_agent_app/enhancements/types.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
 import 'package:tired_agent_app/widgets/forms/directory_picker_field.dart';
 import 'package:tired_agent_app/widgets/forms/directory_picker_modal.dart';
 import 'package:tired_agent_app/widgets/forms/launch_chip.dart';
 import 'package:tired_agent_app/widgets/session/preset_option_chips.dart';
 import 'package:tired_agent_app/widgets/session/preset_selector.dart';
-import 'package:tired_agent_app/widgets/session/resume_option_chip.dart';
-import 'package:tired_agent_app/widgets/session/resume_session_dialog.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 const _labelChars = 'abcdefghijkmnpqrstuvwxyz23456789';
@@ -62,18 +57,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   final Map<String, String?> _optionSelections = {};
   bool _busy = false;
 
-  final EnhancementContext _enhancementCtx = EnhancementContext();
-  List<SessionEnhancement> _activeEnhancements = [];
-
-  /// Currently selected resume session (from dialog), if any.
-  ResumeSelection? _resumeSelection;
-
   /// Agent OS platform, used to filter builtin presets.
   String? _platform;
 
-  // Convenience accessors into the PresetSelector state.
+  // Convenience accessor into the PresetSelector state.
   BuiltinPreset? get _selectedPreset => _presetKey.currentState?.selectedPreset;
-  String? get _selectedBuiltinId => _presetKey.currentState?.selectedBuiltinId;
 
   /// Assemble effective args from option selections + manual args.
   List<String> get _effectiveArgs {
@@ -92,9 +80,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return args;
   }
 
-  bool get _isClaude =>
-      _selectedBuiltinId == 'claude' || _cmd.trim() == 'claude';
-
   String get _previewCommand {
     final c = _cmd.trim();
     if (c.isEmpty) return '';
@@ -105,9 +90,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         .split(RegExp(r'\s+'))
         .where((s) => s.isNotEmpty);
     parts.addAll(manualArgs);
-    if (_enhancementCtx.selectedSessionId != null) {
-      parts.addAll(['--resume', _enhancementCtx.selectedSessionId!]);
-    }
     return parts.join(' ');
   }
 
@@ -126,9 +108,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _optionSelections.clear();
       _argsController.clear();
       _labelController.clear();
-      _onResumeChanged(null);
     });
-    _updateEnhancements();
   }
 
   void _applyUserPreset(UserPreset p) {
@@ -138,9 +118,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _optionSelections.clear();
       _argsController.text = p.args.join(' ');
       _labelController.clear();
-      _onResumeChanged(null);
     });
-    _updateEnhancements();
   }
 
   void _onOptionsChanged(Map<String, String?> updated) {
@@ -149,12 +127,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         ..clear()
         ..addAll(updated),
     );
-  }
-
-  void _onResumeChanged(ResumeSelection? selection) {
-    setState(() => _resumeSelection = selection);
-    _enhancementCtx.selectedSessionId = selection?.sessionId;
-    _enhancementCtx.selectedSessionDisplayName = selection?.displayName;
   }
 
   @override
@@ -169,18 +141,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       _cmd = 'powershell.exe';
     }
     _cmdController.text = _cmd;
-    _enhancementCtx
-      ..profileId = widget.profileId
-      ..agentId = widget.agentId
-      ..onStateChanged = () => setState(() {});
-  }
-
-  void _updateEnhancements() {
-    _activeEnhancements = EnhancementRegistry.forPoint(
-      EnhancementPoint.directorySelected,
-      _cmd,
-      _selectedBuiltinId,
-    );
   }
 
   Future<void> _submit() async {
@@ -223,19 +183,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         mode: SessionMode.process,
       );
 
-      var finalSpec = spec;
-      for (final e in _activeEnhancements) {
-        finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
-      }
-      for (final e in EnhancementRegistry.forPoint(
-        EnhancementPoint.beforeSubmit,
-        _cmd,
-        _selectedBuiltinId,
-      )) {
-        finalSpec = await e.modifySpec(finalSpec, _enhancementCtx);
-      }
-
-      final session = await api.createSession(finalSpec);
+      final session = await api.createSession(spec);
 
       if (mounted) {
         _presetKey.currentState?.trackRecent(_cmd.trim(), manualArgs);
@@ -269,9 +217,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
     if (path != null && mounted) {
       _cwdController.text = path;
-      _enhancementCtx.cwd = path;
-      _onResumeChanged(null);
-      _updateEnhancements();
       setState(() {});
     }
   }
@@ -345,10 +290,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   TextField(
                     controller: _cmdController,
                     enabled: !_busy,
-                    onChanged: (v) {
-                      setState(() => _cmd = v);
-                      _updateEnhancements();
-                    },
+                    onChanged: (v) => setState(() => _cmd = v),
                     style: TextStyle(
                       fontFamily: 'monospace',
                       color: c.textCode,
@@ -405,39 +347,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                             _selectedPreset!.options.isNotEmpty) ...[
                           const SizedBox(height: AppSpacing.four),
                           sectionHeader(context, AppStrings.of.createOptions),
-                          _buildOptionChips(
-                            extra: [
-                              ResumeOptionChip(
-                                profileId: widget.profileId,
-                                agentId: widget.agentId,
-                                cwd: _enhancementCtx.cwd,
-                                enabled: _isClaude,
-                                selection: _resumeSelection,
-                                onChanged: _onResumeChanged,
-                              ),
-                            ],
-                          ),
-                        ] else ...[
-                          ResumeOptionChip(
-                            profileId: widget.profileId,
-                            agentId: widget.agentId,
-                            cwd: _enhancementCtx.cwd,
-                            enabled: _isClaude,
-                            selection: _resumeSelection,
-                            onChanged: _onResumeChanged,
-                          ),
-                          if (_resumeSelection == null)
-                            const SizedBox(height: AppSpacing.six),
+                          _buildOptionChips(),
                         ],
                       ],
                     ),
                   ),
-
-                  if (_activeEnhancements.isNotEmpty) ...[
-                    for (final e in _activeEnhancements)
-                      e.buildWidget(context, _enhancementCtx),
-                    const SizedBox(height: AppSpacing.four),
-                  ],
                 ],
               ),
             ),
@@ -454,13 +368,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     onClear: () => _cwdController.clear(),
   );
 
-  Widget _buildOptionChips({List<Widget>? extra}) {
+  Widget _buildOptionChips() {
     if (_selectedPreset == null) return const SizedBox.shrink();
     return PresetOptionChips(
       preset: _selectedPreset!,
       selections: _optionSelections,
       onChanged: _onOptionsChanged,
-      extra: extra,
     );
   }
 }

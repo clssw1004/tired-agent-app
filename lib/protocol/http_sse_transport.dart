@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as dev;
 
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/protocol/urls.dart';
 
 /// Concrete [Transport] implementation that speaks HTTP + SSE to
 /// a tired-agent manager or agent daemon, backed by [Dio].
@@ -13,16 +14,27 @@ class HttpSseTransport implements Transport {
   final Dio _dio;
   final Future<String?> Function()? _tokenProvider;
 
-  HttpSseTransport({Dio? dio, Future<String?> Function()? tokenProvider})
-    : _dio =
-          dio ??
-          Dio(
-            BaseOptions(
-              connectTimeout: const Duration(seconds: 10),
-              receiveTimeout: const Duration(seconds: 30),
-            ),
-          ),
-      _tokenProvider = tokenProvider {
+  /// Base delay (ms) for the first reconnect attempt. Reconnect backoff
+  /// doubles this per attempt, capped at 30 s. Injectable to speed up tests.
+  final int retryBaseDelayMs;
+
+  /// Teardown callbacks for all active subscriptions, so [dispose] can close
+  /// them (and any pending reconnect timers) in one shot.
+  final Set<void Function()> _teardowns = {};
+
+  HttpSseTransport({
+    Dio? dio,
+    Future<String?> Function()? tokenProvider,
+    this.retryBaseDelayMs = 500,
+  }) : _dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               connectTimeout: const Duration(seconds: 10),
+               receiveTimeout: const Duration(seconds: 30),
+             ),
+           ),
+       _tokenProvider = tokenProvider {
     // Dio interceptor: on 401, refresh token and retry once.
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -55,55 +67,44 @@ class HttpSseTransport implements Transport {
     );
   }
 
-  bool closed = false;
-
   // ─── URL helpers ──────────────────────────────────────────────────────
 
-  String _ensureBaseUrl(String url) => url.replaceAll(RegExp(r'/+$'), '');
-
-  String _sessionsUrl(String baseUrl, {String? agentId}) {
-    final base = _ensureBaseUrl(baseUrl);
+  /// /api/v1 prefix, optionally scoped under a specific agent.
+  String _apiPrefix(String baseUrl, {String? agentId, String? subpath}) {
+    final base = normalizeBaseUrl(baseUrl);
+    final path = subpath != null ? '/$subpath' : '';
     if (agentId != null && agentId.isNotEmpty) {
-      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/sessions';
+      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}$path';
     }
-    return '$base/api/v1/sessions';
+    return '$base/api/v1$path';
   }
 
-  String _sessionUrl(String baseUrl, String sessionId, {String? agentId}) {
-    final base = _ensureBaseUrl(baseUrl);
-    if (agentId != null && agentId.isNotEmpty) {
-      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/sessions/${Uri.encodeComponent(sessionId)}';
-    }
-    return '$base/api/v1/sessions/${Uri.encodeComponent(sessionId)}';
-  }
+  String _sessionsBase(String baseUrl, {String? agentId}) =>
+      _apiPrefix(baseUrl, agentId: agentId, subpath: 'sessions');
 
-  String _directoriesUrl(String baseUrl, {String? agentId}) {
-    final base = _ensureBaseUrl(baseUrl);
-    if (agentId != null && agentId.isNotEmpty) {
-      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/directories';
-    }
-    return '$base/api/v1/directories';
-  }
+  String _sessionsUrl(String baseUrl, {String? agentId}) =>
+      _sessionsBase(baseUrl, agentId: agentId);
 
-  String _claudeProjectsUrl(String baseUrl, {String? agentId}) {
-    final base = _ensureBaseUrl(baseUrl);
-    if (agentId != null && agentId.isNotEmpty) {
-      return '$base/api/v1/agents/${Uri.encodeComponent(agentId)}/directories/claude-projects';
-    }
-    return '$base/api/v1/directories/claude-projects';
-  }
+  String _sessionUrl(String baseUrl, String sessionId, {String? agentId}) =>
+      '${_sessionsBase(baseUrl, agentId: agentId)}/${Uri.encodeComponent(sessionId)}';
+
+  String _directoriesBase(String baseUrl, {String? agentId}) =>
+      _apiPrefix(baseUrl, agentId: agentId, subpath: 'directories');
+
+  String _directoriesUrl(String baseUrl, {String? agentId}) =>
+      _directoriesBase(baseUrl, agentId: agentId);
 
   String _agentsUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/agents';
+      '${normalizeBaseUrl(baseUrl)}/api/v1/manager/agents';
 
   String _loginUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/auth/login';
+      '${normalizeBaseUrl(baseUrl)}/api/v1/manager/auth/login';
 
   String _refreshUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/auth/refresh';
+      '${normalizeBaseUrl(baseUrl)}/api/v1/manager/auth/refresh';
 
   String _checkSessionUrl(String baseUrl) =>
-      '${_ensureBaseUrl(baseUrl)}/api/v1/manager/auth/me';
+      '${normalizeBaseUrl(baseUrl)}/api/v1/manager/auth/me';
 
   // ─── Low-level request helper ─────────────────────────────────────────
   //
@@ -137,8 +138,9 @@ class HttpSseTransport implements Transport {
       );
       return response.data;
     } on DioException catch (e) {
-      debugPrint(
-        '[HttpSseTransport] DioException: ${e.type} ${e.message} status=${e.response?.statusCode}',
+      dev.log(
+        'DioException: ${e.type} ${e.message} status=${e.response?.statusCode}',
+        name: 'HttpSseTransport',
       );
       if (e.response?.data != null) {
         try {
@@ -154,8 +156,9 @@ class HttpSseTransport implements Transport {
             errorJson = errorJson['error'] as Map<String, dynamic>;
           }
           final error = ErrorResponse.fromJson(errorJson);
-          debugPrint(
-            '[HttpSseTransport] parsed error: ${error.code}: ${error.message}',
+          dev.log(
+            'parsed error: ${error.code}: ${error.message}',
+            name: 'HttpSseTransport',
           );
           throw TransportException(
             '${error.code}: ${error.message}',
@@ -316,16 +319,20 @@ class HttpSseTransport implements Transport {
     StreamSubscription<String>? lineSub;
     int currentFrom = fromOffset;
     int reconnectAttempt = 0;
+    Timer? reconnectTimer;
     late void Function() scheduleReconnect;
 
     void teardown() {
+      reconnectTimer?.cancel();
       closed = true;
       cancelToken?.cancel();
       lineSub?.cancel();
+      _teardowns.remove(teardown);
     }
 
     void connect() {
       if (closed) return;
+      reconnectTimer?.cancel();
       cancelToken?.cancel();
       cancelToken = CancelToken();
 
@@ -374,23 +381,32 @@ class HttpSseTransport implements Transport {
                 utf8.decodeStream(responseBody.stream).then((body) {
                   if (closed) return;
                   try {
-                    final error = ErrorResponse.fromJson(
-                      json.decode(body) as Map<String, dynamic>,
-                    );
+                    // Server wraps errors in {"error": {"code", "message"}}.
+                    var errorJson = json.decode(body) as Map<String, dynamic>;
+                    if (errorJson.containsKey('error') &&
+                        errorJson['error'] is Map) {
+                      errorJson = errorJson['error'] as Map<String, dynamic>;
+                    }
+                    final error = ErrorResponse.fromJson(errorJson);
+                    final status = response.statusCode;
 
                     // 404 NOT_FOUND → session 已永久删除/退出，不重连。
-                    if (response.statusCode == 404 &&
-                        error.code == 'NOT_FOUND') {
-                      handlers.onState(
-                        Session(
-                          id: id,
-                          cmd: '',
-                          args: [],
-                          status: SessionStatus.exited,
-                          createdAt: 0,
-                          byteOffset: currentFrom,
-                          cols: 80,
-                          rows: 24,
+                    if (status == 404 && error.code == 'NOT_FOUND') {
+                      handlers.onError(
+                        SessionNotFoundException(
+                          '${error.code}: ${error.message}',
+                        ),
+                      );
+                      teardown();
+                      return;
+                    }
+                    // 401 → token 已失效，重连也无法恢复；交由上层刷新后
+                    // 手动 resubscribe，避免无限退避空转。
+                    if (status == 401) {
+                      handlers.onError(
+                        TransportException(
+                          '${error.code}: ${error.message}',
+                          statusCode: 401,
                         ),
                       );
                       teardown();
@@ -400,7 +416,7 @@ class HttpSseTransport implements Transport {
                     handlers.onError(
                       TransportException(
                         '${error.code}: ${error.message}',
-                        statusCode: response.statusCode,
+                        statusCode: status,
                       ),
                     );
                   } catch (inner) {
@@ -422,6 +438,7 @@ class HttpSseTransport implements Transport {
 
               // Successful connection -- reset back-off counter.
               reconnectAttempt = 0;
+              handlers.onConnected?.call();
 
               final stream = responseBody.stream
                   .cast<List<int>>()
@@ -462,8 +479,6 @@ class HttpSseTransport implements Transport {
                         case StateEvent():
                           handlers.onState(event.session);
                         case HeartbeatEvent():
-                          // Heartbeats keep the connection alive;
-                          // dispatch liveness callback if provided.
                           handlers.onHeartbeat?.call();
                           break;
                       }
@@ -500,17 +515,31 @@ class HttpSseTransport implements Transport {
 
     scheduleReconnect = () {
       if (closed) return;
+      handlers.onReconnecting?.call();
       reconnectAttempt++;
-      final delayMs = (500 * (1 << (reconnectAttempt - 1))).clamp(500, 30000);
-      Future.delayed(Duration(milliseconds: delayMs), () {
+      final delayMs = (retryBaseDelayMs * (1 << (reconnectAttempt - 1))).clamp(
+        retryBaseDelayMs,
+        30000,
+      );
+      reconnectTimer = Timer(Duration(milliseconds: delayMs), () {
         if (!closed) connect();
       });
     };
 
-    // Kick off the initial connection.
+    /// Reconnect from the current offset without re-fetching history.
+    ///
+    /// Cancels any pending backoff timer so a stale timer can't spawn a second
+    /// connection after a manual reconnect.
+    void resubscribe() {
+      reconnectTimer?.cancel();
+      closed = false;
+      connect();
+    }
+
+    _teardowns.add(teardown);
     connect();
 
-    return Subscription(close: teardown);
+    return Subscription(close: teardown, resubscribe: resubscribe);
   }
 
   @override
@@ -594,21 +623,6 @@ class HttpSseTransport implements Transport {
       token: ref.token,
       agentId: agentId,
     );
-  }
-
-  @override
-  Future<ClaudeProjectInfo> getClaudeProjects(
-    ServerRef ref, {
-    required String path,
-    String? agentId,
-  }) async {
-    final data = await _request(
-      'GET',
-      '${_claudeProjectsUrl(ref.baseUrl, agentId: agentId)}?path=${Uri.encodeComponent(path)}',
-      token: ref.token,
-      agentId: agentId,
-    );
-    return ClaudeProjectInfo.fromJson(data as Map<String, dynamic>);
   }
 
   // ─── Agent endpoints ──────────────────────────────────────────────────
@@ -711,6 +725,13 @@ class HttpSseTransport implements Transport {
       return result['valid'] as bool? ?? false;
     } catch (_) {
       return false;
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final teardown in List.of(_teardowns)) {
+      teardown();
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/models/manager_profile.dart';
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/protocol/urls.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 
 /// Manages multiple simultaneous manager connections.
@@ -46,7 +47,7 @@ class AuthService {
     final conn = _connections[profileId];
     if (conn == null) throw Exception('Profile not found: $profileId');
     await conn.connect(apiToken: apiToken);
-    await _persistRefreshToken(conn);
+    await persistRefreshToken(conn);
   }
 
   /// Disconnect and unregister a connection.
@@ -65,7 +66,7 @@ class AuthService {
         if (conn.profile.refreshToken != null ||
             conn.profile.sessionToken != null) {
           await conn.connect();
-          await _persistRefreshToken(conn);
+          await persistRefreshToken(conn);
         }
       }),
       eagerError: false,
@@ -81,7 +82,7 @@ class AuthService {
     for (final conn in _connections.values) {
       try {
         await conn.ensureFreshSession();
-        await _persistRefreshToken(conn);
+        await persistRefreshToken(conn);
       } catch (e) {
         debugPrint(
           '[AuthService] refreshAllSessions — ${conn.profile.name}: $e',
@@ -127,7 +128,7 @@ class AuthService {
     String apiToken, {
     String? name,
   }) async {
-    final normalized = url.trim().replaceAll(RegExp(r'/+$'), '');
+    final normalized = normalizeBaseUrl(url);
 
     // Check for existing profile with the same URL.
     final existing = _connections.values
@@ -137,7 +138,7 @@ class AuthService {
     if (existing != null) {
       await existing.disconnect();
       await existing.connect(apiToken: apiToken);
-      await _persistRefreshToken(existing);
+      await persistRefreshToken(existing);
       // Update name if caller provided one.
       if (name != null) existing.profile.name = name;
       await _persistProfiles();
@@ -154,7 +155,7 @@ class AuthService {
     await conn.connect(apiToken: apiToken);
     _connections[profile.id] = conn;
 
-    await _persistRefreshToken(conn);
+    await persistRefreshToken(conn);
     await _persistProfiles();
     return conn;
   }
@@ -212,7 +213,7 @@ class AuthService {
   /// Persist the rotated refresh token after a successful auth flow.
   ///
   /// Only saves when the connection is healthy and a token is available.
-  Future<void> _persistRefreshToken(ManagerConnection conn) async {
+  Future<void> persistRefreshToken(ManagerConnection conn) async {
     if (conn.status == ConnectionStatus.connected &&
         conn.profile.refreshToken != null) {
       await storage.saveManagerRefreshToken(

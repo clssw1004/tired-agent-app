@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
@@ -11,13 +9,11 @@ import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/terminal_themes.dart';
-import 'package:tired_agent_app/widgets/shell/claude_chat_view.dart';
-import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
-import 'package:tired_agent_app/widgets/shell/pty_session_view.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/protocol/sse_client.dart';
 import 'package:tired_agent_app/services/session_api_service.dart';
+import 'package:tired_agent_app/widgets/shell/pty_session_view.dart';
 
 class SessionDetailScreen extends StatefulWidget {
   final String profileId;
@@ -43,7 +39,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
   bool _loading = true;
 
   final GlobalKey<PtySessionViewState> _ptyKey = GlobalKey();
-  final GlobalKey<ClaudeChatViewState> _chatKey = GlobalKey();
   Timer? _statusPoller;
 
   /// Cached from PtySessionView for AppBar display.
@@ -114,13 +109,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     }
   }
 
-  /// 重新建立 SSE 连接（PTY 或 Chat），完成后刷新 session 元信息。
+  /// 重新建立 PTY 的 SSE 连接，完成后刷新 session 元信息。
   void _reconnect() {
-    if (_session?.mode == SessionMode.persistent) {
-      _chatKey.currentState?.reconnect();
-    } else {
-      _ptyKey.currentState?.reconnect();
-    }
+    _ptyKey.currentState?.reconnect();
     _refreshSession();
   }
 
@@ -134,116 +125,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
       }
     } catch (_) {
       // 静默失败——SSE 流数据不受影响。
-    }
-  }
-
-  // ── Kill / Delete (persistent sessions) ──────────────────────────
-
-  Future<void> _requestKill() async {
-    final confirmed = await NeonDialog.showConfirm(
-      context: context,
-      title: AppStrings.of.sessionKillTitle,
-      showRobot: true,
-      content: ThemedText.small(AppStrings.of.sessionKillDesc),
-      confirmText: AppStrings.of.sessionKillBtn,
-      confirmIsDanger: true,
-    );
-    if (confirmed != true || !mounted) return;
-
-    try {
-      await _api!.killSession(widget.sessionId);
-      if (mounted) context.pop();
-    } catch (e) {
-      if (mounted) {
-        final c = context.appColors;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.of.sessionKillFailed(e.toString())),
-            backgroundColor: c.danger,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _requestDelete() async {
-    final confirmed = await NeonDialog.showConfirm(
-      context: context,
-      title: AppStrings.of.sessionDeleteTitle,
-      showRobot: true,
-      content: ThemedText.small(AppStrings.of.sessionDeleteDesc),
-      confirmText: AppStrings.of.sessionDeleteBtn,
-      confirmIsDanger: true,
-    );
-    if (confirmed != true || !mounted) return;
-
-    try {
-      await _api!.deleteSession(widget.sessionId);
-      if (mounted) context.pop();
-    } catch (e) {
-      if (mounted) {
-        final c = context.appColors;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppStrings.of.sessionDeleteFailed(e.toString())),
-            backgroundColor: c.danger,
-          ),
-        );
-      }
-    }
-  }
-
-  String _generateLabel() {
-    final chars = 'abcdefghijkmnpqrstuvwxyz23456789';
-    final rnd = List.generate(
-      8,
-      (_) => chars[Random().nextInt(chars.length)],
-    ).join();
-    final now = DateTime.now();
-    String pad(int n) => n.toString().padLeft(2, '0');
-    final stamp =
-        '${now.year}${pad(now.month)}${pad(now.day)}T${pad(now.hour)}${pad(now.minute)}${pad(now.second)}';
-    return '${rnd}_$stamp';
-  }
-
-  Future<void> _requestResume() async {
-    if (_session == null || _api == null) return;
-
-    final newLabel = _session!.label != null
-        ? _session!.label!
-        : _generateLabel();
-
-    // Resume value priority: extra.claudeSessionId > extra.claudeName > label
-    final resumeValue =
-        (_session!.extra?['claudeSessionId'] as String?) ??
-        (_session!.extra?['claudeName'] as String?) ??
-        _session!.label;
-
-    final spec = SessionSpec(
-      cmd: 'claude',
-      args: ['--name', newLabel, '--resume', resumeValue ?? _session!.id],
-      cwd: _session!.cwd,
-      cols: _session!.cols,
-      rows: _session!.rows,
-      label: newLabel,
-      mode: SessionMode.process,
-      extra: {'claudeName': newLabel},
-    );
-
-    try {
-      final newSession = await _api!.createSession(spec);
-      if (mounted) {
-        context.replace(
-          '/session/${widget.profileId}/${widget.agentId}/${newSession.id}',
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final c = context.appColors;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
-        );
-      }
     }
   }
 
@@ -280,15 +161,6 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
     context.select<AppSettingsProvider, TerminalThemePreset>(
       (p) => p.terminalThemePreset,
     );
-    final isPersistent = _session?.mode == SessionMode.persistent;
-    final isClaude = _session?.cmd == 'claude';
-    final sessionStatus = _session?.status;
-    final canResume =
-        sessionStatus == SessionStatus.exited &&
-        isClaude &&
-        (_session!.extra?['claudeSessionId'] != null ||
-            _session!.extra?['claudeName'] != null ||
-            _session!.label != null);
     final title =
         _session?.label ?? _session?.cmd ?? AppStrings.of.sessionTitle;
     final c = context.appColors;
@@ -299,8 +171,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Status dot — meaningful for PTY, hidden for persistent.
-            if (!isPersistent) _appBarStatusDot(),
+            _appBarStatusDot(),
             Flexible(
               child: ThemedText(
                 title,
@@ -312,27 +183,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
           ],
         ),
         actions: [
-          // Persistent session: kill / delete
-          if (isPersistent && sessionStatus != SessionStatus.exited)
-            IconButton(
-              icon: Icon(Icons.stop_circle_outlined, color: c.danger),
-              tooltip: AppStrings.of.sessionKillTooltip,
-              onPressed: _requestKill,
-            ),
-          if (canResume)
-            IconButton(
-              icon: Icon(Icons.replay, color: c.success),
-              tooltip: AppStrings.of.sessionResumeTooltip,
-              onPressed: _requestResume,
-            ),
-          if (isPersistent && sessionStatus == SessionStatus.exited)
-            IconButton(
-              icon: Icon(Icons.delete_outline, color: c.textSecondary),
-              tooltip: AppStrings.of.sessionDeleteTooltip,
-              onPressed: _requestDelete,
-            ),
-          // PTY: reconnect
-          if (!isPersistent && _ptyStatus != SseConnectionStatus.connected)
+          if (_ptyStatus != SseConnectionStatus.connected)
             IconButton(
               icon: Icon(Icons.refresh, color: c.primary),
               tooltip: AppStrings.of.sessionReconnectTooltip,
@@ -349,21 +200,13 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
           : _error != null
           ? Center(child: ThemedText.small(_error!, color: c.danger))
           : _session != null && _conn != null
-          ? isPersistent
-                ? ClaudeChatView(
-                    key: _chatKey,
-                    serverRef: _conn!.managerRef,
-                    agentId: widget.agentId,
-                    session: _session!,
-                    tokenProvider: () async => _conn!.profile.sessionToken,
-                  )
-                : PtySessionView(
-                    key: _ptyKey,
-                    serverRef: _conn!.managerRef,
-                    agentId: widget.agentId,
-                    session: _session!,
-                    tokenProvider: () async => _conn!.profile.sessionToken,
-                  )
+          ? PtySessionView(
+              key: _ptyKey,
+              serverRef: _conn!.managerRef,
+              agentId: widget.agentId,
+              session: _session!,
+              tokenProvider: () async => _conn!.profile.sessionToken,
+            )
           : Center(child: ThemedText.small(AppStrings.of.sessionNotFound)),
     );
   }
