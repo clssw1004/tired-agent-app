@@ -8,7 +8,7 @@
 
 tiredAgentMobile — tired-agent 的 Flutter 客户端（Android / Windows / Linux）。
 
-连接 tired-agent Manager 服务，管理 Agent、会话与终端，并提供 Claude 聊天界面。
+连接 tired-agent Manager 服务，管理 Agent、会话与终端。
 
 ## 后端
 
@@ -36,13 +36,6 @@ flutter test         # 运行测试
 |---|---|
 | ![新建会话](screenshots/session-create.png) 新建会话 | ![会话列表](screenshots/session-list.png) 会话列表 |
 
-### Claude 聊天
-
-| | |
-|---|---|
-| ![Claude 会话](screenshots/claude-session-hello.png) Claude 会话 | ![Claude 会话](screenshots/claude-session-1.png) Claude 会话 |
-| ![会话恢复](screenshots/claude-resume.png) 历史会话恢复 | ![扩展键盘](screenshots/claude-extension-keyboard.png) Claude 扩展键盘 |
-
 ### 设置
 
 | | |
@@ -56,5 +49,4 @@ flutter test         # 运行测试
 | `screens/` | 页面层（go_router 路由） |
 | `providers/` | 状态管理层（Provider + ChangeNotifier） |
 | `protocol/` | 协议层 Dart 镜像（手写自 TypeScript） |
-| `renderer/` | ClaudeRenderer NDJSON 解析引擎 |
-| `widgets/pty_session_view.dart` | WebView + xterm.js + 自定义键盘 bridge |
+| `widgets/pty_session_view.dart` | xterm2 终端视图 + 自定义键盘 bridge |

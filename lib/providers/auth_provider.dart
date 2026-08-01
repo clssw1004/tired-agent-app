@@ -102,13 +102,8 @@ class AuthProvider extends ChangeNotifier {
       '[AuthProvider] reconnect status=${conn.status} error=${conn.error}',
     );
     if (conn.status == ConnectionStatus.connected) {
-      if (conn.profile.refreshToken != null) {
-        debugPrint('[AuthProvider] saving refresh token for $profileId');
-        await _authService.storage.saveManagerRefreshToken(
-          profileId,
-          conn.profile.refreshToken!,
-        );
-      } else {
+      await _authService.persistRefreshToken(conn);
+      if (conn.profile.refreshToken == null) {
         debugPrint('[AuthProvider] WARN refreshToken is null after connect');
       }
       notifyListeners();

@@ -297,9 +297,6 @@
   "agentUrlHint": "http://192.168.1.10:3100",
   "send": "发送",
   "timeJustNow": "刚刚",
-  "claudeProjectsLoading": "正在加载历史会话...",
-  "claudeProjectsTitle": "Claude 历史会话",
-  "claudeProjectsNoSessions": "暂无历史会话",
   "dirPickerTitle": "选择工作目录",
   "dirPickerUpLevel": "上一级",
   "dirPickerFavorites": "收藏夹",
@@ -317,24 +314,7 @@
   "ptyKeyboardConfirmSend": "确认发送此按键序列？",
   "ptyReconnecting": "重连中…",
   "ptySessionExited": "会话已退出",
-  "ptySessionEnded": "会话已结束",
   "ptyDisconnected": "已断开",
-  "chatInputHint": "输入消息…",
-  "chatStatusThinking": "思考中…",
-  "chatStatusWorking": "工作中…",
-  "chatStatusDone": "完成",
-  "chatStatusIdle": "空闲",
-  "chatTokenUsage": "输入: {inputTokens} · 输出: {outputTokens}",
-  "@chatTokenUsage": {
-    "placeholders": {
-      "inputTokens": {
-        "type": "int"
-      },
-      "outputTokens": {
-        "type": "int"
-      }
-    }
-  },
 
   "settingsTerminal": "终端设置",
   "settingsBufferSize": "缓冲区大小",

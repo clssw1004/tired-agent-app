@@ -62,9 +62,6 @@ class PtySessionViewState extends State<PtySessionView>
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
 
-  /// Tracks the previous status to detect reconnection success.
-  SseConnectionStatus _prevStatus = SseConnectionStatus.disconnected;
-
   /// Public getter so [SessionDetailScreen] can read the status.
   SseConnectionStatus get connectionStatus => _sseClient.status;
 
@@ -202,13 +199,13 @@ class PtySessionViewState extends State<PtySessionView>
         debugPrint('[PtySessionView] SSE error: $error');
         if (mounted) setState(() {});
       }
-      ..onHeartbeat = () {
-        // Reconnection success → smooth transition to connected.
-        if (_sseClient.status == SseConnectionStatus.connected &&
-            _prevStatus == SseConnectionStatus.reconnecting) {
-          _pulseController.stop();
-          _prevStatus = SseConnectionStatus.connected;
-        }
+      ..onConnected = () {
+        // Connection (re)established → stop the pulsing reconnect dot.
+        _pulseController.stop();
+        if (mounted) setState(() {});
+      }
+      ..onReconnecting = () {
+        _pulseController.repeat(reverse: true);
         if (mounted) setState(() {});
       };
 
@@ -241,7 +238,6 @@ class PtySessionViewState extends State<PtySessionView>
   /// Public — called from [SessionDetailScreen] via GlobalKey to
   /// resubscribe the SSE stream without re-fetching history.
   void reconnect() {
-    _prevStatus = _sseClient.status;
     _sseClient.reconnect();
     _pulseController.repeat(reverse: true);
     if (mounted) setState(() {});

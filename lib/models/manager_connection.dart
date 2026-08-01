@@ -75,12 +75,14 @@ class ManagerConnection extends ChangeNotifier {
   }
 
   /// Build a [ServerRef] for the manager-level proxy API.
-  ServerRef get managerRef {
+  ServerRef get managerRef => _managerRefWith(profile.sessionToken ?? '');
+
+  ServerRef _managerRefWith(String token) {
     return ServerRef(
       id: '__manager__',
       name: profile.name,
       baseUrl: profile.baseUrl,
-      token: profile.sessionToken ?? '',
+      token: token,
     );
   }
 
@@ -130,12 +132,7 @@ class ManagerConnection extends ChangeNotifier {
       if (apiToken != null) {
         // Fresh login.
         debugPrint('[ManagerConnection] logging in to ${profile.baseUrl}');
-        final ref = ServerRef(
-          id: '__manager__',
-          name: 'manager',
-          baseUrl: profile.baseUrl,
-          token: apiToken,
-        );
+        final ref = _managerRefWith(apiToken);
         final result = await transport.login(ref, apiToken);
         debugPrint(
           '[ManagerConnection] login OK, session=${result.sessionToken.substring(0, 8)}…',
@@ -152,12 +149,7 @@ class ManagerConnection extends ChangeNotifier {
           debugPrint('[ManagerConnection] session fresh, skipping refresh');
         } else {
           // Restore via refresh token.
-          final ref = ServerRef(
-            id: '__manager__',
-            name: profile.name,
-            baseUrl: profile.baseUrl,
-            token: profile.refreshToken!,
-          );
+          final ref = _managerRefWith(profile.refreshToken!);
           final result = await transport.refreshSession(
             ref,
             profile.refreshToken!,
@@ -173,12 +165,7 @@ class ManagerConnection extends ChangeNotifier {
       }
 
       // Fetch agents.
-      final mgrRef = ServerRef(
-        id: '__manager__',
-        name: profile.name,
-        baseUrl: profile.baseUrl,
-        token: profile.sessionToken!,
-      );
+      final mgrRef = _managerRefWith(profile.sessionToken!);
       agents = await transport.listAgents(mgrRef);
 
       status = ConnectionStatus.connected;
@@ -220,12 +207,7 @@ class ManagerConnection extends ChangeNotifier {
       throw Exception('Session expired for ${profile.name}');
     }
 
-    final ref = ServerRef(
-      id: '__manager__',
-      name: profile.name,
-      baseUrl: profile.baseUrl,
-      token: profile.refreshToken!,
-    );
+    final ref = _managerRefWith(profile.refreshToken!);
     final result = await transport.refreshSession(ref, profile.refreshToken!);
 
     profile.sessionToken = result.sessionToken;
@@ -236,10 +218,8 @@ class ManagerConnection extends ChangeNotifier {
 
   @override
   void dispose() {
-    if (_transport != null) {
-      _transport!.closed = true;
-      _transport = null;
-    }
+    _transport?.dispose();
+    _transport = null;
     super.dispose();
   }
 }

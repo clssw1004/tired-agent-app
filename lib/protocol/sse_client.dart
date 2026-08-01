@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:tired_agent_app/protocol/transport.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 
@@ -11,13 +9,12 @@ enum SseConnectionStatus { connected, reconnecting, disconnected }
 /// Encapsulates the SSE lifecycle for a single PTY session.
 ///
 /// Orchestrates [Transport.fetchOutput] (history replay) →
-/// [Transport.subscribe] (live stream), manages connection status,
-/// and handles session-exit detection.
+/// [Transport.subscribe] (live stream), tracks connection status from the
+/// transport's [SubscribeHandlers.onConnected]/[onReconnecting] callbacks, and
+/// detects session-exit.
 ///
-/// Transport-level reconnection (HTTP backoff) is handled internally by
-/// [Transport.subscribe]; this class owns screen-level concerns: tracking
-/// status, triggering reconnect at the right offset, and ending the stream
-/// when the session has exited.
+/// Transport-level reconnection (HTTP backoff) and the resume byte offset are
+/// owned by [Transport.subscribe]; this class only mirrors status and teardown.
 class SseClient {
   final Transport _transport;
   final ServerRef _ref;
@@ -27,9 +24,6 @@ class SseClient {
   Subscription? _subscription;
   bool _closed = false;
   bool _sessionExited = false;
-
-  /// Current byte offset, updated on every chunk.
-  int _currentOffset = 0;
 
   SseConnectionStatus _status = SseConnectionStatus.disconnected;
 
@@ -45,6 +39,8 @@ class SseClient {
   void Function(Session session)? onState;
   void Function(Object error)? onError;
   void Function()? onHeartbeat;
+  void Function()? onConnected;
+  void Function()? onReconnecting;
 
   SseClient({
     required Transport transport,
@@ -61,7 +57,7 @@ class SseClient {
   /// [tail] controls how much historical output to fetch (default 1 MiB).
   /// Pass 0 to skip history entirely.
   Future<void> start({int tail = 1048576}) async {
-    _currentOffset = 0;
+    int fromOffset = 0;
 
     // Fetch historical output (skip if tail is 0).
     if (tail > 0) {
@@ -77,28 +73,44 @@ class SseClient {
           onChunk?.call(OutputChunk(offset: chunk.offset, data: decoded));
         }
         if (result.chunks.isNotEmpty) {
-          _currentOffset = result.upTo;
+          fromOffset = result.upTo;
         }
-      } catch (_) {
-        // May fail if the session has no output yet — fine.
+      } on SessionNotFoundException catch (e) {
+        // Session already gone — mark exited and don't bother subscribing.
+        _sessionExited = true;
+        _status = SseConnectionStatus.disconnected;
+        onError?.call(e);
+        return;
+      } catch (e) {
+        // History replay may fail (e.g. transient network error). Surface it
+        // but still try the live stream; offset falls back to 0, so the tail
+        // of the buffer may be replayed.
+        onError?.call(e);
       }
     }
 
-    // Subscribe to live stream.
-    _doSubscribe();
-    _status = SseConnectionStatus.connected;
+    _subscription = _transport.subscribe(
+      _ref,
+      _sessionId,
+      SubscribeHandlers(
+        onChunk: _onChunk,
+        onState: _onState,
+        onError: _onError,
+        onHeartbeat: _onHeartbeat,
+        onConnected: _onConnected,
+        onReconnecting: _onReconnecting,
+      ),
+      agentId: _agentId,
+      fromOffset: fromOffset,
+    );
   }
 
-  /// Tear down the current subscription and create a new one.
+  /// Reconnect the current stream without re-fetching history.
   ///
-  /// Does NOT re-fetch history — resumes from the last byte offset.
+  /// Status transitions are driven by the transport's connection callbacks.
   void reconnect() {
     if (_sessionExited || _closed) return;
-    _subscription?.close();
-    _subscription = null;
-    _status = SseConnectionStatus.reconnecting;
-    _doSubscribe();
-    _status = SseConnectionStatus.connected;
+    _subscription?.resubscribe?.call();
   }
 
   /// Close permanently — no more reconnections.
@@ -111,23 +123,7 @@ class SseClient {
 
   // ── Internal ───────────────────────────────────────────────────────────
 
-  void _doSubscribe() {
-    _subscription = _transport.subscribe(
-      _ref,
-      _sessionId,
-      SubscribeHandlers(
-        onChunk: _onChunk,
-        onState: _onState,
-        onError: _onError,
-        onHeartbeat: _onHeartbeat,
-      ),
-      agentId: _agentId,
-      fromOffset: _currentOffset,
-    );
-  }
-
   void _onChunk(OutputChunk chunk) {
-    _currentOffset = chunk.offset + chunk.data.length;
     onChunk?.call(chunk);
   }
 
@@ -142,18 +138,26 @@ class SseClient {
   }
 
   void _onError(Object error) {
-    debugPrint('[SseClient] SSE error: $error');
-    if (!_sessionExited && !_closed) {
-      _status = SseConnectionStatus.reconnecting;
+    if (error is SessionNotFoundException && !_sessionExited) {
+      _sessionExited = true;
+      _status = SseConnectionStatus.disconnected;
     }
     onError?.call(error);
   }
 
-  void _onHeartbeat() {
-    // Heartbeat received → connection is alive.
-    if (_status == SseConnectionStatus.reconnecting) {
-      _status = SseConnectionStatus.connected;
+  void _onConnected() {
+    _status = SseConnectionStatus.connected;
+    onConnected?.call();
+  }
+
+  void _onReconnecting() {
+    if (!_sessionExited && !_closed) {
+      _status = SseConnectionStatus.reconnecting;
     }
+    onReconnecting?.call();
+  }
+
+  void _onHeartbeat() {
     onHeartbeat?.call();
   }
 }

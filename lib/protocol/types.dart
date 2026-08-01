@@ -10,9 +10,6 @@ enum SessionStatus { starting, running, exited }
 /// Session lifecycle mode.
 enum SessionMode { process, persistent }
 
-/// Execution mode for persistent (chat) sessions.
-enum ExecutionMode { auto, manual, plan }
-
 // ─── Core types ───────────────────────────────────────────────────────
 
 /// Specifications for creating a new session.
@@ -25,7 +22,6 @@ class SessionSpec {
   final int? rows;
   final String? label;
   final SessionMode? mode;
-  final ExecutionMode? executionMode;
   final Map<String, dynamic>? extra;
 
   const SessionSpec({
@@ -37,7 +33,6 @@ class SessionSpec {
     this.rows,
     this.label,
     this.mode,
-    this.executionMode,
     this.extra,
   });
 
@@ -50,7 +45,6 @@ class SessionSpec {
     if (rows != null) 'rows': rows,
     if (label != null) 'label': label,
     if (mode != null) 'mode': mode!.name,
-    if (executionMode != null) 'executionMode': executionMode!.name,
     if (extra != null && extra!.isNotEmpty) 'extra': extra,
   };
 }
@@ -454,203 +448,6 @@ class AgentInfo {
           : null,
     );
   }
-}
-
-// ─── Claude project types ─────────────────────────────────────────
-
-class ClaudeProjectSession {
-  final String sessionId;
-  final int lastModified;
-  final int size;
-  final String? displayName;
-  const ClaudeProjectSession({
-    required this.sessionId,
-    required this.lastModified,
-    required this.size,
-    this.displayName,
-  });
-
-  factory ClaudeProjectSession.fromJson(Map<String, dynamic> json) =>
-      ClaudeProjectSession(
-        sessionId: json['sessionId'] as String,
-        lastModified: (json['lastModified'] as num).toInt(),
-        size: (json['size'] as num).toInt(),
-        displayName: json['displayName'] as String?,
-      );
-}
-
-class ClaudeProjectInfo {
-  final String displayPath;
-  final List<ClaudeProjectSession> sessions;
-  const ClaudeProjectInfo({required this.displayPath, required this.sessions});
-
-  factory ClaudeProjectInfo.fromJson(Map<String, dynamic> json) =>
-      ClaudeProjectInfo(
-        displayPath: json['displayPath'] as String,
-        sessions: (json['sessions'] as List<dynamic>)
-            .map(
-              (e) => ClaudeProjectSession.fromJson(e as Map<String, dynamic>),
-            )
-            .toList(),
-      );
-}
-
-// ─── Structured content types (renderer output) ───────────────────────
-
-sealed class StructuredContent {
-  const StructuredContent();
-}
-
-class ContentText extends StructuredContent {
-  final String text;
-  final ContentStyle? style;
-  const ContentText({required this.text, this.style});
-}
-
-class ContentCode extends StructuredContent {
-  final String code;
-  final String? language;
-  final bool displayBlock;
-  const ContentCode({
-    required this.code,
-    this.language,
-    this.displayBlock = true,
-  });
-}
-
-class ContentDivider extends StructuredContent {
-  final String? label;
-  const ContentDivider({this.label});
-}
-
-class ContentStatus extends StructuredContent {
-  final StatusKind kind;
-  final String text;
-  final bool ephemeral;
-  const ContentStatus({
-    required this.kind,
-    required this.text,
-    this.ephemeral = false,
-  });
-}
-
-class ContentTable extends StructuredContent {
-  final List<String> headers;
-  final List<List<String>> rows;
-  const ContentTable({required this.headers, required this.rows});
-}
-
-class ContentLink extends StructuredContent {
-  final String url;
-  final String text;
-  const ContentLink({required this.url, required this.text});
-}
-
-class ContentImage extends StructuredContent {
-  final String alt;
-  final String url;
-  const ContentImage({required this.alt, required this.url});
-}
-
-class ContentCommand extends StructuredContent {
-  final String raw;
-  final String parsed;
-  const ContentCommand({required this.raw, required this.parsed});
-}
-
-class ContentUserMessage extends StructuredContent {
-  final String text;
-  const ContentUserMessage({required this.text});
-}
-
-class ContentToolUse extends StructuredContent {
-  final String name;
-  final String input; // JSON-stringified
-  final String toolUseId;
-  final bool completed;
-  const ContentToolUse({
-    required this.name,
-    required this.input,
-    required this.toolUseId,
-    this.completed = false,
-  });
-}
-
-class ContentToolResult extends StructuredContent {
-  final String toolUseId;
-  final String content;
-  final String? mimeType;
-  final bool isError;
-  const ContentToolResult({
-    required this.toolUseId,
-    required this.content,
-    this.mimeType,
-    this.isError = false,
-  });
-}
-
-class ContentStreamEvent extends StructuredContent {
-  final String text;
-  final bool append;
-  const ContentStreamEvent({required this.text, this.append = false});
-}
-
-class ContentUsage extends StructuredContent {
-  final int inputTokens;
-  final int outputTokens;
-  const ContentUsage({required this.inputTokens, required this.outputTokens});
-}
-
-enum StatusKind { starting, thinking, working, done, error, idle }
-
-class ContentStyle {
-  final bool bold;
-  final bool italic;
-  final bool underline;
-  final bool strikethrough;
-  final bool faint;
-  final bool inverse;
-  final String? color;
-  final String? background;
-  final double? fontSize;
-  final bool monospace;
-
-  const ContentStyle({
-    this.bold = false,
-    this.italic = false,
-    this.underline = false,
-    this.strikethrough = false,
-    this.faint = false,
-    this.inverse = false,
-    this.color,
-    this.background,
-    this.fontSize,
-    this.monospace = false,
-  });
-}
-
-// ─── Structured input types ───────────────────────────────────────────
-
-sealed class StructuredInput {
-  const StructuredInput();
-}
-
-class StructuredUserMessage extends StructuredInput {
-  final String content;
-  final ExecutionMode? executionMode;
-  const StructuredUserMessage({required this.content, this.executionMode});
-
-  Map<String, dynamic> toJson() => {
-    'type': 'message',
-    'content': content,
-    if (executionMode != null) 'executionMode': executionMode!.name,
-  };
-}
-
-class StructuredInterrupt extends StructuredInput {
-  const StructuredInterrupt();
-
-  Map<String, dynamic> toJson() => const {'type': 'interrupt'};
 }
 
 // ─── Error response ───────────────────────────────────────────────────

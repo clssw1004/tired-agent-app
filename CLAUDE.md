@@ -54,8 +54,9 @@ flutter pub outdated           # 检查过期依赖
 ```
 App → AuthProvider(login) → transport.login(ref) → manager /v1/manager/auth/login
     → AuthProvider.connectionFor(profileId) → transport.listAgents(ref) → manager /v1/manager/agents
-    → subscribe → transport.subscribe(ref, sessionId, handlers) → agent SSE stream
-    → chunk accumulation → ClaudeRenderer.processChunk → UI 渲染
+    → SseClient.start → transport.fetchOutput(ref, sessionId) 回放历史
+    → transport.subscribe(ref, sessionId, handlers) → agent SSE stream
+    → onChunk → PtySessionView → xterm2 渲染
 ```
 
 ### 关键模块
@@ -65,8 +66,7 @@ App → AuthProvider(login) → transport.login(ref) → manager /v1/manager/aut
 | `screens/` | 页面层（go_router 路由） |
 | `providers/` | 状态管理层（Provider + ChangeNotifier） |
 | `protocol/` | 协议层 Dart 镜像（手写自 TypeScript） |
-| `renderer/` | ClaudeRenderer NDJSON 解析引擎 |
-| `widgets/pty_session_view.dart` | WebView + xterm.js + 自定义键盘 bridge |
+| `widgets/pty_session_view.dart` | xterm2 终端视图 + 自定义键盘 bridge |
 
 ## 代码规范
 
@@ -165,7 +165,7 @@ class AuthProvider extends ChangeNotifier {
 
 - Provider 只放"全局共享"状态（auth、server list）
 - 页面级状态放 `StatefulWidget` 内部
-- Session 级状态（SSE 流）放 `ClaudeChatView` 的 `StatefulWidget`
+- Session 级状态（SSE 流）放 `PtySessionView` 的 `StatefulWidget`（经 `SseClient`）
 
 ## 常见陷阱
 
@@ -243,10 +243,10 @@ Future<void> _refresh() async {
 
 ### 与 tired-agent/web 的同步
 
-- `lib/renderer/` 通过手工翻译自 `tired-agent/packages/web/src/renderer/`
+- `lib/protocol/` 通过手工翻译自 `tired-agent/packages/protocol/src/`
 - `lib/utils/` 通过手工翻译自 `tired-agent/web/src/` 散落文件
 - 翻译后必须跑 `flutter test` 验证无回归
-- 关键同步契约：`ClaudeRenderer.processChunk`、`formatBytes`、`stripAnsi`
+- 关键同步契约：`Transport.subscribe`（SSE 重连/退避）、`parseStreamEvent`、`formatBytes`、`stripAnsi`
 
 ### 关于组件的封装与页面的拆分
 当一个页面/组件文件行数大于300行时，就要考虑该页面是否需要真的那么大，里面组件是否可提取出来，若判断可提取，则需要进行页面/组件重构拆分。

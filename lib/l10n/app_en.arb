@@ -300,9 +300,6 @@
   "statusExited": "Exited",
   "send": "Send",
   "timeJustNow": "just now",
-  "claudeProjectsLoading": "Loading history...",
-  "claudeProjectsTitle": "Claude History",
-  "claudeProjectsNoSessions": "No previous sessions",
   "dirPickerTitle": "Select working directory",
   "dirPickerUpLevel": "Up one level",
   "dirPickerFavorites": "Favorites",
@@ -320,24 +317,7 @@
   "ptyKeyboardConfirmSend": "Are you sure you want to send this key sequence?",
   "ptyReconnecting": "Reconnecting…",
   "ptySessionExited": "Session exited",
-  "ptySessionEnded": "Session ended",
   "ptyDisconnected": "Disconnected",
-  "chatInputHint": "Type a message…",
-  "chatStatusThinking": "Thinking…",
-  "chatStatusWorking": "Working…",
-  "chatStatusDone": "Done",
-  "chatStatusIdle": "Idle",
-  "chatTokenUsage": "tokens in: {inputTokens} · out: {outputTokens}",
-  "@chatTokenUsage": {
-    "placeholders": {
-      "inputTokens": {
-        "type": "int"
-      },
-      "outputTokens": {
-        "type": "int"
-      }
-    }
-  },
 
   "settingsTerminal": "Terminal",
   "settingsBufferSize": "Buffer Size",

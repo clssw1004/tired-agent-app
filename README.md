@@ -8,7 +8,7 @@
 
 tiredAgentMobile — a Flutter client for tired-agent (Android / Windows / Linux).
 
-Connect to a tired-agent Manager service to manage agents, sessions and terminals, with a built-in Claude chat interface.
+Connect to a tired-agent Manager service to manage agents, sessions and terminals.
 
 ## Backend
 
@@ -36,13 +36,6 @@ flutter test         # run tests
 |---|---|
 | ![New session](screenshots/session-create.png) New session | ![Session list](screenshots/session-list.png) Sessions |
 
-### Claude Chat
-
-| | |
-|---|---|
-| ![Claude session](screenshots/claude-session-hello.png) Claude session | ![Claude session](screenshots/claude-session-1.png) Claude session |
-| ![Session resume](screenshots/claude-resume.png) Resume history | ![Extension keyboard](screenshots/claude-extension-keyboard.png) Claude extension keyboard |
-
 ### Settings
 
 | | |
@@ -56,5 +49,4 @@ flutter test         # run tests
 | `screens/` | UI layer (go_router routes) |
 | `providers/` | State management (Provider + ChangeNotifier) |
 | `protocol/` | Dart mirror of the protocol (hand-written from TypeScript) |
-| `renderer/` | ClaudeRenderer NDJSON parsing engine |
-| `widgets/pty_session_view.dart` | WebView + xterm.js + custom keyboard bridge |
+| `widgets/pty_session_view.dart` | xterm2 terminal view + custom keyboard bridge |
