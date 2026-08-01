@@ -16,6 +16,33 @@ flutter run          # 连接设备/模拟器启动
 flutter test         # 运行测试
 ```
 
+## 界面预览
+
+### 管理器与 Agent
+
+| | |
+|---|---|
+| ![添加 Manager](screenshots/add-manager.png) 添加 Manager | ![管理器列表](screenshots/manager-list.png) 管理器与 Agent 列表 |
+
+### 会话与终端
+
+| | |
+|---|---|
+| ![新建会话](screenshots/session-create.png) 新建会话 | ![会话列表](screenshots/session-list.png) 会话列表 |
+
+### Claude 聊天
+
+| | |
+|---|---|
+| ![Claude 会话](screenshots/claude-session-hello.png) Claude 会话 | ![Claude 会话](screenshots/claude-session-1.png) Claude 会话 |
+| ![会话恢复](screenshots/claude-resume.png) 历史会话恢复 | ![扩展键盘](screenshots/claude-extension-keyboard.png) Claude 扩展键盘 |
+
+### 设置
+
+| | |
+|---|---|
+| ![设置页](screenshots/settings.png) 设置 | ![主题设置](screenshots/theme.png) 主题设置 |
+
 ## 目录结构
 
 | 模块 | 说明 |
