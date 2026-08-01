@@ -155,6 +155,15 @@ abstract class Transport {
   /// Unregister an agent backend.
   Future<void> deleteAgent(ServerRef ref, String agentId);
 
+  /// Update an agent backend's name/baseUrl (token 留空则保持不变)。
+  Future<void> updateAgent(
+    ServerRef ref,
+    String agentId, {
+    required String name,
+    required String baseUrl,
+    String? token,
+  });
+
   /// Authenticate against the manager with a bearer token.
   Future<LoginResponse> login(ServerRef ref, String token);
 

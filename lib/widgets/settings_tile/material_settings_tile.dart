@@ -14,7 +14,7 @@ class MaterialSettingsTile extends SettingsTileContract {
       dense: true,
       visualDensity: VisualDensity.compact,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      minTileHeight: 48,
+      minTileHeight: 44,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       tileColor: data.selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
       leading: data.selected
@@ -22,7 +22,9 @@ class MaterialSettingsTile extends SettingsTileContract {
           : null,
       title: Text(
         data.label,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
           color: data.selected ? scheme.onPrimaryContainer : scheme.onSurface,
         ),
       ),

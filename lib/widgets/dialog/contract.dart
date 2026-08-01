@@ -45,6 +45,9 @@ class DialogAction<T> {
 abstract class DialogContract {
   const DialogContract();
 
+  /// 主题默认弹窗宽度：调用方不传 [maxWidth] 时生效，避免宽度散落各页面硬编码。
+  double get defaultMaxWidth;
+
   Future<bool?> showConfirm(
     BuildContext context, {
     required String title,

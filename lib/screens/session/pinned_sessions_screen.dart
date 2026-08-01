@@ -72,9 +72,9 @@ class PinnedSessionsScreen extends StatelessWidget {
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.four,
         AppSpacing.two,
-        AppSpacing.four,
+        AppSpacing.two,
+        AppSpacing.two,
         AppSpacing.four,
       ),
       children: grouped.entries.map((entry) {

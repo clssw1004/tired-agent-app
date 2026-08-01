@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/dialog/contract.dart';
+import 'package:tired_agent_app/widgets/dialog/styled_dialog_body.dart';
 
 /// 赛博朋克风格对话框：透明底 + 主色描边 + glow + 机器人图标 + 描边按钮。
 class NeonDialogImpl extends DialogContract {
   const NeonDialogImpl();
+
+  @override
+  double get defaultMaxWidth => 640;
 
   @override
   Future<bool?> showConfirm(
@@ -90,7 +94,7 @@ class NeonDialogImpl extends DialogContract {
       icon: icon,
       emoji: emoji,
       showRobot: showRobot,
-      maxWidth: maxWidth,
+      maxWidth: maxWidth ?? defaultMaxWidth,
       insetPadding: insetPadding,
       actions: actions,
     );
@@ -125,51 +129,23 @@ class _NeonDialogContent<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      insetPadding:
-          insetPadding ??
-          const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Container(
-        constraints: BoxConstraints(maxWidth: maxWidth ?? 400),
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.primary.withAlpha(50), width: 0.5),
-          boxShadow: [
-            BoxShadow(
-              color: c.primary.withAlpha(15),
-              blurRadius: 16,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Title bar ────────────────────────────────────────────
-            _TitleBar(
-              title: title,
-              icon: icon,
-              emoji: emoji,
-              showRobot: showRobot,
-            ),
-
-            // ── Content body (scrollable) ────────────────────────────
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: content,
-              ),
-            ),
-
-            // ── Action buttons ───────────────────────────────────────
-            if (actions.isNotEmpty) _ActionBar<T>(actions: actions),
-          ],
-        ),
+    return StyledDialogBody(
+      maxWidth: maxWidth ?? 640,
+      insetPadding: insetPadding,
+      backgroundColor: c.surface,
+      borderColor: c.primary.withAlpha(50),
+      borderRadius: 12,
+      titlePadding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      contentPadding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      title: _TitleBar(
+        title: title,
+        icon: icon,
+        emoji: emoji,
+        showRobot: showRobot,
       ),
+      content: content,
+      actions: [for (final a in actions) _NeonActionButton<T>(action: a)],
     );
   }
 }
@@ -235,86 +211,66 @@ class _TitleBar extends StatelessWidget {
   }
 }
 
-class _ActionBar<T> extends StatelessWidget {
-  const _ActionBar({required this.actions});
+class _NeonActionButton<T> extends StatelessWidget {
+  const _NeonActionButton({required this.action});
 
-  final List<DialogAction<T>> actions;
+  final DialogAction<T> action;
 
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: actions.map((action) {
-          final Color? resolvedColor;
-          if (action.color != null) {
-            resolvedColor = action.color;
-          } else if (action.isDanger) {
-            resolvedColor = c.danger;
-          } else if (action.isPrimary) {
-            resolvedColor = c.primary;
-          } else {
-            resolvedColor = null;
-          }
+    final Color? resolvedColor;
+    if (action.color != null) {
+      resolvedColor = action.color;
+    } else if (action.isDanger) {
+      resolvedColor = c.danger;
+    } else if (action.isPrimary) {
+      resolvedColor = c.primary;
+    } else {
+      resolvedColor = null;
+    }
 
-          if (action.isDanger || action.isPrimary || action.color != null) {
-            return Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: TextButton(
-                onPressed: () => action.onPressed(context),
-                style: TextButton.styleFrom(
-                  foregroundColor: resolvedColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    side: BorderSide(
-                      color: (resolvedColor ?? c.primary).withAlpha(
-                        action.isDanger ? 80 : 50,
-                      ),
-                      width: 0.5,
-                    ),
-                  ),
-                  backgroundColor: (resolvedColor ?? c.primary).withAlpha(8),
-                ),
-                child: Text(
-                  action.label,
-                  style: TextStyle(
-                    color: resolvedColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
+    if (action.isDanger || action.isPrimary || action.color != null) {
+      return TextButton(
+        onPressed: () => action.onPressed(context),
+        style: TextButton.styleFrom(
+          foregroundColor: resolvedColor,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+            side: BorderSide(
+              color: (resolvedColor ?? c.primary).withAlpha(
+                action.isDanger ? 80 : 50,
               ),
-            );
-          }
-
-          return Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: TextButton(
-              onPressed: () => action.onPressed(context),
-              style: TextButton.styleFrom(
-                foregroundColor: c.textSecondary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-              ),
-              child: Text(
-                action.label,
-                style: TextStyle(
-                  color: c.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
-              ),
+              width: 0.5,
             ),
-          );
-        }).toList(),
+          ),
+          backgroundColor: (resolvedColor ?? c.primary).withAlpha(8),
+        ),
+        child: Text(
+          action.label,
+          style: TextStyle(
+            color: resolvedColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      );
+    }
+
+    return TextButton(
+      onPressed: () => action.onPressed(context),
+      style: TextButton.styleFrom(
+        foregroundColor: c.textSecondary,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+      child: Text(
+        action.label,
+        style: TextStyle(
+          color: c.textSecondary,
+          fontWeight: FontWeight.w500,
+          fontSize: 13,
+        ),
       ),
     );
   }

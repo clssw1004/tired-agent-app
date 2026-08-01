@@ -91,6 +91,20 @@
   "agentRetry": "Retry",
   "agentRemoveTooltip": "Remove agent",
   "agentAddTooltip": "Add Agent",
+  "agentEditTitle": "Edit Agent",
+  "agentSave": "Save",
+  "agentUpdated": "Agent {name} updated",
+  "@agentUpdated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "agentUpdateFailed": "Failed to update agent: {error}",
+  "@agentUpdateFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "sessionsFilterAll": "All",
   "sessionsFilterRunning": "Running",

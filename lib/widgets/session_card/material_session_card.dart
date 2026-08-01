@@ -6,7 +6,7 @@ import 'package:tired_agent_app/widgets/session_card/contract.dart';
 /// Material Design 3 风格 Session 卡片 — 原生 M3 组件（Card/InkWell/FilledButton），
 /// 删除交互为滑动删除（Dismissible endToStart）。
 ///
-/// 布局紧凑：Card margin 收紧、subtitle 与 cwd 合并、操作按钮 compact，卡片更宽更扁。
+/// 布局紧凑：Card margin 收紧、cmd/meta/cwd 三行分摊，操作按钮 compact，卡片更宽更扁。
 class MD3SessionCard extends SessionCardContract {
   const MD3SessionCard();
 
@@ -40,15 +40,16 @@ class MD3SessionCard extends SessionCardContract {
     final up = session.status == SessionStatus.exited
         ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
         : 'up ${_timeSince(session.createdAt)}';
-    final cwd = session.cwd != null && session.cwd!.isNotEmpty ? ' · ${session.cwd!}' : '';
-    final subtitle = session.status == SessionStatus.exited
-        ? '$cmd · $meta${up.isEmpty ? '' : ' · $up'}$cwd'
-        : '$cmd · $meta · $up$cwd';
+    // 三行独立：cmd / pid/exit · up / /cwd
+    final cwd = session.cwd != null && session.cwd!.isNotEmpty ? session.cwd! : '';
+    final metaLine = session.status == SessionStatus.exited
+        ? (up.isEmpty ? meta : '$meta · $up')
+        : '$meta · $up';
 
     final card = Card(
       elevation: 0,
       color: scheme.surfaceContainerLow,
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -87,12 +88,30 @@ class MD3SessionCard extends SessionCardContract {
                   _StatusChip(status: session.status, scheme: scheme),
                 ],
               ),
-              const SizedBox(height: 2),
-              // cmd · pid/exit · up · /cwd
+              const SizedBox(height: 4),
+              // /cwd（第一行紧接标签）
+              if (cwd.isNotEmpty)
+                Text(
+                  cwd,
+                  style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              // cmd（主行）
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  cmd,
+                  style: textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // pid/exit · up（次行）
               Text(
-                subtitle,
-                style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-                maxLines: 2,
+                metaLine,
+                style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               // Actions: kill / resume（compact 按钮）

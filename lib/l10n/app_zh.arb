@@ -91,6 +91,20 @@
   "agentRetry": "重试",
   "agentRemoveTooltip": "移除 Agent",
   "agentAddTooltip": "添加 Agent",
+  "agentEditTitle": "编辑 Agent",
+  "agentSave": "保存",
+  "agentUpdated": "Agent {name} 已更新",
+  "@agentUpdated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "agentUpdateFailed": "更新 Agent 失败：{error}",
+  "@agentUpdateFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "sessionsFilterAll": "全部",
   "sessionsFilterRunning": "运行中",

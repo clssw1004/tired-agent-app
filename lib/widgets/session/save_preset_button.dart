@@ -56,7 +56,7 @@ class _SavePresetButtonState extends State<SavePresetButton> {
           TextField(
             controller: _labelCtrl,
             autofocus: true,
-            decoration: const InputDecoration(isDense: true),
+            decoration: context.appComponents.buildInputDecoration(context),
           ),
         ],
       ),

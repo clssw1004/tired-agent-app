@@ -46,12 +46,13 @@ class GeekSessionCard extends SessionCardContract {
     // ── 合并信息行（cmd · pid/exit · uptime）────────────────────
     final cmd = [session.cmd, ...session.args].join(' ');
     final meta = session.status == SessionStatus.exited
-        ? 'exit=${session.exitCode ?? '?'}'
-        : 'pid=${session.pid ?? '?'}';
+        ? 'exit ${session.exitCode ?? '?'}'
+        : 'pid ${session.pid ?? '?'}';
     final up = session.status == SessionStatus.exited
-        ? (session.exitedAt != null ? 'ago=${_timeSince(session.exitedAt!)}' : '')
-        : 'up=${_timeSince(session.createdAt)}';
-    final cmdLine = up.isEmpty ? '│ $cmd · $meta' : '│ $cmd · $meta · $up';
+        ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
+        : 'up ${_timeSince(session.createdAt)}';
+    // 仅命令；pid/exit/up 全部交给左下角 Row3 状态行（避免 pid 重复）
+    final cmdLine = cmd;
 
     return GestureDetector(
       onTap: data.onTap,
@@ -59,70 +60,87 @@ class GeekSessionCard extends SessionCardContract {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
         decoration: BoxDecoration(
+          // 卡片底部分割线 + label 浮在分割线上方（终端 tab 标题感）
           border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Row1: > label + [mode] + *pin + status ───────────
+            // ── Row0: [ LABEL ] + [process] + *pin（标签右贴 process/pin）─
             Row(
               children: [
-                ThemedText.mono('> ', color: c.primary),
-                Expanded(
-                  child: ThemedText.mono(
-                    session.label ?? session.cmd,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: c.text,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                ThemedText.mono(
+                  '[ ${session.label ?? session.cmd} ]',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: c.primary,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (session.mode != null) ...[
-                  ThemedText.mono('[${session.mode!.name}]', color: c.textSecondary),
-                  const SizedBox(width: 8),
-                ],
-                if (data.isPinned) ...[
-                  ThemedText.mono('*pin', color: c.primary),
-                  const SizedBox(width: 8),
-                ],
-                ThemedText.mono(_statusLabel(session.status), color: statusColor),
+                const SizedBox(width: 6),
+                if (session.mode != null)
+                  ThemedText.mono('[${session.mode!.name}]', fontSize: 11, color: c.textSecondary),
+                const SizedBox(width: 6),
+                if (data.isPinned) ThemedText.mono('*pin', fontSize: 11, color: c.primary),
               ],
             ),
-            // ── Row2: cmd · pid/exit · uptime ────────────────────
-            ThemedText.mono(
-              cmdLine,
-              color: c.textSecondary,
-              height: 1.5,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            // ── Row3: cwd ────────────────────────────────────────
+            // ── Row1: /cwd（终端顶部 cwd，路径感）──────────────
             if (session.cwd != null && session.cwd!.isNotEmpty)
               ThemedText.mono(
-                '│ ${session.cwd!}',
+                '─ ${session.cwd!}',
+                fontSize: 11,
                 color: c.primary.withAlpha(140),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-            // ── Row4: Actions（可点击文字按钮，免长按）──────────
-            if (data.onPin != null || data.onKill != null || data.onDelete != null || canResume)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (data.onPin != null)
-                      GeekActionButton(label: data.isPinned ? '*unpin' : '*pin', onTap: data.onPin!, color: c.primary),
-                    if (data.onKill != null && session.status != SessionStatus.exited)
-                      GeekActionButton(label: 'kill', onTap: data.onKill!, color: c.danger),
-                    if (session.status == SessionStatus.exited && data.onDelete != null)
-                      GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
-                    if (canResume)
-                      GeekActionButton(label: 'resume', onTap: data.onResume!, color: c.success),
-                  ],
-                ),
+            // ── Row2: $ cmd（终端 prompt 主内容）─────────────
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: ThemedText.mono(
+                '\$ $cmdLine',
+                color: c.textSecondary,
+                height: 1.5,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
+            ),
+            // ── Row4: 左下角 status/pid/up，右下 actions ───────
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: ThemedText.mono(
+                      _statusLabel(session.status) == 'exited'
+                          ? '${_statusLabel(session.status)} · $meta${up.isEmpty ? '' : ' · $up'}'
+                          : '${_statusLabel(session.status)} · pid ${session.pid ?? '?'} · $up',
+                      fontSize: 11,
+                      color: statusColor,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                if (data.onPin != null || data.onKill != null || data.onDelete != null || canResume)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (data.onPin != null)
+                          GeekActionButton(label: data.isPinned ? '*unpin' : '*pin', onTap: data.onPin!, color: c.primary),
+                        if (data.onPin != null && (data.onKill != null || data.onDelete != null || canResume))
+                          const SizedBox(width: AppSpacing.two),
+                        if (data.onKill != null && session.status != SessionStatus.exited)
+                          GeekActionButton(label: 'kill', onTap: data.onKill!, color: c.danger),
+                        if (canResume)
+                          GeekActionButton(label: 'resume', onTap: data.onResume!, color: c.success),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

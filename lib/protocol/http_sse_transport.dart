@@ -653,6 +653,26 @@ class HttpSseTransport implements Transport {
     );
   }
 
+  @override
+  Future<void> updateAgent(
+    ServerRef ref,
+    String agentId, {
+    required String name,
+    required String baseUrl,
+    String? token,
+  }) async {
+    await _request(
+      'PATCH',
+      '${_agentsUrl(ref.baseUrl)}/$agentId',
+      body: {
+        'name': name,
+        'baseUrl': baseUrl,
+        if (token != null && token.isNotEmpty) 'token': token,
+      },
+      token: ref.token,
+    );
+  }
+
   // ─── Auth endpoints ───────────────────────────────────────────────────
 
   @override

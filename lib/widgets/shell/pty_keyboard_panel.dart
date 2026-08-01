@@ -369,7 +369,6 @@ class _KeyButton extends StatelessWidget {
       NeonDialog.show<bool>(
         context: context,
         title: keyDef.confirmMessage!,
-        maxWidth: 340,
         showRobot: true,
         content: ThemedText.body(
           AppStrings.of.ptyKeyboardConfirmSend,

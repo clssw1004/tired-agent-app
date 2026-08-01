@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/dialog/contract.dart';
+import 'package:tired_agent_app/widgets/dialog/styled_dialog_body.dart';
 
 /// Material Design 3 风格对话框：原生 [AlertDialog]，primary → FilledButton，其余 TextButton。
 class MaterialDialogImpl extends DialogContract {
   const MaterialDialogImpl();
+
+  @override
+  double get defaultMaxWidth => 640;
 
   @override
   Future<bool?> showConfirm(
@@ -84,31 +88,50 @@ class MaterialDialogImpl extends DialogContract {
     required List<DialogAction<T>> actions,
   }) {
     final scheme = Theme.of(context).colorScheme;
-    return AlertDialog(
-      icon: icon != null ? Icon(icon, color: scheme.primary) : null,
-      title: Text(title),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 480),
-        child: SingleChildScrollView(child: content),
-      ),
-      actions: actions.map((action) {
-        if (action.isPrimary || action.isDanger || action.color != null) {
-          return FilledButton(
-            onPressed: () => action.onPressed(context),
-            style: action.isDanger
-                ? FilledButton.styleFrom(
-                    backgroundColor: scheme.error,
-                    foregroundColor: scheme.onError,
-                  )
-                : null,
-            child: Text(action.label),
-          );
-        }
-        return TextButton(
-          onPressed: () => action.onPressed(context),
-          child: Text(action.label),
-        );
-      }).toList(),
+    return StyledDialogBody(
+      maxWidth: maxWidth ?? defaultMaxWidth,
+      insetPadding: insetPadding,
+      backgroundColor: scheme.surface,
+      borderColor: scheme.outline,
+      borderRadius: 12,
+      titlePadding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      contentPadding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      title: icon != null
+          ? Column(
+              children: [
+                Icon(icon, color: scheme.primary, size: 24),
+                const SizedBox(height: 8),
+                Text(title, style: Theme.of(context).textTheme.titleLarge),
+              ],
+            )
+          : Text(title, style: Theme.of(context).textTheme.titleLarge),
+      content: content,
+      actions: [
+        for (final action in actions)
+          () {
+            if (action.isDanger) {
+              return FilledButton(
+                onPressed: () => action.onPressed(context),
+                style: FilledButton.styleFrom(
+                  backgroundColor: scheme.error,
+                  foregroundColor: scheme.onError,
+                ),
+                child: Text(action.label),
+              );
+            }
+            if (action.isPrimary || action.color != null) {
+              return FilledButton(
+                onPressed: () => action.onPressed(context),
+                child: Text(action.label),
+              );
+            }
+            return TextButton(
+              onPressed: () => action.onPressed(context),
+              child: Text(action.label),
+            );
+          }(),
+      ],
     );
   }
 }

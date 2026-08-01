@@ -4,10 +4,14 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/dialog/contract.dart';
+import 'package:tired_agent_app/widgets/dialog/styled_dialog_body.dart';
 
 /// 极简极客风格对话框：纯 [AlertDialog] + 等宽标题，无描边/发光/机器人图标。
 class GeekDialogImpl extends DialogContract {
   const GeekDialogImpl();
+
+  @override
+  double get defaultMaxWidth => 640;
 
   @override
   Future<bool?> showConfirm(
@@ -86,15 +90,15 @@ class GeekDialogImpl extends DialogContract {
     required List<DialogAction<T>> actions,
   }) {
     final c = context.appColors;
-    return AlertDialog(
+    return StyledDialogBody(
+      maxWidth: maxWidth ?? defaultMaxWidth,
+      insetPadding: insetPadding,
       backgroundColor: c.surface,
-      constraints:
-          maxWidth != null ? BoxConstraints(maxWidth: maxWidth) : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: c.border, width: 1),
-      ),
+      borderColor: c.border,
+      borderRadius: 4,
       titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+      contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       title: Row(
         children: [
           ThemedText.mono('> ', color: c.primary),
@@ -107,16 +111,10 @@ class GeekDialogImpl extends DialogContract {
           ),
         ],
       ),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 480),
-        child: SingleChildScrollView(child: content),
-      ),
-      contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      content: content,
       actions: [
-        for (var i = 0; i < actions.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.two),
+        for (final action in actions)
           () {
-            final action = actions[i];
             final Color color;
             if (action.color != null) {
               color = action.color!;
@@ -137,9 +135,7 @@ class GeekDialogImpl extends DialogContract {
               ),
             );
           }(),
-        ],
       ],
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
     );
   }
 }

@@ -289,7 +289,6 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         context: context,
         title: AppStrings.of.sessionsPinTitle,
         showRobot: true,
-        maxWidth: 400,
         content: LabelFormField(
           key: formKey,
           initialText: session.label ?? session.cmd,
@@ -457,9 +456,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         // ── Header ────────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.four,
             AppSpacing.two,
-            AppSpacing.four,
+            AppSpacing.two,
+            AppSpacing.two,
             0,
           ),
           child: Row(
