@@ -262,9 +262,9 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
       onRefresh: _loadAgents,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.four,
           AppSpacing.two,
-          AppSpacing.four,
+          AppSpacing.two,
+          AppSpacing.two,
           AppSpacing.four,
         ),
         itemCount: _agents.length,

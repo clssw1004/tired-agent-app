@@ -41,14 +41,15 @@ class MD3SessionCard extends SessionCardContract {
         ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
         : 'up ${_timeSince(session.createdAt)}';
     final cwd = session.cwd != null && session.cwd!.isNotEmpty ? ' · ${session.cwd!}' : '';
-    final subtitle = session.status == SessionStatus.exited
-        ? '$cmd · $meta${up.isEmpty ? '' : ' · $up'}$cwd'
-        : '$cmd · $meta · $up$cwd';
+    // 主行：完整命令；次行：pid/exit · up · /cwd，分行展示避免长串挤在一起换行
+    final metaLine = session.status == SessionStatus.exited
+        ? '$meta${up.isEmpty ? '' : ' · $up'}$cwd'
+        : '$meta · $up$cwd';
 
     final card = Card(
       elevation: 0,
       color: scheme.surfaceContainerLow,
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -87,12 +88,20 @@ class MD3SessionCard extends SessionCardContract {
                   _StatusChip(status: session.status, scheme: scheme),
                 ],
               ),
-              const SizedBox(height: 2),
-              // cmd · pid/exit · up · /cwd
+              const SizedBox(height: 4),
+              // cmd（主行）
               Text(
-                subtitle,
-                style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-                maxLines: 2,
+                cmd,
+                style: textTheme.bodyMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              // pid/exit · up · /cwd（次行）
+              Text(
+                metaLine,
+                style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               // Actions: kill / resume（compact 按钮）

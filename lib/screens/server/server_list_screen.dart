@@ -84,9 +84,9 @@ class ServerListScreen extends StatelessWidget {
   Widget _buildManagerList(BuildContext context, AuthProvider auth) {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(
-        AppSpacing.four,
         AppSpacing.two,
-        AppSpacing.four,
+        AppSpacing.two,
+        AppSpacing.two,
         AppSpacing.four,
       ),
       itemCount: auth.connections.length,

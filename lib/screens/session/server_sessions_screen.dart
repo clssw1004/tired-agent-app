@@ -456,9 +456,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         // ── Header ────────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.four,
             AppSpacing.two,
-            AppSpacing.four,
+            AppSpacing.two,
+            AppSpacing.two,
             0,
           ),
           child: Row(

@@ -48,7 +48,7 @@ class MD3ManagerCard extends ManagerCardContract {
     return Card(
       elevation: 0,
       color: scheme.surfaceContainerLow,
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
