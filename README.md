@@ -1,45 +1,27 @@
 # tired_agent_app
 
-Flutter mobile client for tired-agent.
+tiredAgentMobile — tired-agent 的 Flutter 客户端（Android / Windows / Linux）。
 
-## CI / Release
+连接 tired-agent Manager 服务，管理 Agent、会话与终端，并提供 Claude 聊天界面。
 
-Tag 触发 GitHub Actions（`.github/workflows/flutter_build.yml`），并行构建 windows / linux / android 三个平台产物，自动从 `CHANGELOG.md` 提取本版本 release notes 写入 GitHub Release。
+## 后端
 
-```bash
-git tag v1.0.0            # tag 命名规范：v<version>
-git push origin v1.0.0    # push 后 CI 自动起跑
-```
+本项目是 [tired-agent](https://github.com/clssw1004/tired-agent) 的前端客户端。后端以 TypeScript 实现 Manager / Agent 服务，协议定义见 [@tired-agent/protocol](https://www.npmjs.com/package/@tired-agent/protocol)，Dart 端镜像位于 `lib/protocol/`。
 
-### GitHub Secrets 配置（Android 签名）
-
-CI 注入 4 个 Secret 到 `android/key.properties` + `android/app/tired-agent.keystore`：
-
-| Secret | 说明 |
-|--------|------|
-| `KEYSTORE_BASE64` | keystore 文件 base64 编码（去掉换行）。生成：`base64 -w0 keystore文件` |
-| `KEYSTORE_PASSWORD` | keystore 密码（不要写进 README/CLAUDE.md，只放 GitHub Secret） |
-| `KEY_PASSWORD` | 私钥密码（可与 store 同） |
-| `KEY_ALIAS` | 私钥别名，本项目用 `tired-agent` |
-
-### 复用已有 keystore（推荐）
-
-多个 applicationId 共用同一 keystore 完全合法 —— Android 按「包名 + 签名指纹」识别身份，签名指纹相同即可同源升级。
+## 快速开始
 
 ```bash
-# 直接用你已有的 keystore：
-cp path/to/your.keystore android/app/tired-agent.keystore
-# 或在 CI 里把这份 keystore base64 上传到 KEYSTORE_BASE64，alias 填 tired-agent
+flutter pub get
+flutter run          # 连接设备/模拟器启动
+flutter test         # 运行测试
 ```
 
-### 本地生成新 keystore
+## 目录结构
 
-```bash
-cd android/app
-keytool -genkey -v \
-  -keystore tired-agent.keystore \
-  -alias tired-agent \
-  -keyalg RSA -keysize 2048 -validity 10000
-```
-
-> **注意**：`android/key.properties` 和 `android/app/*.keystore` 已加入 `.gitignore`，本地调试时按需手动放置。**真实密码只放 GitHub Secret 配置面板，不要提交任何代码或文档。**
+| 模块 | 说明 |
+|---|---|
+| `screens/` | 页面层（go_router 路由） |
+| `providers/` | 状态管理层（Provider + ChangeNotifier） |
+| `protocol/` | 协议层 Dart 镜像（手写自 TypeScript） |
+| `renderer/` | ClaudeRenderer NDJSON 解析引擎 |
+| `widgets/pty_session_view.dart` | WebView + xterm.js + 自定义键盘 bridge |
