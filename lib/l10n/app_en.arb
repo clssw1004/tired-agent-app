@@ -203,6 +203,7 @@
   "createAutoLabel": "Auto-generated if empty",
   "createTerminalSizeHint": "Terminal size auto-matches after session starts",
   "createNotConnected": "Not connected",
+  "createFailed": "Failed to create session",
   "createSectionRecent": "Recent",
   "createSectionCustom": "Custom",
   "createArgsHint": "--no-input  --verbose",

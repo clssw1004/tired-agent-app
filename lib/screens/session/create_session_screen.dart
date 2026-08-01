@@ -52,6 +52,7 @@ class CreateSessionScreen extends StatefulWidget {
 }
 
 class _CreateSessionScreenState extends State<CreateSessionScreen> {
+  final _cmdController = TextEditingController();
   final _argsController = TextEditingController();
   final _cwdController = TextEditingController();
   final _labelController = TextEditingController();
@@ -121,6 +122,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   void _applyBuiltin(BuiltinPreset p) {
     setState(() {
       _cmd = p.cmd;
+      _cmdController.text = p.cmd;
       _optionSelections.clear();
       _argsController.clear();
       _labelController.clear();
@@ -132,6 +134,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   void _applyUserPreset(UserPreset p) {
     setState(() {
       _cmd = p.cmd;
+      _cmdController.text = p.cmd;
       _optionSelections.clear();
       _argsController.text = p.args.join(' ');
       _labelController.clear();
@@ -165,6 +168,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     if (_platform == 'win32') {
       _cmd = 'powershell.exe';
     }
+    _cmdController.text = _cmd;
     _enhancementCtx
       ..profileId = widget.profileId
       ..agentId = widget.agentId
@@ -242,7 +246,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
+          SnackBar(
+            content: Text('${AppStrings.of.createFailed}\n$e'),
+            backgroundColor: c.danger,
+          ),
         );
       }
     } finally {
@@ -271,6 +278,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   @override
   void dispose() {
+    _cmdController.dispose();
     _argsController.dispose();
     _cwdController.dispose();
     _labelController.dispose();
@@ -320,21 +328,23 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   sectionHeader(context, AppStrings.of.createPreset),
-                  PresetSelector(
-                    key: _presetKey,
-                    platform: _platform,
-                    cmd: _cmd,
-                    argsText: _argsController.text,
-                    onChanged: _onPresetChanged,
-                    onSaved: (_) {},
+                  IgnorePointer(
+                    ignoring: _busy,
+                    child: PresetSelector(
+                      key: _presetKey,
+                      platform: _platform,
+                      cmd: _cmd,
+                      argsText: _argsController.text,
+                      onChanged: _onPresetChanged,
+                      onSaved: (_) {},
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.four),
 
                   sectionHeader(context, AppStrings.of.createCommand),
                   TextField(
-                    controller: TextEditingController.fromValue(
-                      TextEditingValue(text: _cmd),
-                    ),
+                    controller: _cmdController,
+                    enabled: !_busy,
                     onChanged: (v) {
                       setState(() => _cmd = v);
                       _updateEnhancements();
@@ -351,11 +361,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   sectionHeader(context, AppStrings.of.createSessionLabel),
                   TextField(
                     controller: _labelController,
+                    maxLength: 64,
                     style: TextStyle(color: c.text, fontSize: 14),
                     decoration: neonInputDecoration(
                       context,
                       hint: AppStrings.of.createAutoLabel,
-                    ),
+                    ).copyWith(counterText: ''),
                     enabled: !_busy,
                   ),
                   const SizedBox(height: AppSpacing.four),
@@ -385,34 +396,42 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                     enabled: !_busy,
                   ),
 
-                  if (_selectedPreset != null &&
-                      _selectedPreset!.options.isNotEmpty) ...[
-                    const SizedBox(height: AppSpacing.four),
-                    sectionHeader(context, AppStrings.of.createOptions),
-                    _buildOptionChips(
-                      extra: [
-                        ResumeOptionChip(
-                          profileId: widget.profileId,
-                          agentId: widget.agentId,
-                          cwd: _enhancementCtx.cwd,
-                          enabled: _isClaude,
-                          selection: _resumeSelection,
-                          onChanged: _onResumeChanged,
-                        ),
+                  IgnorePointer(
+                    ignoring: _busy,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_selectedPreset != null &&
+                            _selectedPreset!.options.isNotEmpty) ...[
+                          const SizedBox(height: AppSpacing.four),
+                          sectionHeader(context, AppStrings.of.createOptions),
+                          _buildOptionChips(
+                            extra: [
+                              ResumeOptionChip(
+                                profileId: widget.profileId,
+                                agentId: widget.agentId,
+                                cwd: _enhancementCtx.cwd,
+                                enabled: _isClaude,
+                                selection: _resumeSelection,
+                                onChanged: _onResumeChanged,
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          ResumeOptionChip(
+                            profileId: widget.profileId,
+                            agentId: widget.agentId,
+                            cwd: _enhancementCtx.cwd,
+                            enabled: _isClaude,
+                            selection: _resumeSelection,
+                            onChanged: _onResumeChanged,
+                          ),
+                          if (_resumeSelection == null)
+                            const SizedBox(height: AppSpacing.six),
+                        ],
                       ],
                     ),
-                  ] else ...[
-                    ResumeOptionChip(
-                      profileId: widget.profileId,
-                      agentId: widget.agentId,
-                      cwd: _enhancementCtx.cwd,
-                      enabled: _isClaude,
-                      selection: _resumeSelection,
-                      onChanged: _onResumeChanged,
-                    ),
-                    if (_resumeSelection == null)
-                      const SizedBox(height: AppSpacing.six),
-                  ],
+                  ),
 
                   if (_activeEnhancements.isNotEmpty) ...[
                     for (final e in _activeEnhancements)
