@@ -71,12 +71,11 @@ class GeekManagerCard extends ManagerCardContract {
             // ── Row1: > name + status ──────────────────────────
             Row(
               children: [
-                ThemedText('> ', fontSize: 12, fontFamily: 'monospace', color: c.primary),
+                ThemedText.mono('> ', color: c.primary),
                 Flexible(
-                  child: ThemedText(
+                  child: ThemedText.mono(
                     profile.name,
                     fontSize: 13,
-                    fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,
                     color: c.text,
                     maxLines: 1,
@@ -84,17 +83,15 @@ class GeekManagerCard extends ManagerCardContract {
                   ),
                 ),
                 const Spacer(),
-                ThemedText(_statusLabel(connStatus), fontSize: 12, fontFamily: 'monospace', color: statusColor),
+                ThemedText.mono(_statusLabel(connStatus), color: statusColor),
               ],
             ),
             // ── 异常行（断链时独立展示，不挤在状态行）────────
             if (connection.error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: ThemedText(
+                child: ThemedText.mono(
                   '! ${connection.error}',
-                  fontSize: 12,
-                  fontFamily: 'monospace',
                   color: c.danger,
                   height: 1.5,
                   maxLines: 2,
@@ -103,10 +100,10 @@ class GeekManagerCard extends ManagerCardContract {
               ),
             // ── Row2: url · last used ───────────────────────────
             if (urlLine.isNotEmpty)
-              ThemedText(urlLine, fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ThemedText.mono(urlLine, color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
             // ── Row3: agent counts ──────────────────────────────
             if (agentsLine.isNotEmpty)
-              ThemedText(agentsLine, fontSize: 12, fontFamily: 'monospace', color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ThemedText.mono(agentsLine, color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
             // ── Row4: [delete]（可点击文字按钮，免长按）────────
             if (data.onDelete != null)
               Row(

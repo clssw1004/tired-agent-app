@@ -74,12 +74,17 @@ class ThemedText extends StatelessWidget {
     Color? color,
     int? maxLines,
     TextOverflow? overflow,
+    double? fontSize,
+    FontWeight? fontWeight,
+    double? height,
   }) => ThemedText(
     data,
     key: key,
     color: color,
-    fontSize: 12,
+    fontSize: fontSize ?? 12,
     fontFamily: 'monospace',
+    fontWeight: fontWeight,
+    height: height,
     maxLines: maxLines,
     overflow: overflow,
   );

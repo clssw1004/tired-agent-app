@@ -31,15 +31,22 @@ ThemeData _buildMd3(Brightness b) {
       bodyMedium: const TextStyle(fontSize: 14),
       bodySmall: const TextStyle(fontSize: 12),
       labelLarge: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      labelMedium: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
       labelSmall: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
       titleMedium: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      titleLarge: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+      titleLarge: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: scheme.surface,
       foregroundColor: scheme.onSurface,
       elevation: 0,
       centerTitle: true,
+      toolbarHeight: 48,
+      titleTextStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    ),
+    dialogTheme: DialogThemeData(
+      contentTextStyle: const TextStyle(fontSize: 14),
+      titleTextStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
     ),
     extensions: [c, AppComponents.material],
   );
