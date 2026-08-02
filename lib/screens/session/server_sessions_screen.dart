@@ -178,21 +178,21 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     );
   }
 
-  void _requestPrune() {
-    final resumableIds = <String>{};
-    final pruneTargets = <String>[];
-    for (final s in _sessions) {
-      if (s.status != SessionStatus.exited) continue;
-      if (s.cmd == 'claude' &&
-          (s.extra?['claudeSessionId'] != null ||
-              s.extra?['claudeName'] != null ||
-              s.label != null)) {
-        resumableIds.add(s.id);
-      } else {
-        pruneTargets.add(s.id);
-      }
-    }
+  /// Exited sessions that are NOT resumable claude sessions — prune targets.
+  List<String> get _pruneTargets => [
+    for (final s in _sessions)
+      if (s.status == SessionStatus.exited && !_isResumable(s)) s.id,
+  ];
 
+  /// A session is resumable when it's a claude session with resume metadata.
+  static bool _isResumable(Session s) =>
+      s.cmd == 'claude' &&
+      (s.extra?['claudeSessionId'] != null ||
+          s.extra?['claudeName'] != null ||
+          s.label != null);
+
+  void _requestPrune() {
+    final pruneTargets = _pruneTargets;
     if (pruneTargets.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -202,7 +202,9 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       return;
     }
 
-    final resumableCount = resumableIds.length;
+    final resumableCount = _sessions
+        .where((s) => s.status == SessionStatus.exited && _isResumable(s))
+        .length;
     _showConfirm(
       title: AppStrings.of.sessionsPruneTitle,
       desc: resumableCount > 0
@@ -469,12 +471,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap:
-                    (_sessions
-                        .where((s) => s.status != SessionStatus.exited)
-                        .isNotEmpty)
-                    ? _requestPrune
-                    : null,
+                onTap: _pruneTargets.isNotEmpty ? _requestPrune : null,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.two,
@@ -482,10 +479,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color:
-                          (_sessions
-                              .where((s) => s.status != SessionStatus.exited)
-                              .isNotEmpty)
+                      color: _pruneTargets.isNotEmpty
                           ? c.primary.withAlpha(70)
                           : c.primary.withAlpha(30),
                     ),
@@ -493,10 +487,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                   ),
                   child: ThemedText.small(
                     AppStrings.of.sessionsPruneBtn,
-                    color:
-                        (_sessions
-                            .where((s) => s.status != SessionStatus.exited)
-                            .isNotEmpty)
+                    color: _pruneTargets.isNotEmpty
                         ? c.primary
                         : c.primary.withAlpha(60),
                   ),
