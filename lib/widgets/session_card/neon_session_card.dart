@@ -95,7 +95,7 @@ class NeonSessionCard extends SessionCardContract {
               final cmd = [session.cmd, ...session.args].join(' ');
               final uptime = session.status == SessionStatus.exited
                   ? session.exitedAt != null
-                      ? '${_timeSince(session.exitedAt!)} ago'
+                      ? _timeSince(session.exitedAt!)
                       : ''
                   : 'up ${_timeSince(session.createdAt)}';
               if (session.status == SessionStatus.exited) {
