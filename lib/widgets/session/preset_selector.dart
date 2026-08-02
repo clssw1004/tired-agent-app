@@ -52,6 +52,7 @@ class PresetSelector extends StatefulWidget {
 
 class PresetSelectorState extends State<PresetSelector> {
   String? _selectedBuiltinId;
+  String? _selectedUserId;
   List<UserPreset> _customPresets = [];
   List<UserPreset> _recentPresets = [];
 
@@ -63,6 +64,8 @@ class PresetSelectorState extends State<PresetSelector> {
 
   String? get selectedBuiltinId => _selectedBuiltinId;
 
+  String? get selectedUserId => _selectedUserId;
+
   BuiltinPreset? get selectedPreset => widget.platform == null
       ? builtinPresets.where((p) => p.id == _selectedBuiltinId).firstOrNull
       : builtinPresets
@@ -72,6 +75,12 @@ class PresetSelectorState extends State<PresetSelector> {
                       p.platforms!.contains(widget.platform)) &&
                   p.id == _selectedBuiltinId,
             )
+            .firstOrNull;
+
+  UserPreset? get selectedUserPreset => _selectedUserId == null
+      ? null
+      : [..._customPresets, ..._recentPresets]
+            .where((p) => p.id == _selectedUserId)
             .firstOrNull;
 
   List<BuiltinPreset> get visibleBuiltinPresets {
@@ -122,19 +131,27 @@ class PresetSelectorState extends State<PresetSelector> {
   // ── Actions ───────────────────────────────────────────────────────
 
   void applyBuiltin(BuiltinPreset p) {
-    setState(() => _selectedBuiltinId = p.id);
+    setState(() {
+      _selectedBuiltinId = p.id;
+      _selectedUserId = null;
+    });
     widget.onChanged?.call(PresetSelection(builtin: p));
   }
 
   void applyUserPreset(UserPreset p) {
     setState(() {
       _selectedBuiltinId = null;
+      _selectedUserId = p.id;
     });
     widget.onChanged?.call(PresetSelection(user: p));
   }
 
   void onSavedPreset(UserPreset p) {
-    setState(() => _customPresets.insert(0, p));
+    setState(() {
+      _customPresets.insert(0, p);
+      _selectedBuiltinId = null;
+      _selectedUserId = p.id;
+    });
     _saveCustomPresets();
     widget.onSaved?.call(p);
   }
@@ -176,6 +193,8 @@ class PresetSelectorState extends State<PresetSelector> {
   String get _currentLabel {
     final s = selectedPreset;
     if (_selectedBuiltinId != null && s != null) return s.label;
+    final u = selectedUserPreset;
+    if (_selectedUserId != null && u != null) return u.label;
     return widget.cmd;
   }
 
@@ -186,12 +205,15 @@ class PresetSelectorState extends State<PresetSelector> {
         Expanded(
           child: SessionPresetDropdown(
             currentLabel: _currentLabel,
-            hasSelection: _selectedBuiltinId != null,
-            emoji: selectedPreset?.emoji ?? '⚡',
+            hasSelection:
+                _selectedBuiltinId != null || _selectedUserId != null,
+            emoji:
+                selectedPreset?.emoji ?? selectedUserPreset?.emoji ?? '⚡',
             builtinPresets: visibleBuiltinPresets,
             recentPresets: _recentPresets,
             customPresets: _customPresets,
             selectedBuiltinId: _selectedBuiltinId,
+            selectedUserId: _selectedUserId,
             onSelectBuiltin: applyBuiltin,
             onSelectUser: applyUserPreset,
           ),

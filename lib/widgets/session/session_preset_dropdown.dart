@@ -35,6 +35,7 @@ class SessionPresetDropdown extends StatelessWidget {
   final List<UserPreset> recentPresets;
   final List<UserPreset> customPresets;
   final String? selectedBuiltinId;
+  final String? selectedUserId;
   final void Function(BuiltinPreset)? onSelectBuiltin;
   final void Function(UserPreset)? onSelectUser;
 
@@ -47,6 +48,7 @@ class SessionPresetDropdown extends StatelessWidget {
     required this.recentPresets,
     required this.customPresets,
     this.selectedBuiltinId,
+    this.selectedUserId,
     this.onSelectBuiltin,
     this.onSelectUser,
   });
@@ -138,8 +140,9 @@ class SessionPresetDropdown extends StatelessWidget {
                   );
                 }
                 final isActive =
-                    item.builtin != null &&
-                    item.builtin!.id == selectedBuiltinId;
+                    (item.builtin != null &&
+                        item.builtin!.id == selectedBuiltinId) ||
+                    (item.user != null && item.user!.id == selectedUserId);
                 return Container(
                   margin: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.two,
