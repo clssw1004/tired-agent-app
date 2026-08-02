@@ -35,6 +35,11 @@ class MaterialSettingsTile extends SettingsTileContract {
             )
           : data.navigation
           ? Icon(Icons.chevron_right, size: 20, color: scheme.onSurfaceVariant)
+          : data.onSwitchChanged != null
+          ? Switch.adaptive(
+              value: data.switchValue,
+              onChanged: data.onSwitchChanged,
+            )
           : null,
     );
   }

@@ -76,6 +76,22 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.four),
 
+          // ── Notifications ──────────────────────────────────────
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.settingsNotifications,
+          ),
+          const SizedBox(height: AppSpacing.two),
+          context.appComponents.buildSettingsTile(
+            context,
+            SettingsTileData(
+              label: AppStrings.of.settingsSessionExitNotifications,
+              switchValue: settings.sessionExitNotifications,
+              onSwitchChanged: (v) => settings.setSessionExitNotifications(v),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
           // ── About（version/build 同步自 pubspec.yaml）────────
           context.appComponents.buildSectionHeader(context, AppStrings.of.settingsAbout),
           const SizedBox(height: AppSpacing.two),

@@ -39,7 +39,14 @@ class GeekSettingsTile extends SettingsTileContract {
             if (data.value != null)
               ThemedText.mono(data.value!, fontSize: 12, color: c.textSecondary)
             else if (data.navigation)
-              ThemedText.mono('>', color: c.textSecondary),
+              ThemedText.mono('>', color: c.textSecondary)
+            else if (data.onSwitchChanged != null)
+              Switch(
+                value: data.switchValue,
+                onChanged: data.onSwitchChanged,
+                activeThumbColor: c.primary,
+                activeTrackColor: c.primary.withAlpha(60),
+              ),
           ],
         ),
       ),

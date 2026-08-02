@@ -16,6 +16,7 @@ import 'package:tired_agent_app/screens/settings/settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/terminal_settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/theme_settings_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
+import 'package:tired_agent_app/services/session_exit_notifier.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
@@ -41,6 +42,7 @@ class _TiredAgentAppState extends State<TiredAgentApp>
   late final PinnedSessionProvider _pinnedSessionProvider;
   late final ToastProvider _toastProvider;
   late final AppSettingsProvider _settingsProvider;
+  late final SessionExitNotifier _sessionExitNotifier;
   late final GoRouter _router;
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -54,6 +56,12 @@ class _TiredAgentAppState extends State<TiredAgentApp>
     _pinnedSessionProvider = PinnedSessionProvider();
     _toastProvider = ToastProvider();
     _settingsProvider = AppSettingsProvider();
+    _sessionExitNotifier = SessionExitNotifier();
+    _sessionExitNotifier.init(
+      authService: _authService,
+      isEnabled: () => _settingsProvider.sessionExitNotifications,
+      onTap: _openSessionFromNotification,
+    ).then((_) => _handleNotificationLaunch());
 
     _router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -144,23 +152,55 @@ class _TiredAgentAppState extends State<TiredAgentApp>
       ],
     );
 
-    _authProvider.boot();
+    _authProvider.boot().whenComplete(() {
+      // 轮询在连接建立后再启动。
+      _sessionExitNotifier.startWatching();
+    });
     _pinnedSessionProvider.load();
     _settingsProvider.load();
   }
 
+  /// 通知点击 / 冷启动跳转到对应会话详情页。
+  void _openSessionFromNotification(SessionRef ref) {
+    final navContext = _rootNavigatorKey.currentContext;
+    if (navContext == null) return;
+    navContext.push(
+      '/session/${ref.profileId}/${ref.agentId}/${ref.sessionId}',
+    );
+  }
+
+  /// 处理从通知冷启动 app 的跳转。
+  Future<void> _handleNotificationLaunch() async {
+    final ref = await _sessionExitNotifier.takeLaunchRef();
+    if (ref == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _openSessionFromNotification(ref);
+    });
+  }
+
   @override
   void dispose() {
+    _sessionExitNotifier.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // 切回前台时，刷新所有 manager 的 session 状态。
-      // Confirmed Rotation 确保 refreshToken 在丢响应后仍可用，此处静默恢复即可。
-      _authProvider.refreshAllSessions();
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // 切回前台时，刷新所有 manager 的 session 状态。
+        // Confirmed Rotation 确保 refreshToken 在丢响应后仍可用，此处静默恢复即可。
+        _authProvider.refreshAllSessions();
+        // 会话退出通知：回前台立即查一次 + 恢复轮询。
+        _sessionExitNotifier.resumeCheck();
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.inactive:
+        // 后台暂停轮询省电。
+        _sessionExitNotifier.pauseWatching();
+      case AppLifecycleState.detached:
+        _sessionExitNotifier.pauseWatching();
     }
   }
 
@@ -172,6 +212,7 @@ class _TiredAgentAppState extends State<TiredAgentApp>
         ChangeNotifierProvider.value(value: _pinnedSessionProvider),
         ChangeNotifierProvider.value(value: _toastProvider),
         ChangeNotifierProvider.value(value: _settingsProvider),
+        Provider<SessionExitNotifier>.value(value: _sessionExitNotifier),
       ],
       child: Consumer<AppSettingsProvider>(
         builder: (context, settings, _) {
