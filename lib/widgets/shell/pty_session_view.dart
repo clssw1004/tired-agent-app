@@ -8,6 +8,7 @@ import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/protocol/sse_client.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
+import 'package:tired_agent_app/services/session_exit_notifier.dart';
 import 'package:tired_agent_app/utils/pty_scroll_physics.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
@@ -18,6 +19,7 @@ import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// PTY session view using xterm2 for terminal emulation.
 class PtySessionView extends StatefulWidget {
+  final String profileId;
   final ServerRef serverRef;
   final String agentId;
   final Session session;
@@ -25,6 +27,7 @@ class PtySessionView extends StatefulWidget {
 
   const PtySessionView({
     super.key,
+    required this.profileId,
     required this.serverRef,
     required this.agentId,
     required this.session,
@@ -91,8 +94,23 @@ class PtySessionViewState extends State<PtySessionView>
     _terminalFocusNode = FocusNode();
     _setupTerminal();
     _initialize();
+    // 打开的是 running 会话 → 记录，退出时才能触发通知（running→exited 转移）。
+    if (widget.session.status != SessionStatus.exited) {
+      context.read<SessionExitNotifier>().trackRunning(_sessionRef());
+    }
     // Send initial resize after first frame so TerminalView has actual dimensions.
     WidgetsBinding.instance.addPostFrameCallback((_) => _sendInitialResize());
+  }
+
+  SessionRef _sessionRef({Session? session}) {
+    final s = session ?? widget.session;
+    return SessionRef(
+      profileId: widget.profileId,
+      agentId: widget.agentId,
+      sessionId: widget.session.id,
+      label: s.label ?? s.cmd,
+      cmd: s.cmd,
+    );
   }
 
   /// Send current terminal dimensions to the server.
@@ -193,6 +211,8 @@ class PtySessionViewState extends State<PtySessionView>
           );
           _pulseController.stop();
           if (mounted) setState(() {});
+          // 快路径：SSE 实时退出 → 立即通知。
+          context.read<SessionExitNotifier>().handleExited(_sessionRef(session: session));
         }
       }
       ..onError = (error) {

@@ -39,6 +39,7 @@ class AppSettingsProvider extends ChangeNotifier {
   static const _kTerminalBufferSize = 'terminal_buffer_size';
 
   static const _kTerminalTheme = 'terminal_theme';
+  static const _kSessionExitNotifications = 'session_exit_notifications';
 
   /// 默认终端缓冲区大小。
   static const int kDefaultBufferSize = 5000;
@@ -48,6 +49,7 @@ class AppSettingsProvider extends ChangeNotifier {
   Locale _locale;
   int _terminalBufferSize;
   TerminalThemePreset _terminalThemePreset;
+  bool _sessionExitNotifications = true;
 
   ThemeFlavor get themeFlavor => _themeFlavor;
   ThemeMode get themeMode => _themeMode;
@@ -55,6 +57,9 @@ class AppSettingsProvider extends ChangeNotifier {
   int get terminalBufferSize => _terminalBufferSize;
   TerminalThemePreset get terminalThemePreset => _terminalThemePreset;
   TerminalTheme get terminalTheme => TerminalThemes.of(_terminalThemePreset);
+
+  /// 会话结束时是否发送本地通知。
+  bool get sessionExitNotifications => _sessionExitNotifications;
 
   // 是否为暗色（供 callers 便捷判断）
   bool get isDark => _themeMode == ThemeMode.dark;
@@ -106,6 +111,10 @@ class AppSettingsProvider extends ChangeNotifier {
         orElse: () => TerminalThemePreset.classic,
       );
     }
+
+    // 会话退出通知
+    _sessionExitNotifications =
+        prefs.getBool(_kSessionExitNotifications) ?? true;
 
     notifyListeners();
   }
@@ -165,5 +174,15 @@ class AppSettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kTerminalTheme, preset.name);
+  }
+
+  // ── 会话退出通知 ───────────────────────────────────────────────────
+
+  Future<void> setSessionExitNotifications(bool enabled) async {
+    if (_sessionExitNotifications == enabled) return;
+    _sessionExitNotifications = enabled;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kSessionExitNotifications, enabled);
   }
 }

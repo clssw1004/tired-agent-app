@@ -45,7 +45,14 @@ class NeonSettingsTile extends SettingsTileContract {
             else if (data.selected)
               Icon(Icons.check, size: 18, color: c.primary)
             else if (data.navigation)
-              Icon(Icons.chevron_right, size: 18, color: c.textSecondary),
+              Icon(Icons.chevron_right, size: 18, color: c.textSecondary)
+            else if (data.onSwitchChanged != null)
+              Switch(
+                value: data.switchValue,
+                onChanged: data.onSwitchChanged,
+                activeThumbColor: c.primary,
+                activeTrackColor: c.primary.withAlpha(60),
+              ),
           ],
         ),
       ),

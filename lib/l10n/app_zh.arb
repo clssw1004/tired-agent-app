@@ -332,5 +332,24 @@
 
   "settingsTerminalTheme": "终端配色",
 
-  "agentEditTooltip": "编辑 Agent"
+  "agentEditTooltip": "编辑 Agent",
+
+  "settingsNotifications": "通知",
+  "settingsSessionExitNotifications": "会话结束通知",
+  "sessionExitNotificationTitle": "{label} 已结束",
+  "@sessionExitNotificationTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionExitNotificationBody": "{cmd}",
+  "@sessionExitNotificationBody": {
+    "placeholders": {
+      "cmd": {
+        "type": "String"
+      }
+    }
+  }
 }

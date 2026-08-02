@@ -202,6 +202,7 @@ class _SessionDetailScreenState extends State<SessionDetailScreen>
           : _session != null && _conn != null
           ? PtySessionView(
               key: _ptyKey,
+              profileId: widget.profileId,
               serverRef: _conn!.managerRef,
               agentId: widget.agentId,
               session: _session!,

@@ -335,5 +335,24 @@
 
   "settingsTerminalTheme": "Terminal Theme",
 
-  "agentEditTooltip": "Edit Agent"
+  "agentEditTooltip": "Edit Agent",
+
+  "settingsNotifications": "Notifications",
+  "settingsSessionExitNotifications": "Session exit notifications",
+  "sessionExitNotificationTitle": "{label} ended",
+  "@sessionExitNotificationTitle": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionExitNotificationBody": "{cmd}",
+  "@sessionExitNotificationBody": {
+    "placeholders": {
+      "cmd": {
+        "type": "String"
+      }
+    }
+  }
 }

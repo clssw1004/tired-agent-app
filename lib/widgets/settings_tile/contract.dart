@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// 设置列表项数据：支持单选（selected）、导航（navigation）、信息（value）三种形态。
+/// 设置列表项数据：支持单选（selected）、导航（navigation）、信息（value）、
+/// 开关（switchValue + onSwitchChanged）四种形态。
 class SettingsTileData {
   final String label;
   final String? value;
   final bool selected;
   final VoidCallback? onTap;
   final bool navigation;
+  final bool switchValue;
+  final ValueChanged<bool>? onSwitchChanged;
 
   const SettingsTileData({
     required this.label,
@@ -14,6 +17,8 @@ class SettingsTileData {
     this.selected = false,
     this.onTap,
     this.navigation = false,
+    this.switchValue = false,
+    this.onSwitchChanged,
   });
 }
 
