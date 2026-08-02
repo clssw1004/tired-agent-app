@@ -33,6 +33,7 @@ class AddAgentFormState extends State<AddAgentForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _urlController;
   late final TextEditingController _tokenController;
+  bool _obscureToken = true;
 
   @override
   void initState() {
@@ -89,8 +90,13 @@ class AddAgentFormState extends State<AddAgentForm> {
             decoration: context.appComponents.buildInputDecoration(
               context,
               label: AppStrings.of.labelAgentToken,
+            ).copyWith(
+              suffixIcon: IconButton(
+                icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
+                onPressed: () => setState(() => _obscureToken = !_obscureToken),
+              ),
             ),
-            obscureText: true,
+            obscureText: _obscureToken,
             autocorrect: false,
           ),
         ],

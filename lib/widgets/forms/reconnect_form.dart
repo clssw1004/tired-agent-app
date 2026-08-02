@@ -15,6 +15,7 @@ class ReconnectForm extends StatefulWidget {
 
 class ReconnectFormState extends State<ReconnectForm> {
   late final TextEditingController _tokenController;
+  bool _obscureToken = true;
 
   @override
   void initState() {
@@ -49,8 +50,12 @@ class ReconnectFormState extends State<ReconnectForm> {
           controller: _tokenController,
           decoration: InputDecoration(
             labelText: AppStrings.of.managersAccessToken,
+            suffixIcon: IconButton(
+              icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
+              onPressed: () => setState(() => _obscureToken = !_obscureToken),
+            ),
           ),
-          obscureText: true,
+          obscureText: _obscureToken,
           autocorrect: false,
         ),
       ],
