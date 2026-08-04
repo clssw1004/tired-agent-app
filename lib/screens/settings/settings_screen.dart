@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
+import 'package:tired_agent_app/providers/pty_keyboard_scheme_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
@@ -74,6 +75,23 @@ class SettingsScreen extends StatelessWidget {
               onTap: () => context.push('/settings/terminal'),
             ),
           ),
+          const SizedBox(height: AppSpacing.one),
+          context.appComponents.buildSettingsTile(
+            context,
+            SettingsTileData(
+              label: AppStrings.of.kbdSchemeDefault,
+              onTap: () => _pickDefaultKeyboardScheme(context),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.one),
+          context.appComponents.buildSettingsTile(
+            context,
+            SettingsTileData(
+              label: AppStrings.of.kbdSchemeTitle,
+              navigation: true,
+              onTap: () => context.push('/settings/keyboard'),
+            ),
+          ),
           const SizedBox(height: AppSpacing.four),
 
           // ── Notifications ──────────────────────────────────────
@@ -107,6 +125,97 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
+void _pickDefaultKeyboardScheme(BuildContext context) {
+    final provider = context.read<PtyKeyboardSchemeProvider>();
+    final c = context.appColors;
+    final schemes = provider.allSchemes;
+    final currentId = provider.defaultSchemeId;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.four),
+              child: Row(
+                children: [
+                  Icon(Icons.keyboard_alt_outlined, color: c.primary, size: 20),
+                  const SizedBox(width: AppSpacing.two),
+                  ThemedText.title(
+                    AppStrings.of.kbdSchemeDefault,
+                    color: c.primary,
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: c.border),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: schemes.length + 1,
+                itemBuilder: (_, i) {
+                  if (i == 0) {
+                    return ListTile(
+                      dense: true,
+                      leading: Icon(Icons.auto_fix_high, color: c.textSecondary, size: 18),
+                      title: ThemedText.body(
+                        AppStrings.of.kbdSchemeAuto,
+                        color: c.text,
+                      ),
+                      subtitle: ThemedText.small(
+                        AppStrings.of.kbdSchemeAutoDesc,
+                        color: c.textSecondary,
+                      ),
+                      trailing: currentId == null
+                          ? Icon(Icons.check, color: c.primary, size: 18)
+                          : null,
+                      onTap: () async {
+                        Navigator.of(ctx).pop();
+                        await provider.setDefaultSchemeId(null);
+                      },
+                    );
+                  }
+                  final s = schemes[i - 1];
+                  final active = s.id == currentId;
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      provider.isBuiltin(s.id)
+                          ? Icons.bookmark_outline
+                          : Icons.keyboard,
+                      color: active ? c.primary : c.textSecondary,
+                      size: 18,
+                    ),
+                    title: ThemedText.body(
+                      s.name,
+                      color: active ? c.primary : c.text,
+                    ),
+                    subtitle: ThemedText.small(
+                      '${s.rows.length} ${AppStrings.of.kbdSchemeRows}',
+                      color: c.textSecondary,
+                    ),
+                    trailing: active
+                        ? Icon(Icons.check, color: c.primary, size: 18)
+                        : null,
+                    onTap: () async {
+                      Navigator.of(ctx).pop();
+                      await provider.setDefaultSchemeId(s.id);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
 /// 关于区版本/build tile：从 pubspec.yaml（通过 native versionName/versionCode）
 /// 读运行时版本号，构建号单独一行展示，避免升级时遗漏同步。

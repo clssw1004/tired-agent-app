@@ -9,6 +9,7 @@ import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/protocol/sse_client.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
+import 'package:tired_agent_app/providers/pty_keyboard_scheme_provider.dart';
 import 'package:tired_agent_app/services/session_exit_notifier.dart';
 import 'package:tired_agent_app/utils/pty_scroll_physics.dart';
 import 'package:tired_agent_app/theme.dart';
@@ -77,13 +78,14 @@ class PtySessionViewState extends State<PtySessionView>
   /// Public getter so [SessionDetailScreen] can read the status.
   SseConnectionStatus get connectionStatus => _sseClient.status;
 
-  /// Resolve keyboard layout from the session command.
-  PtyKeyboardConfig get _keyboardConfig =>
-      PtyKeyboardConfig.fromCommand(widget.session.cmd);
+  /// Active keyboard layout. Initialised from the session command; may be
+  /// replaced by the user's chosen scheme (persisted per session).
+  late PtyKeyboardConfig _keyboardConfig;
 
   @override
   void initState() {
     super.initState();
+    _keyboardConfig = PtyKeyboardConfig.fromCommand(widget.session.cmd);
     _transport = HttpSseTransport(tokenProvider: widget.tokenProvider);
     _sseClient = SseClient(
       transport: _transport,
@@ -104,12 +106,48 @@ class PtySessionViewState extends State<PtySessionView>
     _terminalController.addListener(_onSelectionChanged);
     _setupTerminal();
     _initialize();
+    _loadKeyboardScheme();
     // 打开的是 running 会话 → 记录，退出时才能触发通知（running→exited 转移）。
     if (widget.session.status != SessionStatus.exited) {
       context.read<SessionExitNotifier>().trackRunning(_sessionRef());
     }
     // Send initial resize after first frame so TerminalView has actual dimensions.
     WidgetsBinding.instance.addPostFrameCallback((_) => _sendInitialResize());
+  }
+
+/// Load the session's keyboard layout using the full resolution chain
+/// (session assignment → client default → builtin preset by command name).
+/// Missing/stale ids fall through automatically.
+Future<void> _loadKeyboardScheme() async {
+  final provider = context.read<PtyKeyboardSchemeProvider>();
+  // Ensure the on-disk prefs (default scheme id, session assignments) are
+  // loaded before we resolve.
+  await provider.load();
+  if (!mounted) return;
+  setState(() {
+    _keyboardConfig = provider.configForSession(
+      widget.session.cmd,
+      sessionId: widget.session.id,
+    );
+  });
+}
+
+  /// Open the scheme switcher sheet and apply the chosen scheme.
+  Future<void> _switchKeyboardScheme() async {
+    final provider = context.read<PtyKeyboardSchemeProvider>();
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _KeyboardSchemeSwitcher(
+        provider: provider,
+        currentId: _keyboardConfig.id,
+      ),
+    );
+    if (chosen == null || !mounted) return;
+    final scheme = provider.byId(chosen);
+    if (scheme == null) return;
+    setState(() => _keyboardConfig = scheme.toConfig());
+    await provider.assignSchemeToSession(widget.session.id, chosen);
   }
 
   SessionRef _sessionRef({Session? session}) {
@@ -554,6 +592,8 @@ class PtySessionViewState extends State<PtySessionView>
                   setState(() => _keyboardExpanded = !_keyboardExpanded),
               onToggleIme: _toggleIme,
               onPaste: _pasteFromDialog,
+              schemeName: _keyboardConfig.name,
+              onSwitchScheme: _switchKeyboardScheme,
               onSendBytes: (bytes) => _transport.sendInput(
                 widget.serverRef,
                 widget.session.id,
@@ -735,6 +775,83 @@ class _PasteDialogState extends State<_PasteDialog> {
                     label: ThemedText.label(AppStrings.of.send),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet listing builtin + user keyboard schemes for quick switching.
+class _KeyboardSchemeSwitcher extends StatelessWidget {
+  final PtyKeyboardSchemeProvider provider;
+  final String currentId;
+
+  const _KeyboardSchemeSwitcher({
+    required this.provider,
+    required this.currentId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    final schemes = provider.allSchemes;
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        ),
+        constraints: const BoxConstraints(maxHeight: 420),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.four),
+              child: Row(
+                children: [
+                  Icon(Icons.keyboard_alt_outlined, color: c.primary, size: 20),
+                  const SizedBox(width: AppSpacing.two),
+                  ThemedText.title(
+                    AppStrings.of.kbdSchemeSwitch,
+                    color: c.text,
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: c.border),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: schemes.length,
+                itemBuilder: (_, i) {
+                  final s = schemes[i];
+                  final active = s.id == currentId;
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      provider.isBuiltin(s.id)
+                          ? Icons.bookmark_outline
+                          : Icons.keyboard,
+                      color: active ? c.primary : c.textSecondary,
+                      size: 18,
+                    ),
+                    title: ThemedText.body(
+                      s.name,
+                      color: active ? c.primary : c.text,
+                    ),
+                    subtitle: ThemedText.small(
+                      '${s.rows.length} ${AppStrings.of.kbdSchemeRows}',
+                      color: c.textSecondary,
+                    ),
+                    trailing: active
+                        ? Icon(Icons.check, color: c.primary, size: 18)
+                        : null,
+                    onTap: () => Navigator.of(context).pop(s.id),
+                  );
+                },
               ),
             ),
           ],
