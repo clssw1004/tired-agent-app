@@ -334,7 +334,14 @@ class HttpSseTransport implements Transport {
       if (closed) return;
       reconnectTimer?.cancel();
       cancelToken?.cancel();
-      cancelToken = CancelToken();
+      // Per-connection token: once a newer connect() replaces this one,
+      // `cancelToken` stops pointing at `thisCancelToken`, so a stale stream
+      // (deliberately cancelled to start a successor) bails instead of
+      // scheduling reconnects. Without this, cancelling a live stream on
+      // reconnect() looks like a drop → schedules a reconnect → which cancels
+      // the new connection → infinite connected↔reconnecting flicker.
+      final thisCancelToken = CancelToken();
+      cancelToken = thisCancelToken;
 
       // Resolve a fresh token before each connection attempt.
       Future<String> resolveToken() async {
@@ -347,7 +354,7 @@ class HttpSseTransport implements Transport {
       }
 
       resolveToken().then((String token) {
-        if (closed) return;
+        if (closed || cancelToken != thisCancelToken) return;
 
         final queryParams = <String, String>{};
         if (currentFrom > 0) {
@@ -370,16 +377,16 @@ class HttpSseTransport implements Transport {
         );
 
         _dio
-            .get(uri.toString(), options: options, cancelToken: cancelToken)
+            .get(uri.toString(), options: options, cancelToken: thisCancelToken)
             .then((Response<dynamic> response) {
-              if (closed) return;
+              if (closed || cancelToken != thisCancelToken) return;
 
               final responseBody = response.data as ResponseBody;
 
               if (response.statusCode != 200) {
                 // Read error body from the streamed response.
                 utf8.decodeStream(responseBody.stream).then((body) {
-                  if (closed) return;
+                  if (closed || cancelToken != thisCancelToken) return;
                   try {
                     // Server wraps errors in {"error": {"code", "message"}}.
                     var errorJson = json.decode(body) as Map<String, dynamic>;
@@ -488,12 +495,16 @@ class HttpSseTransport implements Transport {
                   }
                 },
                 onError: (Object error) {
+                  // Deliberately cancelled — a newer connect()/teardown took
+                  // over this stream. Not a real drop, so don't reconnect.
+                  if (cancelToken != thisCancelToken) return;
                   if (!closed) {
                     handlers.onError(error);
                     scheduleReconnect();
                   }
                 },
                 onDone: () {
+                  if (cancelToken != thisCancelToken) return;
                   if (!closed) {
                     scheduleReconnect();
                   }
@@ -501,7 +512,7 @@ class HttpSseTransport implements Transport {
               );
             })
             .catchError((Object error) {
-              if (closed) return;
+              if (closed || cancelToken != thisCancelToken) return;
               // Ignore cancellation errors since we trigger them deliberately.
               if (error is DioException &&
                   error.type == DioExceptionType.cancel) {
