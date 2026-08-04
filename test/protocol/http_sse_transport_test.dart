@@ -340,6 +340,48 @@ void main() {
     await server.close();
   });
 
+  test('resubscribe while connected does not schedule a spurious reconnect',
+      () async {
+    var requests = 0;
+    final server = await _startServer((req) async {
+      requests++;
+      req.response
+        ..headers.contentType = ContentType('text', 'event-stream')
+        ..write(_sseHeartbeat());
+      await req.response.flush();
+      // keep the connection open; never close.
+    });
+    final transport = HttpSseTransport(retryBaseDelayMs: 10);
+    final statuses = <String>[];
+    final sub = transport.subscribe(
+      _ref(server),
+      's1',
+      SubscribeHandlers(
+        onChunk: (_) {},
+        onState: (_) {},
+        onError: (_) {},
+        onConnected: () => statuses.add('connected'),
+        onReconnecting: () => statuses.add('reconnecting'),
+      ),
+    );
+    await _waitUntil(() => requests >= 1 && statuses.contains('connected'));
+    // Manual reconnect while the current stream is alive.
+    sub.resubscribe?.call();
+    await _waitUntil(
+      () =>
+          requests >= 2 &&
+          statuses.where((s) => s == 'connected').length >= 2,
+    );
+    // Give any (wrong) reconnect timer a chance to fire.
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    // Only the explicit resubscribe — the cancelled stream must not schedule
+    // an extra reconnect, or the page would flicker connected↔reconnecting.
+    expect(requests, 2);
+    expect(statuses, isNot(contains('reconnecting')));
+    sub.close();
+    await server.close(force: true);
+  });
+
   test('dispose closes active subscriptions', () async {
     var requests = 0;
     final server = await _startServer((req) async {
