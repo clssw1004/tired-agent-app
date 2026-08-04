@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm2/xterm.dart';
 
@@ -45,6 +46,14 @@ class PtySessionViewState extends State<PtySessionView>
   late final HttpSseTransport _transport;
   late final SseClient _sseClient;
   final PtyModifierState _modifierState = PtyModifierState();
+
+  /// Selection controller — xterm2 long-press/drag/double-tap/triple-tap
+  /// gestures drive selection through this. We own it to observe selection
+  /// changes (show/hide the copy bar) and to read the selected text.
+  final TerminalController _terminalController = TerminalController();
+
+  /// Whether the terminal currently has an active (non-empty) selection.
+  bool _hasSelection = false;
 
   /// Toggle the system keyboard (IME) on/off.
   late final FocusNode _terminalFocusNode;
@@ -92,6 +101,7 @@ class PtySessionViewState extends State<PtySessionView>
     final bufferSize = context.read<AppSettingsProvider>().terminalBufferSize;
     _terminal = Terminal(maxLines: bufferSize);
     _terminalFocusNode = FocusNode();
+    _terminalController.addListener(_onSelectionChanged);
     _setupTerminal();
     _initialize();
     // 打开的是 running 会话 → 记录，退出时才能触发通知（running→exited 转移）。
@@ -263,8 +273,77 @@ class PtySessionViewState extends State<PtySessionView>
     if (mounted) setState(() {});
   }
 
+  // ── Selection / copy / paste ────────────────────────────────────
+
+  /// Tracks xterm2 selection state; flips the copy-bar visibility.
+  void _onSelectionChanged() {
+    final hasSelection = _hasSelection;
+    final newState = _terminalController.selectionFor(_terminal.buffer) != null;
+    if (hasSelection != newState && mounted) {
+      setState(() => _hasSelection = newState);
+    }
+  }
+
+  /// Copy the currently selected text to the system clipboard.
+  Future<void> _copySelection() async {
+    final selection = _terminalController.selectionFor(_terminal.buffer);
+    if (selection == null) return;
+    final text = _terminal.buffer.getText(selection, true);
+    if (text.isEmpty) return;
+    await Clipboard.setData(ClipboardData(text: text));
+    _terminalController.clearSelection();
+    _showSnack(AppStrings.of.ptyCopied);
+  }
+
+  /// Clear the current selection without copying.
+  void _clearSelection() {
+    _terminalController.clearSelection();
+  }
+
+  /// Select the entire terminal buffer (scrollback + viewport).
+  void _selectAll() {
+    _terminalController.setSelection(
+      _terminal.buffer.createAnchor(0, 0),
+      _terminal.buffer.createAnchor(
+        _terminal.viewWidth,
+        _terminal.buffer.height - 1,
+      ),
+      mode: SelectionMode.line,
+    );
+  }
+
+  /// Paste via a textarea dialog — avoid flooding the IME input connection
+  /// with large pastes. Writes the whole text in one `paste` call.
+  Future<void> _pasteFromDialog() async {
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    if (!mounted) return;
+    final initial = clipboard?.text ?? '';
+    final controller = TextEditingController(text: initial);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => _PasteDialog(controller: controller),
+    );
+    if (result == null || result.isEmpty) return;
+    _terminal.paste(result);
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: ThemedText.small(message),
+          duration: const Duration(milliseconds: 1500),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
+
   @override
   void dispose() {
+    _terminalController.removeListener(_onSelectionChanged);
+    _terminalController.dispose();
     _sseClient.close();
     _pulseController.dispose();
     _terminalFocusNode.dispose();
@@ -273,6 +352,56 @@ class PtySessionViewState extends State<PtySessionView>
   }
 
   // ── Status banner ─────────────────────────────────────────────────
+
+  /// Floating action bar shown above the keyboard when text is selected —
+  /// copy / select-all / clear.
+  Widget _buildSelectionBar() {
+    final c = context.appColors;
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.two),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two),
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: c.border, width: 0.5),
+            boxShadow: [
+              BoxShadow(
+                color: c.borderGlow.withAlpha(60),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _SelectionAction(
+                icon: Icons.copy,
+                label: AppStrings.of.ptyCopy,
+                color: c.primary,
+                onTap: _copySelection,
+              ),
+              _SelectionAction(
+                icon: Icons.select_all,
+                label: AppStrings.of.ptySelectAll,
+                color: c.textSecondary,
+                onTap: _selectAll,
+              ),
+              _SelectionAction(
+                icon: Icons.close,
+                label: '',
+                color: c.textSecondary,
+                onTap: _clearSelection,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   /// Animated status banner — slides in/out with pulsing reconnect dot.
   Widget _statusBanner() {
@@ -380,32 +509,40 @@ class PtySessionViewState extends State<PtySessionView>
             // Status banner
             _statusBanner(),
             Expanded(
-              child: Listener(
-                onPointerDown: (_) {
-                  final now = DateTime.now();
-                  final gap = _lastTapDown != null
-                      ? now.difference(_lastTapDown!).inMilliseconds
-                      : null;
-                  _lastTapDown = now;
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Listener(
+                      onPointerDown: (_) {
+                        final now = DateTime.now();
+                        final gap = _lastTapDown != null
+                            ? now.difference(_lastTapDown!).inMilliseconds
+                            : null;
+                        _lastTapDown = now;
 
-                  // Double-tap within 400ms → toggle system keyboard.
-                  if (gap != null && gap < 400) {
-                    _toggleIme();
-                  }
-                },
-                child: ScrollConfiguration(
-                  behavior: const PtyScrollBehavior(),
-                  child: TerminalView(
-                    _terminal,
-                    key: _terminalViewKey,
-                    theme: terminalTheme,
-                    autofocus: false,
-                    hardwareKeyboardOnly: _hardwareKeyboardOnly,
-                    focusNode: _terminalFocusNode,
-                    backgroundOpacity: 1.0,
-                    deleteDetection: true,
+                        // Double-tap within 400ms → toggle system keyboard.
+                        if (gap != null && gap < 400) {
+                          _toggleIme();
+                        }
+                      },
+                      child: ScrollConfiguration(
+                        behavior: const PtyScrollBehavior(),
+                        child: TerminalView(
+                          _terminal,
+                          key: _terminalViewKey,
+                          controller: _terminalController,
+                          theme: terminalTheme,
+                          autofocus: false,
+                          hardwareKeyboardOnly: _hardwareKeyboardOnly,
+                          focusNode: _terminalFocusNode,
+                          backgroundOpacity: 1.0,
+                          deleteDetection: true,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  if (_hasSelection) _buildSelectionBar(),
+                ],
               ),
             ),
             PtyKeyboardPanel(
@@ -416,11 +553,188 @@ class PtySessionViewState extends State<PtySessionView>
               onToggle: () =>
                   setState(() => _keyboardExpanded = !_keyboardExpanded),
               onToggleIme: _toggleIme,
+              onPaste: _pasteFromDialog,
               onSendBytes: (bytes) => _transport.sendInput(
                 widget.serverRef,
                 widget.session.id,
                 bytes,
                 agentId: widget.agentId,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A single icon+label action in the terminal selection bar.
+class _SelectionAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _SelectionAction({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 4),
+              ThemedText.label(label, color: color),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal textarea for pasting/typing large blocks of text. Sends the whole
+/// buffer in one `paste` call instead of flooding the IME input connection
+/// with per-character input requests.
+class _PasteDialog extends StatefulWidget {
+  final TextEditingController controller;
+
+  const _PasteDialog({required this.controller});
+
+  @override
+  State<_PasteDialog> createState() => _PasteDialogState();
+}
+
+class _PasteDialogState extends State<_PasteDialog> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    widget.controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    return Dialog(
+      backgroundColor: c.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: c.border, width: 0.5),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420, maxHeight: 480),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.four,
+                AppSpacing.three,
+                AppSpacing.four,
+                AppSpacing.one,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.content_paste, size: 18, color: c.primary),
+                  const SizedBox(width: AppSpacing.two),
+                  Expanded(
+                    child: ThemedText.title(
+                      AppStrings.of.ptyPaste,
+                      color: c.text,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.three,
+                  AppSpacing.two,
+                  AppSpacing.three,
+                  AppSpacing.one,
+                ),
+                child: TextField(
+                  controller: widget.controller,
+                  focusNode: _focusNode,
+                  maxLines: null,
+                  expands: true,
+                  minLines: null,
+                  textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  style: const TextStyle(fontSize: 13, height: 1.5),
+                  decoration: InputDecoration(
+                    hintText: AppStrings.of.ptyPasteHint,
+                    hintStyle: TextStyle(
+                      color: c.textSecondary.withAlpha(140),
+                      fontSize: 13,
+                    ),
+                    filled: true,
+                    fillColor: c.surfaceAlt.withAlpha(120),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.all(AppSpacing.three),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: c.border, width: 0.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: c.border, width: 0.5),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: c.primary, width: 1),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.three),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(null),
+                    child: ThemedText.small(
+                      AppStrings.of.cancel,
+                      color: c.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.two),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: c.primary,
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: () => Navigator.of(context)
+                        .pop(widget.controller.text),
+                    icon: const Icon(Icons.send, size: 16),
+                    label: ThemedText.label(AppStrings.of.send),
+                  ),
+                ],
               ),
             ),
           ],
