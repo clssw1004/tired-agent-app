@@ -26,6 +26,7 @@ class PtyKeyboardPanel extends StatelessWidget {
     required this.onToggle,
     required this.imeActive,
     required this.onToggleIme,
+    required this.onPaste,
     required this.onSendBytes,
   });
 
@@ -42,6 +43,9 @@ class PtyKeyboardPanel extends StatelessWidget {
   /// Toggle the system keyboard (IME) on/off.
   final VoidCallback onToggleIme;
 
+  /// Open the textarea paste dialog.
+  final VoidCallback onPaste;
+
   final ValueChanged<List<int>> onSendBytes;
 
   @override
@@ -55,6 +59,7 @@ class PtyKeyboardPanel extends StatelessWidget {
           onToggle: onToggle,
           imeActive: imeActive,
           onToggleIme: onToggleIme,
+          onPaste: onPaste,
           colors: c,
           modifierState: modifierState,
         ),
@@ -111,6 +116,7 @@ class _ExpandHandle extends StatelessWidget {
   final VoidCallback onToggle;
   final bool imeActive;
   final VoidCallback onToggleIme;
+  final VoidCallback onPaste;
   final AppColors colors;
   final PtyModifierState modifierState;
 
@@ -119,6 +125,7 @@ class _ExpandHandle extends StatelessWidget {
     required this.onToggle,
     required this.imeActive,
     required this.onToggleIme,
+    required this.onPaste,
     required this.colors,
     required this.modifierState,
   });
@@ -192,43 +199,86 @@ class _ExpandHandle extends StatelessWidget {
           // Separator line
           Container(width: 0.5, height: 16, color: colors.border.withAlpha(60)),
 
-          // ── Right half: IME toggle ──────────────────────────────
+          // ── Right half: Paste + IME toggle ────────────────────
           Expanded(
             flex: 1,
-            child: GestureDetector(
-              onTap: onToggleIme,
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                height: 28,
-                alignment: Alignment.center,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'IME',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: imeActive
-                            ? colors.primary
-                            : colors.textSecondary.withAlpha(140),
-                        fontWeight: imeActive
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                        letterSpacing: 0.5,
+            child: Row(
+              children: [
+                // Paste button — opens textarea dialog for large text.
+                Expanded(
+                  child: GestureDetector(
+                    onTap: onPaste,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      height: 28,
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.content_paste,
+                            size: 14,
+                            color: colors.textSecondary.withAlpha(180),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            AppStrings.of.ptyPaste,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: colors.textSecondary.withAlpha(160),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_outlined,
-                      size: 16,
-                      color: imeActive
-                          ? colors.primary
-                          : colors.textSecondary.withAlpha(120),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                Container(
+                  width: 0.5,
+                  height: 16,
+                  color: colors.border.withAlpha(60),
+                ),
+                // IME toggle
+                Expanded(
+                  child: GestureDetector(
+                    onTap: onToggleIme,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      height: 28,
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'IME',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: imeActive
+                                  ? colors.primary
+                                  : colors.textSecondary.withAlpha(140),
+                              fontWeight: imeActive
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.keyboard_outlined,
+                            size: 16,
+                            color: imeActive
+                                ? colors.primary
+                                : colors.textSecondary.withAlpha(120),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
