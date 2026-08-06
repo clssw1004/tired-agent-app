@@ -70,16 +70,10 @@ class PtyKeyboardPanel extends StatelessWidget {
           onPaste: onPaste,
           colors: c,
           modifierState: modifierState,
+          schemeName: schemeName,
+          onSwitchScheme: onSwitchScheme,
         ),
         if (expanded) ...[
-          if (schemeName != null) ...[
-            _SchemeHeader(
-              name: schemeName!,
-              onTap: onSwitchScheme,
-              colors: c,
-            ),
-            const SizedBox(height: 2),
-          ],
           for (final row in config.rows) ...[
             const SizedBox(height: 4),
             _buildRow(row, c),
@@ -121,12 +115,13 @@ class PtyKeyboardPanel extends StatelessWidget {
 // Toggle handle — two halves: 扩展键 toggle | IME toggle
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Handle bar split into two tap zones:
+/// Handle bar split into four evenly-divided tap zones:
 ///
-/// - **Left half**: toggle the extended keyboard panel. Grayed when collapsed,
-///   lit up when expanded.
-/// - **Right half**: toggle the system keyboard (IME). Grayed when hidden,
-///   lit up when visible.
+/// 1. **Extended keys** toggle — grayed when collapsed, lit up when expanded.
+/// 2. **Scheme/mode** switch — shows the active keyboard scheme; tapping opens
+///    the switcher. Always visible, even when the panel is collapsed.
+/// 3. **Paste** — opens the textarea paste dialog.
+/// 4. **IME** toggle — shows/hides the system keyboard.
 class _ExpandHandle extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
@@ -135,6 +130,8 @@ class _ExpandHandle extends StatelessWidget {
   final VoidCallback onPaste;
   final AppColors colors;
   final PtyModifierState modifierState;
+  final String? schemeName;
+  final VoidCallback? onSwitchScheme;
 
   const _ExpandHandle({
     required this.expanded,
@@ -144,6 +141,8 @@ class _ExpandHandle extends StatelessWidget {
     required this.onPaste,
     required this.colors,
     required this.modifierState,
+    this.schemeName,
+    this.onSwitchScheme,
   });
 
   @override
@@ -153,11 +152,113 @@ class _ExpandHandle extends StatelessWidget {
       color: colors.surfaceAlt,
       child: Row(
         children: [
-          // ── Left half: Extended keyboard toggle ──────────────────
+          // ── 1. Extended keyboard toggle ──────────────────────────
           Expanded(
             flex: 1,
             child: GestureDetector(
               onTap: onToggle,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 28,
+                alignment: Alignment.center,
+                // FittedBox so the active-modifier badge (Ctrl/Alt/Shift)
+                // scales down instead of overflowing the narrower button.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.extension_outlined,
+                        size: 14,
+                        color: expanded
+                            ? colors.primary
+                            : colors.textSecondary.withAlpha(120),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        AppStrings.of.ptyKeyboardKeys,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: expanded
+                              ? colors.primary
+                              : colors.textSecondary.withAlpha(140),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      // Modifier indicator badge
+                      ListenableBuilder(
+                        listenable: modifierState,
+                        builder: (context, _) {
+                          final active = <String>[];
+                          if (modifierState.ctrl) active.add('Ctrl');
+                          if (modifierState.alt) active.add('Alt');
+                          if (modifierState.shift) active.add('Shift');
+                          if (active.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Text(
+                              active.join('+'),
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: colors.warning,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          _vSep(colors),
+
+          // ── 2. Scheme/mode switch — adjacent to 扩展键 ──────────
+          if (schemeName != null && onSwitchScheme != null) ...[
+            Expanded(
+              flex: 1,
+              child: GestureDetector(
+                onTap: onSwitchScheme,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  height: 28,
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.swap_horiz, size: 14, color: colors.primary),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          schemeName!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colors.primary,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.unfold_more, size: 12, color: colors.primary),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            _vSep(colors),
+          ],
+
+          // ── 3. Paste — opens textarea dialog for large text ────
+          Expanded(
+            flex: 1,
+            child: GestureDetector(
+              onTap: onPaste,
               behavior: HitTestBehavior.opaque,
               child: Container(
                 height: 28,
@@ -167,140 +268,73 @@ class _ExpandHandle extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.extension,
-                      size: 16,
-                      color: expanded
-                          ? colors.primary
-                          : colors.textSecondary.withAlpha(120),
+                      Icons.content_paste,
+                      size: 14,
+                      color: colors.textSecondary.withAlpha(180),
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      AppStrings.of.ptyKeyboardKeys,
+                      AppStrings.of.ptyPaste,
                       style: TextStyle(
                         fontSize: 11,
-                        color: expanded
-                            ? colors.primary
-                            : colors.textSecondary.withAlpha(140),
-                        letterSpacing: 1.0,
+                        color: colors.textSecondary.withAlpha(160),
+                        letterSpacing: 0.5,
                       ),
-                    ),
-                    // Modifier indicator badge
-                    ListenableBuilder(
-                      listenable: modifierState,
-                      builder: (context, _) {
-                        final active = <String>[];
-                        if (modifierState.ctrl) active.add('Ctrl');
-                        if (modifierState.alt) active.add('Alt');
-                        if (modifierState.shift) active.add('Shift');
-                        if (active.isEmpty) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: Text(
-                            active.join('+'),
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: colors.warning,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      },
                     ),
                   ],
                 ),
               ),
             ),
           ),
+          _vSep(colors),
 
-          // Separator line
-          Container(width: 0.5, height: 16, color: colors.border.withAlpha(60)),
-
-          // ── Right half: Paste + IME toggle ────────────────────
+          // ── 4. IME toggle ─────────────────────────────────────
           Expanded(
             flex: 1,
-            child: Row(
-              children: [
-                // Paste button — opens textarea dialog for large text.
-                Expanded(
-                  child: GestureDetector(
-                    onTap: onPaste,
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      height: 28,
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.content_paste,
-                            size: 14,
-                            color: colors.textSecondary.withAlpha(180),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            AppStrings.of.ptyPaste,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: colors.textSecondary.withAlpha(160),
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+            child: GestureDetector(
+              onTap: onToggleIme,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 28,
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.keyboard_outlined,
+                      size: 14,
+                      color: imeActive
+                          ? colors.primary
+                          : colors.textSecondary.withAlpha(120),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'IME',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: imeActive
+                            ? colors.primary
+                            : colors.textSecondary.withAlpha(140),
+                        fontWeight: imeActive
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                Container(
-                  width: 0.5,
-                  height: 16,
-                  color: colors.border.withAlpha(60),
-                ),
-                // IME toggle
-                Expanded(
-                  child: GestureDetector(
-                    onTap: onToggleIme,
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(
-                      height: 28,
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'IME',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: imeActive
-                                  ? colors.primary
-                                  : colors.textSecondary.withAlpha(140),
-                              fontWeight: imeActive
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.keyboard_outlined,
-                            size: 16,
-                            color: imeActive
-                                ? colors.primary
-                                : colors.textSecondary.withAlpha(120),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  /// Thin vertical separator between toggle-bar segments.
+  Widget _vSep(AppColors colors) =>
+      Container(width: 0.5, height: 16, color: colors.border.withAlpha(60));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -499,50 +533,6 @@ class _KeyButton extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Thin header above the key rows showing the active keyboard scheme name.
-/// Tapping it opens the scheme switcher (when [onTap] is provided).
-class _SchemeHeader extends StatelessWidget {
-  final String name;
-  final VoidCallback? onTap;
-  final AppColors colors;
-
-  const _SchemeHeader({
-    required this.name,
-    required this.onTap,
-    required this.colors,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: 22,
-        color: colors.surfaceAlt.withAlpha(120),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.keyboard_alt_outlined, size: 12, color: colors.primary),
-            const SizedBox(width: 4),
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 10,
-                color: colors.primary,
-                letterSpacing: 0.5,
-              ),
-            ),
-            const SizedBox(width: 2),
-            Icon(Icons.unfold_more, size: 12, color: colors.primary),
-          ],
         ),
       ),
     );
