@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
@@ -17,20 +17,26 @@ final PtyKeyboardConfig shellPreset = PtyKeyboardConfig(
         TerminalKeyCode.tab,
       ], label: 'Mode'),
       TerminalKeys.commandShowIcon(
-        icon: Icons.play_arrow,
+        icon: FontAwesomeIcons.play,
         command: '/resume',
         withEnter: true,
         confirm: true,
       ),
       TerminalKeys.commandShowIcon(
-        icon: Icons.cleaning_services,
+        icon: FontAwesomeIcons.broom,
         command: '/clear',
         withEnter: true,
         confirm: true,
       ),
       TerminalKeys.commandShowIcon(
-        icon: Icons.compress,
+        icon: FontAwesomeIcons.compress,
         command: '/compact',
+        withEnter: true,
+        confirm: true,
+      ),
+      TerminalKeys.commandShowIcon(
+        icon: FontAwesomeIcons.codeBranch,
+        command: '!git fetch --all;git checkout main;git rebase origin/main',
         withEnter: true,
         confirm: true,
       ),
@@ -41,6 +47,8 @@ final PtyKeyboardConfig shellPreset = PtyKeyboardConfig(
       TerminalKeys.escape,
       TerminalKeys.shift,
       TerminalKeys.tab,
+      TerminalKeys.commandShowText(label: '@', command: '!@'),
+
       TerminalKeys.up,
       TerminalKeys.enter,
     ],
@@ -48,6 +56,7 @@ final PtyKeyboardConfig shellPreset = PtyKeyboardConfig(
     [
       TerminalKeys.ctrl,
       TerminalKeys.commandShowText(label: '!', command: '!'),
+      TerminalKeys.commandShowText(label: '/', command: '/'),
       TerminalKeys.left,
       TerminalKeys.down,
       TerminalKeys.right,
