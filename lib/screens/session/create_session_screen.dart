@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
+import 'package:tired_agent_app/providers/pty_keyboard_scheme_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/form_utils.dart';
 import 'package:tired_agent_app/utils/session_presets.dart';
@@ -56,6 +57,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   String _cmd = 'bash';
   final Map<String, String?> _optionSelections = {};
   bool _busy = false;
+
+  /// Selected keyboard scheme id, or `null` for the command-derived default.
+  String? _keyboardSchemeId;
 
   /// Agent OS platform, used to filter builtin presets.
   String? _platform;
@@ -185,6 +189,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
       final session = await api.createSession(spec);
 
+      // Persist the chosen keyboard scheme for this session so the PTY page
+      // opens with it.
+      final schemeId = _keyboardSchemeId;
+      if (schemeId != null && mounted) {
+        await context
+            .read<PtyKeyboardSchemeProvider>()
+            .assignSchemeToSession(session.id, schemeId);
+      }
+
       if (mounted) {
         _presetKey.currentState?.trackRecent(_cmd.trim(), manualArgs);
         context.replace(
@@ -300,6 +313,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   ),
                   const SizedBox(height: AppSpacing.four),
 
+                  sectionHeader(context, AppStrings.of.kbdSchemeSelect),
+                  _KeyboardSchemePicker(
+                    selectedId: _keyboardSchemeId,
+                    onChanged: (id) =>
+                        setState(() => _keyboardSchemeId = id),
+                  ),
+                  const SizedBox(height: AppSpacing.four),
+
                   sectionHeader(context, AppStrings.of.createSessionLabel),
                   TextField(
                     controller: _labelController,
@@ -374,6 +395,154 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       preset: _selectedPreset!,
       selections: _optionSelections,
       onChanged: _onOptionsChanged,
+    );
+  }
+}
+
+/// Compact dropdown for choosing a keyboard scheme at session creation.
+class _KeyboardSchemePicker extends StatelessWidget {
+  final String? selectedId;
+  final ValueChanged<String?> onChanged;
+
+  const _KeyboardSchemePicker({
+    required this.selectedId,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.appColors;
+    final provider = context.watch<PtyKeyboardSchemeProvider>();
+    final selected = provider.byId(selectedId);
+    final label = selected?.name ?? AppStrings.of.kbdSchemeAuto;
+    final hasSelection = selected != null;
+
+    return GestureDetector(
+      onTap: () => _showPicker(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.three,
+          vertical: AppSpacing.two,
+        ),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.two),
+          border: Border.all(
+            color: hasSelection
+                ? c.primary.withAlpha(80)
+                : c.border.withAlpha(60),
+            width: hasSelection ? 1 : 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.keyboard_alt_outlined,
+              color: hasSelection ? c.primary : c.textSecondary,
+              size: 16,
+            ),
+            const SizedBox(width: AppSpacing.two),
+            Expanded(
+              child: ThemedText.body(
+                label,
+                color: hasSelection ? c.primary : c.text,
+              ),
+            ),
+            if (hasSelection)
+              IconButton(
+                icon: Icon(Icons.close, size: 14, color: c.textSecondary),
+                onPressed: () => onChanged(null),
+              ),
+            Icon(Icons.unfold_more, color: c.primary.withAlpha(140), size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) {
+    final c = context.appColors;
+    final provider = context.read<PtyKeyboardSchemeProvider>();
+    final schemes = provider.allSchemes;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.four),
+              child: Row(
+                children: [
+                  Icon(Icons.keyboard_alt_outlined, color: c.primary, size: 20),
+                  const SizedBox(width: AppSpacing.two),
+                  ThemedText.title(
+                    AppStrings.of.kbdSchemeSelect,
+                    color: c.primary,
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: c.border),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: schemes.length + 1,
+                itemBuilder: (_, i) {
+                  if (i == 0) {
+                    return ListTile(
+                      dense: true,
+                      leading: Icon(Icons.auto_fix_high, color: c.textSecondary, size: 18),
+                      title: ThemedText.body(
+                        AppStrings.of.kbdSchemeDefault,
+                        color: c.text,
+                      ),
+                      trailing: selectedId == null
+                          ? Icon(Icons.check, color: c.primary, size: 18)
+                          : null,
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        onChanged(null);
+                      },
+                    );
+                  }
+                  final s = schemes[i - 1];
+                  final active = s.id == selectedId;
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      provider.isBuiltin(s.id)
+                          ? Icons.bookmark_outline
+                          : Icons.keyboard,
+                      color: active ? c.primary : c.textSecondary,
+                      size: 18,
+                    ),
+                    title: ThemedText.body(
+                      s.name,
+                      color: active ? c.primary : c.text,
+                    ),
+                    subtitle: ThemedText.small(
+                      '${s.rows.length} ${AppStrings.of.kbdSchemeRows}',
+                      color: c.textSecondary,
+                    ),
+                    trailing: active
+                        ? Icon(Icons.check, color: c.primary, size: 18)
+                        : null,
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      onChanged(s.id);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

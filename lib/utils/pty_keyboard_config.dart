@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-
+import 'package:tired_agent_app/utils/pty_keyboard_presets/minimal.dart';
+import 'package:tired_agent_app/utils/pty_keyboard_presets/shell.dart';
+import 'package:tired_agent_app/utils/pty_keyboard_presets/windows.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 
 /// PTY keyboard panel layout configuration.
@@ -7,6 +8,9 @@ import 'package:tired_agent_app/utils/terminal_keys.dart';
 /// Each [PtyKeyboardConfig] holds the row definitions for the virtual keyboard
 /// panel. Different session presets (bash, cmd.exe, python3, …) load different
 /// configs so the buttons shown match the shell's needs.
+///
+/// The three builtin presets live in their own files under
+/// `pty_keyboard_presets/`: `shell.dart`, `minimal.dart`, `windows.dart`.
 class PtyKeyboardConfig {
   /// Machine-friendly id (e.g. `"shell"`, `"windows"`, `"repl"`).
   final String id;
@@ -27,88 +31,20 @@ class PtyKeyboardConfig {
   // Presets
   // ═══════════════════════════════════════════════════════════════════════
 
-  /// Default shell layout (bash, zsh) — modifiers + nav + command keys.
-  static final shell = PtyKeyboardConfig(
-    id: 'shell',
-    name: 'Shell',
-    rows: [
-      // Row 1 — command macros
-      [
-        TerminalKeys.combo([
-          TerminalKeyCode.shift,
-          TerminalKeyCode.tab,
-        ], label: 'Mode'),
-        TerminalKeys.commandShowIcon(
-          icon: Icons.play_arrow,
-          command: '/resume',
-          withEnter: true,
-          confirm: true,
-        ),
-        TerminalKeys.commandShowIcon(
-          icon: Icons.cleaning_services,
-          command: '/clear',
-          withEnter: true,
-          confirm: true,
-        ),
-        TerminalKeys.commandShowIcon(
-          icon: Icons.compress,
-          command: '/compact',
-          withEnter: true,
-          confirm: true,
-        ),
-        TerminalKeys.backspace,
-      ],
-      // Row 2 — escape + shift + tab + nav + enter
-      [
-        TerminalKeys.escape,
-        TerminalKeys.shift,
-        TerminalKeys.tab,
-        TerminalKeys.up,
-        TerminalKeys.enter,
-      ],
-      // Row 3 — ctrl + alt + arrows
-      [
-        TerminalKeys.ctrl,
-        TerminalKeys.commandShowText(label: '!', command: '!'),
-        TerminalKeys.left,
-        TerminalKeys.down,
-        TerminalKeys.right,
-      ],
-    ],
-  );
+  /// All builtin presets, in display order.
+  static final List<PtyKeyboardConfig> presets = [
+    shellPreset,
+    minimalPreset,
+    windowsPreset,
+  ];
 
-  /// Minimal layout (Python REPL, Node REPL) — fewer function keys.
-  static final minimal = PtyKeyboardConfig(
-    id: 'minimal',
-    name: 'Minimal',
-    rows: [
-      [
-        TerminalKeys.escape,
-        TerminalKeys.shift,
-        TerminalKeys.tab,
-        TerminalKeys.up,
-        TerminalKeys.enter,
-        TerminalKeys.backspace,
-      ],
-      [
-        TerminalKeys.ctrl,
-        TerminalKeys.alt,
-        TerminalKeys.left,
-        TerminalKeys.down,
-        TerminalKeys.right,
-      ],
-    ],
-  );
-
-  /// Windows layout (cmd.exe, PowerShell) — with Windows-specific keys.
-  static final windows = PtyKeyboardConfig(
-    id: 'windows',
-    name: 'Windows',
-    rows: shell.rows, // Same as shell for now; easy to customise later.
-  );
-
-  /// The default config when no specific preset matches.
-  static final defaultConfig = shell;
+  /// Resolve a builtin preset by [id], or `null` if not found.
+  static PtyKeyboardConfig? byId(String id) {
+    for (final p in presets) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
 
   /// Resolve a config from the session command string.
   ///
@@ -117,12 +53,12 @@ class PtyKeyboardConfig {
     final name = cmd.split(RegExp(r'[/\\]')).last;
 
     if (name == 'python3' || name == 'python' || name == 'node') {
-      return minimal;
+      return minimalPreset;
     }
     if (name == 'cmd.exe' || name == 'powershell.exe') {
-      return windows;
+      return windowsPreset;
     }
     // bash, zsh, sh, fish, etc.
-    return shell;
+    return shellPreset;
   }
 }
