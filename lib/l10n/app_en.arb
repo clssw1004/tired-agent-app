@@ -293,6 +293,9 @@
       }
     }
   },
+  "agentStateOnline": "Online",
+  "agentStateOffline": "Offline",
+  "agentStatePending": "Pending",
   "agentNameHint": "web-01",
   "agentUrlHint": "http://192.168.1.10:3100",
   "statusRunning": "Running",

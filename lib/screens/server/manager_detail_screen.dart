@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +28,7 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
   List<AgentInfo> _agents = [];
   bool _loading = true;
   String? _error;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -39,6 +42,18 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     _loading = false;
     // Refresh in background after first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadAgents());
+    // 轮询 agent 状态：online/offline 由服务端健康探测产生，客户端需定期拉取
+    // listAgents 才能看到变化。静默刷新，不闪 loading/错误。
+    _autoRefreshTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _loadSilent(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadAgents() async {
@@ -64,6 +79,23 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
         _error = e.toString();
         _loading = false;
       });
+    }
+  }
+
+  /// 静默轮询 agent 状态：不翻转连接状态、不闪 loading，失败保留上次列表。
+  Future<void> _loadSilent() async {
+    final auth = context.read<AuthProvider>();
+    final conn = auth.connectionFor(widget.profileId);
+    if (conn == null) return;
+    try {
+      await conn.refreshAgents();
+      if (!mounted) return;
+      setState(() {
+        _agents = List.from(conn.agents);
+        _error = null;
+      });
+    } catch (_) {
+      // 瞬时失败忽略，下次轮询再试。
     }
   }
 

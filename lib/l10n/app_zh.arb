@@ -293,6 +293,9 @@
       }
     }
   },
+  "agentStateOnline": "在线",
+  "agentStateOffline": "离线",
+  "agentStatePending": "待定",
   "agentNameHint": "web-01",
   "agentUrlHint": "http://192.168.1.10:3100",
   "send": "发送",
