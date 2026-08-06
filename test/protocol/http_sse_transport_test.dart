@@ -15,17 +15,19 @@ ServerRef _ref(HttpServer server, {String token = 'tok'}) => ServerRef(
   token: token,
 );
 
-Map<String, dynamic> _sessionJson({String id = 's1', String status = 'running'}) =>
-    {
-      'id': id,
-      'cmd': 'bash',
-      'args': <String>[],
-      'status': status,
-      'createdAt': 1,
-      'byteOffset': 0,
-      'cols': 80,
-      'rows': 24,
-    };
+Map<String, dynamic> _sessionJson({
+  String id = 's1',
+  String status = 'running',
+}) => {
+  'id': id,
+  'cmd': 'bash',
+  'args': <String>[],
+  'status': status,
+  'createdAt': 1,
+  'byteOffset': 0,
+  'cols': 80,
+  'rows': 24,
+};
 
 String _sseOutput(int offset, String data) =>
     'event: output\ndata: ${jsonEncode({'offset': offset, 'data': base64.encode(utf8.encode(data))})}\n\n';
@@ -130,74 +132,83 @@ void main() {
     await server.close();
   });
 
-  test('subscribe parses output/state/heartbeat and reports onConnected', () async {
-    final server = await _startServer((req) async {
-      req.response
-        ..headers.contentType = ContentType('text', 'event-stream')
-        ..write(_sseOutput(0, 'hello'))
-        ..write(_sseState(_sessionJson()))
-        ..write(_sseHeartbeat())
-        ..close();
-    });
-    final transport = HttpSseTransport();
-    final chunks = <OutputChunk>[];
-    final states = <Session>[];
-    final heartbeats = <int>[];
-    final statuses = <String>[];
-    final errors = <Object>[];
-    final sub = transport.subscribe(
-      _ref(server),
-      's1',
-      SubscribeHandlers(
-        onChunk: chunks.add,
-        onState: states.add,
-        onError: errors.add,
-        onHeartbeat: () => heartbeats.add(1),
-        onConnected: () => statuses.add('connected'),
-        onReconnecting: () => statuses.add('reconnecting'),
-      ),
-    );
-    await _waitUntil(() => chunks.isNotEmpty && states.isNotEmpty);
-    expect(utf8.decode(chunks.single.data), 'hello');
-    expect(states.single.id, 's1');
-    expect(heartbeats, hasLength(1));
-    expect(statuses, contains('connected'));
-    expect(errors, isEmpty);
-    sub.close();
-    await server.close();
-  });
+  test(
+    'subscribe parses output/state/heartbeat and reports onConnected',
+    () async {
+      final server = await _startServer((req) async {
+        req.response
+          ..headers.contentType = ContentType('text', 'event-stream')
+          ..write(_sseOutput(0, 'hello'))
+          ..write(_sseState(_sessionJson()))
+          ..write(_sseHeartbeat())
+          ..close();
+      });
+      final transport = HttpSseTransport();
+      final chunks = <OutputChunk>[];
+      final states = <Session>[];
+      final heartbeats = <int>[];
+      final statuses = <String>[];
+      final errors = <Object>[];
+      final sub = transport.subscribe(
+        _ref(server),
+        's1',
+        SubscribeHandlers(
+          onChunk: chunks.add,
+          onState: states.add,
+          onError: errors.add,
+          onHeartbeat: () => heartbeats.add(1),
+          onConnected: () => statuses.add('connected'),
+          onReconnecting: () => statuses.add('reconnecting'),
+        ),
+      );
+      await _waitUntil(() => chunks.isNotEmpty && states.isNotEmpty);
+      expect(utf8.decode(chunks.single.data), 'hello');
+      expect(states.single.id, 's1');
+      expect(heartbeats, hasLength(1));
+      expect(statuses, contains('connected'));
+      expect(errors, isEmpty);
+      sub.close();
+      await server.close();
+    },
+  );
 
-  test('auto-reconnects after the stream closes, firing status callbacks', () async {
-    var requests = 0;
-    final server = await _startServer((req) async {
-      requests++;
-      req.response
-        ..headers.contentType = ContentType('text', 'event-stream')
-        ..write(_sseOutput(0, 'hello'))
-        ..close();
-    });
-    final transport = HttpSseTransport(retryBaseDelayMs: 10);
-    final statuses = <String>[];
-    final sub = transport.subscribe(
-      _ref(server),
-      's1',
-      SubscribeHandlers(
-        onChunk: (_) {},
-        onState: (_) {},
-        onError: (_) {},
-        onConnected: () => statuses.add('connected'),
-        onReconnecting: () => statuses.add('reconnecting'),
-      ),
-    );
-    await _waitUntil(
-      () => statuses.where((s) => s == 'connected').length >= 2,
-    );
-    expect(requests, greaterThanOrEqualTo(2));
-    expect(statuses, contains('reconnecting'));
-    expect(statuses.where((s) => s == 'connected').length, greaterThanOrEqualTo(2));
-    sub.close();
-    await server.close();
-  });
+  test(
+    'auto-reconnects after the stream closes, firing status callbacks',
+    () async {
+      var requests = 0;
+      final server = await _startServer((req) async {
+        requests++;
+        req.response
+          ..headers.contentType = ContentType('text', 'event-stream')
+          ..write(_sseOutput(0, 'hello'))
+          ..close();
+      });
+      final transport = HttpSseTransport(retryBaseDelayMs: 10);
+      final statuses = <String>[];
+      final sub = transport.subscribe(
+        _ref(server),
+        's1',
+        SubscribeHandlers(
+          onChunk: (_) {},
+          onState: (_) {},
+          onError: (_) {},
+          onConnected: () => statuses.add('connected'),
+          onReconnecting: () => statuses.add('reconnecting'),
+        ),
+      );
+      await _waitUntil(
+        () => statuses.where((s) => s == 'connected').length >= 2,
+      );
+      expect(requests, greaterThanOrEqualTo(2));
+      expect(statuses, contains('reconnecting'));
+      expect(
+        statuses.where((s) => s == 'connected').length,
+        greaterThanOrEqualTo(2),
+      );
+      sub.close();
+      await server.close();
+    },
+  );
 
   test('404 NOT_FOUND → SessionNotFoundException, no reconnect', () async {
     var requests = 0;
@@ -206,7 +217,11 @@ void main() {
       req.response
         ..statusCode = 404
         ..headers.contentType = ContentType.json
-        ..write(jsonEncode({'error': {'code': 'NOT_FOUND', 'message': 'gone'}}))
+        ..write(
+          jsonEncode({
+            'error': {'code': 'NOT_FOUND', 'message': 'gone'},
+          }),
+        )
         ..close();
     });
     final transport = HttpSseTransport(retryBaseDelayMs: 10);
@@ -240,7 +255,11 @@ void main() {
       req.response
         ..statusCode = 401
         ..headers.contentType = ContentType.json
-        ..write(jsonEncode({'error': {'code': 'UNAUTHORIZED', 'message': 'bad token'}}))
+        ..write(
+          jsonEncode({
+            'error': {'code': 'UNAUTHORIZED', 'message': 'bad token'},
+          }),
+        )
         ..close();
     });
     final transport = HttpSseTransport(retryBaseDelayMs: 10);
@@ -275,7 +294,11 @@ void main() {
         req.response
           ..statusCode = 500
           ..headers.contentType = ContentType.json
-          ..write(jsonEncode({'error': {'code': 'INTERNAL', 'message': 'boom'}}))
+          ..write(
+            jsonEncode({
+              'error': {'code': 'INTERNAL', 'message': 'boom'},
+            }),
+          )
           ..close();
         return;
       }
@@ -325,11 +348,7 @@ void main() {
     final sub = transport.subscribe(
       _ref(server),
       's1',
-      SubscribeHandlers(
-        onChunk: chunks.add,
-        onState: (_) {},
-        onError: (_) {},
-      ),
+      SubscribeHandlers(onChunk: chunks.add, onState: (_) {}, onError: (_) {}),
     );
     await _waitUntil(() => chunks.isNotEmpty);
     expect(fromParams[0], isNull); // fromOffset 0 → no `from` param
@@ -340,47 +359,49 @@ void main() {
     await server.close();
   });
 
-  test('resubscribe while connected does not schedule a spurious reconnect',
-      () async {
-    var requests = 0;
-    final server = await _startServer((req) async {
-      requests++;
-      req.response
-        ..headers.contentType = ContentType('text', 'event-stream')
-        ..write(_sseHeartbeat());
-      await req.response.flush();
-      // keep the connection open; never close.
-    });
-    final transport = HttpSseTransport(retryBaseDelayMs: 10);
-    final statuses = <String>[];
-    final sub = transport.subscribe(
-      _ref(server),
-      's1',
-      SubscribeHandlers(
-        onChunk: (_) {},
-        onState: (_) {},
-        onError: (_) {},
-        onConnected: () => statuses.add('connected'),
-        onReconnecting: () => statuses.add('reconnecting'),
-      ),
-    );
-    await _waitUntil(() => requests >= 1 && statuses.contains('connected'));
-    // Manual reconnect while the current stream is alive.
-    sub.resubscribe?.call();
-    await _waitUntil(
-      () =>
-          requests >= 2 &&
-          statuses.where((s) => s == 'connected').length >= 2,
-    );
-    // Give any (wrong) reconnect timer a chance to fire.
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-    // Only the explicit resubscribe — the cancelled stream must not schedule
-    // an extra reconnect, or the page would flicker connected↔reconnecting.
-    expect(requests, 2);
-    expect(statuses, isNot(contains('reconnecting')));
-    sub.close();
-    await server.close(force: true);
-  });
+  test(
+    'resubscribe while connected does not schedule a spurious reconnect',
+    () async {
+      var requests = 0;
+      final server = await _startServer((req) async {
+        requests++;
+        req.response
+          ..headers.contentType = ContentType('text', 'event-stream')
+          ..write(_sseHeartbeat());
+        await req.response.flush();
+        // keep the connection open; never close.
+      });
+      final transport = HttpSseTransport(retryBaseDelayMs: 10);
+      final statuses = <String>[];
+      final sub = transport.subscribe(
+        _ref(server),
+        's1',
+        SubscribeHandlers(
+          onChunk: (_) {},
+          onState: (_) {},
+          onError: (_) {},
+          onConnected: () => statuses.add('connected'),
+          onReconnecting: () => statuses.add('reconnecting'),
+        ),
+      );
+      await _waitUntil(() => requests >= 1 && statuses.contains('connected'));
+      // Manual reconnect while the current stream is alive.
+      sub.resubscribe?.call();
+      await _waitUntil(
+        () =>
+            requests >= 2 &&
+            statuses.where((s) => s == 'connected').length >= 2,
+      );
+      // Give any (wrong) reconnect timer a chance to fire.
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+      // Only the explicit resubscribe — the cancelled stream must not schedule
+      // an extra reconnect, or the page would flicker connected↔reconnecting.
+      expect(requests, 2);
+      expect(statuses, isNot(contains('reconnecting')));
+      sub.close();
+      await server.close(force: true);
+    },
+  );
 
   test('dispose closes active subscriptions', () async {
     var requests = 0;
@@ -396,11 +417,7 @@ void main() {
     final sub = transport.subscribe(
       _ref(server),
       's1',
-      SubscribeHandlers(
-        onChunk: (_) {},
-        onState: (_) {},
-        onError: (_) {},
-      ),
+      SubscribeHandlers(onChunk: (_) {}, onState: (_) {}, onError: (_) {}),
     );
     await _waitUntil(() => requests >= 1);
     transport.dispose();
@@ -409,4 +426,148 @@ void main() {
     sub.close();
     await server.close(force: true);
   });
+
+  // ── Connection probe (testAgentConnection) ────────────────────────────
+
+  test(
+    'testAgentConnection returns name/version when /health and /sessions both 200',
+    () async {
+      final server = await _startServer((req) async {
+        if (req.uri.path == '/health') {
+          req.response
+            ..headers.contentType = ContentType.json
+            ..write(
+              jsonEncode({
+                'status': 'ok',
+                'name': 'web-01',
+                'port': 3100,
+                'ts': 1,
+                'version': '1.2.3',
+                'uptime': 42,
+                'platform': {'os': 'linux', 'arch': 'x64', 'release': '6.0'},
+              }),
+            )
+            ..close();
+          return;
+        }
+        if (req.uri.path == '/api/v1/sessions') {
+          // Token must ride along as a Bearer header for the probe to count.
+          // `req.headers[name]` returns `List<String>` in Dart's HttpServer —
+          // collapse to a single string before asserting.
+          final auth = req.headers['authorization']?.join(' ') ?? '';
+          expect(auth, 'Bearer probetok');
+          req.response
+            ..headers.contentType = ContentType.json
+            ..write('[]')
+            ..close();
+          return;
+        }
+        req.response.statusCode = 404;
+        req.response.close();
+      });
+      final transport = HttpSseTransport();
+      final result = await transport.testAgentConnection(
+        'http://127.0.0.1:${server.port}',
+        'probetok',
+      );
+      expect(result.ok, isTrue);
+      expect(result.name, 'web-01');
+      expect(result.version, '1.2.3');
+      expect(result.error, isNull);
+      await server.close();
+    },
+  );
+
+  test(
+    'testAgentConnection fails with http:401 prefix when token is rejected',
+    () async {
+      final server = await _startServer((req) async {
+        if (req.uri.path == '/health') {
+          req.response
+            ..headers.contentType = ContentType.json
+            ..write(jsonEncode({'status': 'ok', 'name': 'a', 'version': '0'}))
+            ..close();
+          return;
+        }
+        if (req.uri.path == '/api/v1/sessions') {
+          req.response
+            ..statusCode = 401
+            ..headers.contentType = ContentType.json
+            ..write(
+              jsonEncode({
+                'error': {'code': 'FORBIDDEN', 'message': 'Invalid token'},
+              }),
+            )
+            ..close();
+          return;
+        }
+        req.response.statusCode = 404;
+        req.response.close();
+      });
+      final transport = HttpSseTransport();
+      final result = await transport.testAgentConnection(
+        'http://127.0.0.1:${server.port}',
+        'wrong',
+      );
+      expect(result.ok, isFalse);
+      expect(result.name, isNull);
+      expect(result.version, isNull);
+      expect(result.error, startsWith('http:401:'));
+      await server.close();
+    },
+  );
+
+  test(
+    'testAgentConnection fails with network: prefix when host is unreachable',
+    () async {
+      // Bind+close to grab a port we know is now free, then point the probe
+      // at it — connection refused is what we're after.
+      final probe = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final port = probe.port;
+      await probe.close();
+      final transport = HttpSseTransport();
+      final result = await transport.testAgentConnection(
+        'http://127.0.0.1:$port',
+        'tok',
+      );
+      expect(result.ok, isFalse);
+      expect(result.error, startsWith('network:'));
+    },
+  );
+
+  test(
+    'testAgentConnection tolerates non-JSON /health and still validates token',
+    () async {
+      final server = await _startServer((req) async {
+        if (req.uri.path == '/health') {
+          // Some misconfigured host returns plain text. The probe should not
+          // explode — name/version simply stay null, and we move on to the
+          // token check.
+          req.response
+            ..headers.contentType = ContentType.text
+            ..write('ok')
+            ..close();
+          return;
+        }
+        if (req.uri.path == '/api/v1/sessions') {
+          req.response
+            ..headers.contentType = ContentType.json
+            ..write('[]')
+            ..close();
+          return;
+        }
+        req.response.statusCode = 404;
+        req.response.close();
+      });
+      final transport = HttpSseTransport();
+      final result = await transport.testAgentConnection(
+        'http://127.0.0.1:${server.port}',
+        'tok',
+      );
+      expect(result.ok, isTrue);
+      expect(result.name, isNull);
+      expect(result.version, isNull);
+      await server.close();
+    },
+  );
 }

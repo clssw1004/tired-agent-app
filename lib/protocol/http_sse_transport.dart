@@ -739,10 +739,62 @@ class HttpSseTransport implements Transport {
     }
   }
 
+  // ─── Connection probe ───────────────────────────────────────────────
+
+  @override
+  Future<AgentConnectionTestResult> testAgentConnection(
+    String baseUrl,
+    String token,
+  ) async {
+    final base = normalizeBaseUrl(baseUrl);
+    try {
+      // Step 1 — reachability + identity. `/health` is unauthenticated and
+      // doubles as a sanity check that the target is actually a tired-agent
+      // (non-JSON or 404 here is reported as a transport error).
+      String? name;
+      String? version;
+      final health = await _request('GET', '$base/health');
+      if (health is Map<String, dynamic>) {
+        name = health['name'] as String?;
+        version = health['version'] as String?;
+      }
+
+      // Step 2 — token validity. Bearer-protected; 401 means token is wrong.
+      await _request('GET', '$base/api/v1/sessions', token: token);
+
+      return AgentConnectionTestResult.success(name: name, version: version);
+    } on TransportException catch (e) {
+      return AgentConnectionTestResult.failure(describeTransportError(e));
+    } catch (e) {
+      return AgentConnectionTestResult.failure(e.toString());
+    }
+  }
+
   @override
   void dispose() {
     for (final teardown in List.of(_teardowns)) {
       teardown();
     }
   }
+}
+
+/// Normalize a transport-layer error into a short, prefix-tagged string
+/// suitable for dispatching in the UI layer to a localized message.
+///
+/// Format: `<category>:<detail>` where category is one of:
+///   - `network:<message>`   — request never reached a responder
+///   - `http:<status>:<msg>` — server replied with non-2xx
+///   - `other:<toString()>`  — fallback for any other thrown object
+///
+/// UI layers (e.g. the test-connection button) parse this prefix to pick
+/// the right l10n entry. Keeping the helper here means protocol-layer code
+/// owns its own error taxonomy and UI just translates.
+String describeTransportError(Object error) {
+  if (error is TransportException) {
+    if (error.statusCode == null) {
+      return 'network:${error.message}';
+    }
+    return 'http:${error.statusCode}:${error.message}';
+  }
+  return 'other:$error';
 }

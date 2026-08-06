@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/protocol/http_sse_transport.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/forms/connection_test_button.dart';
 
 /// Form data returned by [AddAgentForm].
 class AddAgentFormData {
@@ -35,6 +37,10 @@ class AddAgentFormState extends State<AddAgentForm> {
   late final TextEditingController _tokenController;
   bool _obscureToken = true;
 
+  /// Ephemeral transport for "Test Connection" — see [AddManagerFormState]
+  /// for the rationale on keeping this separate from any live connection.
+  HttpSseTransport? _testTransport;
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +54,7 @@ class AddAgentFormState extends State<AddAgentForm> {
     _nameController.dispose();
     _urlController.dispose();
     _tokenController.dispose();
+    _testTransport?.dispose();
     super.dispose();
   }
 
@@ -56,6 +63,32 @@ class AddAgentFormState extends State<AddAgentForm> {
     _urlController.text.trim(),
     _tokenController.text.trim(),
   );
+
+  /// Probe the agent by hitting its `/health` (reachability + identity) and
+  /// a Bearer-protected `/api/v1/sessions` (token validity). Success detail
+  /// surfaces the agent's name/version when `/health` advertises them.
+  Future<ConnectionTestResult> _testConnection(String url, String token) async {
+    _testTransport ??= HttpSseTransport();
+    try {
+      final r = await _testTransport!.testAgentConnection(url, token);
+      if (!r.ok) {
+        return ConnectionTestResult.fail(renderTransportError(r.error ?? ''));
+      }
+      String? detail;
+      if (r.name != null && r.version != null) {
+        detail = '${r.name} v${r.version}';
+      } else if (r.name != null) {
+        detail = r.name;
+      } else if (r.version != null) {
+        detail = 'v${r.version}';
+      }
+      return ConnectionTestResult.ok(detail: detail);
+    } catch (e) {
+      return ConnectionTestResult.fail(
+        renderTransportError(describeTransportError(e)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,17 +120,28 @@ class AddAgentFormState extends State<AddAgentForm> {
           const SizedBox(height: AppSpacing.two),
           TextField(
             controller: _tokenController,
-            decoration: context.appComponents.buildInputDecoration(
-              context,
-              label: AppStrings.of.labelAgentToken,
-            ).copyWith(
-              suffixIcon: IconButton(
-                icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
-                onPressed: () => setState(() => _obscureToken = !_obscureToken),
-              ),
-            ),
+            decoration: context.appComponents
+                .buildInputDecoration(
+                  context,
+                  label: AppStrings.of.labelAgentToken,
+                )
+                .copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureToken ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscureToken = !_obscureToken),
+                  ),
+                ),
             obscureText: _obscureToken,
             autocorrect: false,
+          ),
+          const SizedBox(height: AppSpacing.three),
+          ConnectionTestButton(
+            url: () => _urlController.text,
+            token: () => _tokenController.text,
+            test: _testConnection,
           ),
         ],
       ),

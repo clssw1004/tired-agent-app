@@ -32,6 +32,30 @@
   "managersSessionExpired": "Session expired. Enter the API token to reconnect.",
   "managersAccessToken": "Access Token",
 
+  "testConnection": "Test Connection",
+  "testConnectionTesting": "Testing…",
+  "testConnectionSuccess": "Connection successful",
+  "testConnectionFailed": "Failed: {error}",
+  "@testConnectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "testConnectionNeedUrlToken": "Please fill in URL and token first",
+  "testConnectionFailedNetwork": "Cannot reach server, please check your network and URL",
+  "testConnectionFailed401": "Authentication failed (401) — token may be invalid",
+  "testConnectionFailed404": "Not found (404) — please check the URL",
+  "testConnectionFailed5xx": "Server error ({code}) — please retry later",
+  "@testConnectionFailed5xx": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+
   "statusConnected": "Connected",
   "statusConnecting": "Connecting…",
   "statusError": "Error",
