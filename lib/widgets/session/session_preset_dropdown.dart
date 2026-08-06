@@ -157,30 +157,34 @@ class SessionPresetDropdown extends StatelessWidget {
                         ? Border.all(color: c.primary.withAlpha(40), width: 0.5)
                         : null,
                   ),
-                  child: ListTile(
-                    dense: true,
-                    leading: Text(
-                      item.emoji,
-                      style: const TextStyle(fontSize: 18),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    borderRadius: BorderRadius.circular(AppSpacing.two),
+                    child: ListTile(
+                      dense: true,
+                      leading: Text(
+                        item.emoji,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      title: ThemedText.mono(
+                        item.label,
+                        color: isActive ? c.primary : c.text,
+                      ),
+                      subtitle: item.builtin != null
+                          ? ThemedText.small(item.builtin!.hint)
+                          : null,
+                      trailing: isActive
+                          ? Icon(Icons.check, color: c.primary, size: 18)
+                          : null,
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        if (item.builtin != null) {
+                          onSelectBuiltin?.call(item.builtin!);
+                        } else if (item.user != null) {
+                          onSelectUser?.call(item.user!);
+                        }
+                      },
                     ),
-                    title: ThemedText.mono(
-                      item.label,
-                      color: isActive ? c.primary : c.text,
-                    ),
-                    subtitle: item.builtin != null
-                        ? ThemedText.small(item.builtin!.hint)
-                        : null,
-                    trailing: isActive
-                        ? Icon(Icons.check, color: c.primary, size: 18)
-                        : null,
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      if (item.builtin != null) {
-                        onSelectBuiltin?.call(item.builtin!);
-                      } else if (item.user != null) {
-                        onSelectUser?.call(item.user!);
-                      }
-                    },
                   ),
                 );
               },
