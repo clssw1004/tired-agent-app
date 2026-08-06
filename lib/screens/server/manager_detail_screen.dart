@@ -13,6 +13,8 @@ import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/forms/add_agent_form.dart';
+import 'package:tired_agent_app/screens/server/add_agent_screen.dart'
+    show AddAgentPageArgs;
 
 /// Displays all agents for a given manager, with an option to add new ones.
 class ManagerDetailScreen extends StatefulWidget {
@@ -104,61 +106,35 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     final conn = auth.connectionFor(widget.profileId);
     if (conn == null || conn.status != ConnectionStatus.connected) return;
 
-    final formKey = GlobalKey<AddAgentFormState>();
-
-    final formData = await NeonDialog.show<AddAgentFormData?>(
-      context: context,
-      title: AppStrings.of.agentAddTitle,
-      content: AddAgentForm(key: formKey),
-      actions: [
-        NeonDialogAction(
-          label: AppStrings.of.cancel,
-          onPressed: (ctx) => Navigator.of(ctx).pop(null),
-        ),
-        NeonDialogAction(
-          label: AppStrings.of.agentRegister,
-          isPrimary: true,
-          onPressed: (ctx) {
-            final data = formKey.currentState?.data;
-            if (data != null &&
-                data.url.isNotEmpty &&
-                data.token.isNotEmpty &&
-                data.name.isNotEmpty) {
-              Navigator.of(ctx).pop(data);
-            }
-          },
-        ),
-      ],
+    final formData = await context.push<AddAgentFormData>(
+      '/profile/${widget.profileId}/add-agent',
+      extra: const AddAgentPageArgs(),
     );
-
-    if (formData != null && mounted) {
-      try {
-        await conn.transport.addAgent(
-          conn.managerRef,
-          name: formData.name,
-          baseUrl: formData.url,
-          token: formData.token,
+    if (formData == null || !mounted) return;
+    try {
+      await conn.transport.addAgent(
+        conn.managerRef,
+        name: formData.name,
+        baseUrl: formData.url,
+        token: formData.token,
+      );
+      await _loadAgents();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: ThemedText.small(AppStrings.of.agentAdded(formData.name)),
+          ),
         );
-        await _loadAgents();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: ThemedText.small(
-                AppStrings.of.agentAdded(formData.name),
-              ),
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          final c = context.appColors;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.of.agentAddFailed(e.toString())),
-              backgroundColor: c.danger,
-            ),
-          );
-        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final c = context.appColors;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.of.agentAddFailed(e.toString())),
+            backgroundColor: c.danger,
+          ),
+        );
       }
     }
   }
@@ -168,63 +144,42 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
     final conn = auth.connectionFor(widget.profileId);
     if (conn == null || conn.status != ConnectionStatus.connected) return;
 
-    final formKey = GlobalKey<AddAgentFormState>();
-
-    final formData = await NeonDialog.show<AddAgentFormData?>(
-      context: context,
-      title: AppStrings.of.agentEditTitle,
-      content: AddAgentForm(
-        key: formKey,
+    final formData = await context.push<AddAgentFormData>(
+      '/profile/${widget.profileId}/add-agent',
+      extra: AddAgentPageArgs(
+        agentId: agent.id,
         initialName: agent.name,
         initialUrl: agent.baseUrl,
       ),
-      actions: [
-        NeonDialogAction(
-          label: AppStrings.of.cancel,
-          onPressed: (ctx) => Navigator.of(ctx).pop(null),
-        ),
-        NeonDialogAction(
-          label: AppStrings.of.agentSave,
-          isPrimary: true,
-          onPressed: (ctx) {
-            final data = formKey.currentState?.data;
-            if (data != null && data.name.isNotEmpty && data.url.isNotEmpty) {
-              Navigator.of(ctx).pop(data);
-            }
-          },
-        ),
-      ],
     );
-
-    if (formData != null && mounted) {
-      try {
-        await conn.transport.updateAgent(
-          conn.managerRef,
-          agent.id,
-          name: formData.name,
-          baseUrl: formData.url,
-          token: formData.token.isEmpty ? null : formData.token,
+    if (formData == null || !mounted) return;
+    try {
+      await conn.transport.updateAgent(
+        conn.managerRef,
+        agent.id,
+        name: formData.name,
+        baseUrl: formData.url,
+        token: formData.token.isEmpty ? null : formData.token,
+      );
+      await _loadAgents();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: ThemedText.small(
+              AppStrings.of.agentUpdated(formData.name),
+            ),
+          ),
         );
-        await _loadAgents();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: ThemedText.small(
-                AppStrings.of.agentUpdated(formData.name),
-              ),
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          final c = context.appColors;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.of.agentUpdateFailed(e.toString())),
-              backgroundColor: c.danger,
-            ),
-          );
-        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final c = context.appColors;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.of.agentUpdateFailed(e.toString())),
+            backgroundColor: c.danger,
+          ),
+        );
       }
     }
   }
@@ -373,7 +328,8 @@ class _ManagerDetailScreenState extends State<ManagerDetailScreen> {
             context,
             AgentCardData(
               agent: agent,
-              onTap: () => context.push('/profile/${widget.profileId}/agent/$agentId'),
+              onTap: () =>
+                  context.push('/profile/${widget.profileId}/agent/$agentId'),
               onEdit: () => _showEditAgent(agent),
               onDelete: () => _deleteAgent(agent),
             ),

@@ -107,55 +107,32 @@ class ServerListScreen extends StatelessWidget {
   // ── Add Manager dialog ──────────────────────────────────────────────
 
   Future<void> _showAddManager(BuildContext context, AuthProvider auth) async {
-    final formKey = GlobalKey<AddManagerFormState>();
-
-    final formData = await NeonDialog.show<AddManagerFormData?>(
-      context: context,
-      title: AppStrings.of.managersAdd,
-      content: AddManagerForm(
-        key: formKey,
-        initialName: AppStrings.of.managersDefaultName(
-          auth.connections.length + 1,
-        ),
-      ),
-      actions: [
-        NeonDialogAction(
-          label: AppStrings.of.cancel,
-          onPressed: (ctx) => Navigator.of(ctx).pop(null),
-        ),
-        NeonDialogAction(
-          label: AppStrings.of.managersConnect,
-          isPrimary: true,
-          onPressed: (ctx) {
-            final data = formKey.currentState?.data;
-            if (data != null) Navigator.of(ctx).pop(data);
-          },
-        ),
-      ],
+    final initialName = AppStrings.of.managersDefaultName(
+      auth.connections.length + 1,
     );
-
-    if (formData != null && context.mounted) {
-      if (formData.url.isEmpty || formData.token.isEmpty) return;
-      try {
-        await auth.login(
-          formData.url,
-          formData.token,
-          name: formData.name.isNotEmpty ? formData.name : null,
+    final formData = await context.push<AddManagerFormData>(
+      '/add-manager',
+      extra: initialName,
+    );
+    if (formData == null || !context.mounted) return;
+    if (formData.url.isEmpty || formData.token.isEmpty) return;
+    try {
+      await auth.login(
+        formData.url,
+        formData.token,
+        name: formData.name.isNotEmpty ? formData.name : null,
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: ThemedText.small(AppStrings.of.managersAdded)),
         );
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: ThemedText.small(AppStrings.of.managersAdded),
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          final c = context.appColors;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
-          );
-        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        final c = context.appColors;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: c.danger),
+        );
       }
     }
   }

@@ -5,6 +5,7 @@ import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/forms/connection_test_button.dart';
+import 'package:tired_agent_app/widgets/forms/url_scheme_dropdown.dart';
 
 /// Form data returned by [AddManagerForm].
 class AddManagerFormData {
@@ -15,7 +16,10 @@ class AddManagerFormData {
 }
 
 /// Stateful form widget that owns its [TextEditingController]s and disposes
-/// them in sync with the dialog's widget tree lifecycle.
+/// them in sync with the host page's widget tree lifecycle.
+///
+/// Embedding: place this widget inside a `SingleChildScrollView` so the
+/// page handles scrolling — the form itself is a plain `Column`.
 class AddManagerForm extends StatefulWidget {
   final String initialName;
 
@@ -30,6 +34,11 @@ class AddManagerFormState extends State<AddManagerForm> {
   late final TextEditingController _urlController;
   late final TextEditingController _tokenController;
   bool _obscureToken = true;
+
+  /// URL scheme selected via [UrlSchemeDropdown]. Paired with [_urlController]
+  /// which only stores the host:port part — [_effectiveUrl] concatenates them
+  /// on read so the form never has to round-trip the full URL.
+  String _scheme = 'http://';
 
   /// Ephemeral transport used only for the "Test Connection" probe.
   ///
@@ -55,9 +64,21 @@ class AddManagerFormState extends State<AddManagerForm> {
     super.dispose();
   }
 
+  /// Concatenates the dropdown scheme with whatever the user typed in the
+  /// URL field. Also strips a stray `http://` / `https://` prefix the user
+  /// might have pasted into the field, so we never end up with
+  /// `http://https://host` after submit.
+  String get _effectiveUrl {
+    final host = _urlController.text.trim().replaceFirst(
+      RegExp(r'^https?://'),
+      '',
+    );
+    return '$_scheme$host';
+  }
+
   AddManagerFormData get data => AddManagerFormData(
     _nameController.text.trim(),
-    _urlController.text.trim(),
+    _effectiveUrl,
     _tokenController.text.trim(),
   );
 
@@ -81,58 +102,63 @@ class AddManagerFormState extends State<AddManagerForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            controller: _nameController,
-            decoration: context.appComponents.buildInputDecoration(
-              context,
-              label: AppStrings.of.labelName,
-            ),
-            autocorrect: false,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _nameController,
+          decoration: context.appComponents.buildInputDecoration(
+            context,
+            label: AppStrings.of.labelName,
           ),
-          const SizedBox(height: AppSpacing.two),
-          TextField(
-            controller: _urlController,
-            decoration: context.appComponents.buildInputDecoration(
-              context,
-              label: AppStrings.of.labelManagerUrl,
-              hint: AppStrings.of.managerUrlHint,
-            ),
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-          ),
-          const SizedBox(height: AppSpacing.two),
-          TextField(
-            controller: _tokenController,
-            decoration: context.appComponents
-                .buildInputDecoration(
-                  context,
-                  label: AppStrings.of.managersAccessToken,
-                )
-                .copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureToken ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: () =>
-                        setState(() => _obscureToken = !_obscureToken),
-                  ),
+          autocorrect: false,
+        ),
+        const SizedBox(height: AppSpacing.two),
+        TextField(
+          controller: _urlController,
+          decoration: context.appComponents
+              .buildInputDecoration(
+                context,
+                label: AppStrings.of.labelManagerUrl,
+                hint: AppStrings.of.managerUrlHint,
+              )
+              .copyWith(
+                prefix: UrlSchemeDropdown(
+                  value: _scheme,
+                  onChanged: (v) => setState(() => _scheme = v),
                 ),
-            obscureText: _obscureToken,
-            autocorrect: false,
-          ),
-          const SizedBox(height: AppSpacing.three),
-          ConnectionTestButton(
-            url: () => _urlController.text,
-            token: () => _tokenController.text,
-            test: _testConnection,
-          ),
-        ],
-      ),
+              ),
+          keyboardType: TextInputType.url,
+          autocorrect: false,
+        ),
+        const SizedBox(height: AppSpacing.two),
+        TextField(
+          controller: _tokenController,
+          decoration: context.appComponents
+              .buildInputDecoration(
+                context,
+                label: AppStrings.of.managersAccessToken,
+              )
+              .copyWith(
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureToken ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscureToken = !_obscureToken),
+                ),
+              ),
+          obscureText: _obscureToken,
+          autocorrect: false,
+        ),
+        const SizedBox(height: AppSpacing.three),
+        ConnectionTestButton(
+          url: () => _effectiveUrl,
+          token: () => _tokenController.text,
+          test: _testConnection,
+        ),
+      ],
     );
   }
 }
