@@ -65,11 +65,8 @@ class PtySessionViewState extends State<PtySessionView>
   bool _keyboardExpanded = false;
 
   /// When true, the system soft keyboard (IME) won't pop up on tap.
-  /// Toggled by double-tap on the terminal area.
+  /// Toggled via the keyboard panel's IME button.
   bool _hardwareKeyboardOnly = true;
-
-  /// Timestamp of the last pointer-down event, for double-tap detection.
-  DateTime? _lastTapDown;
 
   /// Animation for the pulsing reconnect dot.
   late final AnimationController _pulseController;
@@ -326,7 +323,10 @@ Future<void> _loadKeyboardScheme() async {
   Future<void> _copySelection() async {
     final selection = _terminalController.selectionFor(_terminal.buffer);
     if (selection == null) return;
-    final text = _terminal.buffer.getText(selection, true);
+    // 不能开 trimWhitespace：窄屏折行时，折行边界上真实落在行尾的空格会被
+    // trim 掉，续接后词间空格丢失（"aaaaaa bbb" 复制成 "aaaaaabbb"）。
+    // 空白填充 cell 是 code-0，getText 本就跳过，不会引入整行空格噪声。
+    final text = _terminal.buffer.getText(selection);
     if (text.isEmpty) return;
     await Clipboard.setData(ClipboardData(text: text));
     _terminalController.clearSelection();
@@ -550,32 +550,18 @@ Future<void> _loadKeyboardScheme() async {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: Listener(
-                      onPointerDown: (_) {
-                        final now = DateTime.now();
-                        final gap = _lastTapDown != null
-                            ? now.difference(_lastTapDown!).inMilliseconds
-                            : null;
-                        _lastTapDown = now;
-
-                        // Double-tap within 400ms → toggle system keyboard.
-                        if (gap != null && gap < 400) {
-                          _toggleIme();
-                        }
-                      },
-                      child: ScrollConfiguration(
-                        behavior: const PtyScrollBehavior(),
-                        child: TerminalView(
-                          _terminal,
-                          key: _terminalViewKey,
-                          controller: _terminalController,
-                          theme: terminalTheme,
-                          autofocus: false,
-                          hardwareKeyboardOnly: _hardwareKeyboardOnly,
-                          focusNode: _terminalFocusNode,
-                          backgroundOpacity: 1.0,
-                          deleteDetection: true,
-                        ),
+                    child: ScrollConfiguration(
+                      behavior: const PtyScrollBehavior(),
+                      child: TerminalView(
+                        _terminal,
+                        key: _terminalViewKey,
+                        controller: _terminalController,
+                        theme: terminalTheme,
+                        autofocus: false,
+                        hardwareKeyboardOnly: _hardwareKeyboardOnly,
+                        focusNode: _terminalFocusNode,
+                        backgroundOpacity: 1.0,
+                        deleteDetection: true,
                       ),
                     ),
                   ),
