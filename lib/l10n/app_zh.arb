@@ -29,6 +29,30 @@
   "managersSessionExpired": "会话已过期，输入 API 令牌重连。",
   "managersAccessToken": "访问令牌",
 
+  "testConnection": "测试连接",
+  "testConnectionTesting": "正在测试…",
+  "testConnectionSuccess": "连接成功",
+  "testConnectionFailed": "失败：{error}",
+  "@testConnectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "testConnectionNeedUrlToken": "请先填写 URL 和令牌",
+  "testConnectionFailedNetwork": "无法连接服务器，请检查网络与 URL",
+  "testConnectionFailed401": "认证失败（401）——令牌可能无效",
+  "testConnectionFailed404": "地址不存在（404）——请检查 URL",
+  "testConnectionFailed5xx": "服务器错误（{code}）——请稍后重试",
+  "@testConnectionFailed5xx": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+
   "statusConnected": "已连接",
   "statusConnecting": "连接中…",
   "statusError": "错误",

@@ -194,7 +194,44 @@ abstract class Transport {
   /// Check whether the current session is still valid.
   Future<bool> checkSession(ServerRef ref);
 
+  /// Probe an agent's reachability and bearer token — without registering,
+  /// mutating state, or relying on any persistent session. Used by the
+  /// "Test Connection" affordance on the Add/Edit Agent form.
+  Future<AgentConnectionTestResult> testAgentConnection(
+    String baseUrl,
+    String token,
+  );
+
   /// Release all resources held by this transport, closing any active
   /// SSE subscriptions and cancelling pending reconnect timers.
   void dispose();
+}
+
+/// Result of [Transport.testAgentConnection].
+class AgentConnectionTestResult {
+  /// Whether the probe succeeded (URL reachable + token accepted).
+  final bool ok;
+
+  /// Agent-reported name (from `/health`), populated only on success.
+  final String? name;
+
+  /// Agent-reported version (from `/health`), populated only on success.
+  final String? version;
+
+  /// Short, machine-tagged error description (e.g. `http:401:…` or
+  /// `network:…`). UI layers feed this through their own l10n mapping.
+  final String? error;
+
+  const AgentConnectionTestResult({
+    required this.ok,
+    this.name,
+    this.version,
+    this.error,
+  });
+
+  factory AgentConnectionTestResult.success({String? name, String? version}) =>
+      AgentConnectionTestResult(ok: true, name: name, version: version);
+
+  factory AgentConnectionTestResult.failure(String error) =>
+      AgentConnectionTestResult(ok: false, error: error);
 }
