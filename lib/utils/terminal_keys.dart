@@ -163,6 +163,45 @@ class TerminalKeyDef {
     this.confirm = false,
     this.confirmMessage,
   });
+
+  // ── Serialization ────────────────────────────────────────────────
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'label': label,
+    'bytes': bytes,
+    'icon': icon == null
+        ? null
+        : {
+            'codePoint': icon!.codePoint,
+            'fontFamily': icon!.fontFamily,
+            'fontPackage': icon!.fontPackage,
+          },
+    'isMod': isMod,
+    'confirm': confirm,
+    'confirmMessage': confirmMessage,
+  };
+
+  factory TerminalKeyDef.fromJson(Map<String, dynamic> json) {
+    final iconJson = json['icon'];
+    IconData? icon;
+    if (iconJson != null) {
+      icon = IconData(
+        (iconJson['codePoint'] as num?)?.toInt() ?? 0,
+        fontFamily: iconJson['fontFamily'] as String?,
+        fontPackage: iconJson['fontPackage'] as String?,
+      );
+    }
+    return TerminalKeyDef(
+      id: json['id'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+      bytes: (json['bytes'] as List<dynamic>? ?? const []).cast<int>(),
+      icon: icon,
+      isMod: json['isMod'] as bool? ?? false,
+      confirm: json['confirm'] as bool? ?? false,
+      confirmMessage: json['confirmMessage'] as String?,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -371,6 +410,31 @@ class TerminalKeys {
     label: ';',
     bytes: [0x3B],
   );
+  static const colon = TerminalKeyDef(id: 'colon', label: ':', bytes: [0x3A]);
+  static const slash = TerminalKeyDef(id: 'slash', label: '/', bytes: [0x2F]);
+  static const backslash = TerminalKeyDef(
+    id: 'backslash',
+    label: r'\',
+    bytes: [0x5C],
+  );
+  static const minus = TerminalKeyDef(id: 'minus', label: '-', bytes: [0x2D]);
+  static const equal = TerminalKeyDef(id: 'equal', label: '=', bytes: [0x3D]);
+  static const backquote = TerminalKeyDef(
+    id: 'backquote',
+    label: '`',
+    bytes: [0x60],
+  );
+  static const bracketLeft = TerminalKeyDef(
+    id: 'bracketLeft',
+    label: '[',
+    bytes: [0x5B],
+  );
+  static const bracketRight = TerminalKeyDef(
+    id: 'bracketRight',
+    label: ']',
+    bytes: [0x5D],
+  );
+  static const quote = TerminalKeyDef(id: 'quote', label: '"', bytes: [0x22]);
 
   // ═══════════════════════════════════════════════════════════════════════
   // Combo factories

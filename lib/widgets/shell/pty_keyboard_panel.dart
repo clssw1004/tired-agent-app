@@ -28,6 +28,8 @@ class PtyKeyboardPanel extends StatelessWidget {
     required this.onToggleIme,
     required this.onPaste,
     required this.onSendBytes,
+    this.schemeName,
+    this.onSwitchScheme,
   });
 
   /// The layout configuration (which rows and keys to show).
@@ -48,6 +50,12 @@ class PtyKeyboardPanel extends StatelessWidget {
 
   final ValueChanged<List<int>> onSendBytes;
 
+  /// Current keyboard scheme name — shown in the expanded header.
+  final String? schemeName;
+
+  /// Open the scheme switcher sheet.
+  final VoidCallback? onSwitchScheme;
+
   @override
   Widget build(BuildContext context) {
     final c = context.appColors;
@@ -64,6 +72,14 @@ class PtyKeyboardPanel extends StatelessWidget {
           modifierState: modifierState,
         ),
         if (expanded) ...[
+          if (schemeName != null) ...[
+            _SchemeHeader(
+              name: schemeName!,
+              onTap: onSwitchScheme,
+              colors: c,
+            ),
+            const SizedBox(height: 2),
+          ],
           for (final row in config.rows) ...[
             const SizedBox(height: 4),
             _buildRow(row, c),
@@ -483,6 +499,50 @@ class _KeyButton extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Thin header above the key rows showing the active keyboard scheme name.
+/// Tapping it opens the scheme switcher (when [onTap] is provided).
+class _SchemeHeader extends StatelessWidget {
+  final String name;
+  final VoidCallback? onTap;
+  final AppColors colors;
+
+  const _SchemeHeader({
+    required this.name,
+    required this.onTap,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 22,
+        color: colors.surfaceAlt.withAlpha(120),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.keyboard_alt_outlined, size: 12, color: colors.primary),
+            const SizedBox(width: 4),
+            Text(
+              name,
+              style: TextStyle(
+                fontSize: 10,
+                color: colors.primary,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(Icons.unfold_more, size: 12, color: colors.primary),
+          ],
         ),
       ),
     );

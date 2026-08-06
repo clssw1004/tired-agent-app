@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/providers/pinned_session_provider.dart';
+import 'package:tired_agent_app/providers/pty_keyboard_scheme_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/session/create_session_screen.dart';
 import 'package:tired_agent_app/screens/server/manager_detail_screen.dart';
@@ -15,6 +16,8 @@ import 'package:tired_agent_app/screens/session/session_detail_screen.dart';
 import 'package:tired_agent_app/screens/settings/settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/terminal_settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/theme_settings_screen.dart';
+import 'package:tired_agent_app/screens/settings/keyboard_scheme_list_screen.dart';
+import 'package:tired_agent_app/screens/settings/keyboard_scheme_editor_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
 import 'package:tired_agent_app/services/session_exit_notifier.dart';
 import 'package:tired_agent_app/services/storage_service.dart';
@@ -42,6 +45,7 @@ class _TiredAgentAppState extends State<TiredAgentApp>
   late final PinnedSessionProvider _pinnedSessionProvider;
   late final ToastProvider _toastProvider;
   late final AppSettingsProvider _settingsProvider;
+  late final PtyKeyboardSchemeProvider _keyboardSchemeProvider;
   late final SessionExitNotifier _sessionExitNotifier;
   late final GoRouter _router;
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -56,6 +60,7 @@ class _TiredAgentAppState extends State<TiredAgentApp>
     _pinnedSessionProvider = PinnedSessionProvider();
     _toastProvider = ToastProvider();
     _settingsProvider = AppSettingsProvider();
+    _keyboardSchemeProvider = PtyKeyboardSchemeProvider();
     _sessionExitNotifier = SessionExitNotifier();
     _sessionExitNotifier.init(
       authService: _authService,
@@ -149,6 +154,27 @@ class _TiredAgentAppState extends State<TiredAgentApp>
           builder: (_, _) => const ThemeSettingsScreen(),
           parentNavigatorKey: _rootNavigatorKey,
         ),
+
+        // ── Keyboard scheme manager (full-screen) ────────────────
+        GoRoute(
+          path: '/settings/keyboard',
+          builder: (_, _) => const KeyboardSchemeListScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+        GoRoute(
+          path: '/settings/keyboard/new',
+          builder: (_, state) => KeyboardSchemeEditorScreen(
+            basePreset: state.uri.queryParameters['base'],
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+        GoRoute(
+          path: '/settings/keyboard/:schemeId',
+          builder: (_, state) => KeyboardSchemeEditorScreen(
+            schemeId: state.pathParameters['schemeId'],
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
       ],
     );
 
@@ -158,6 +184,7 @@ class _TiredAgentAppState extends State<TiredAgentApp>
     });
     _pinnedSessionProvider.load();
     _settingsProvider.load();
+    _keyboardSchemeProvider.load();
   }
 
   /// 通知点击 / 冷启动跳转到对应会话详情页。
@@ -212,6 +239,7 @@ class _TiredAgentAppState extends State<TiredAgentApp>
         ChangeNotifierProvider.value(value: _pinnedSessionProvider),
         ChangeNotifierProvider.value(value: _toastProvider),
         ChangeNotifierProvider.value(value: _settingsProvider),
+        ChangeNotifierProvider.value(value: _keyboardSchemeProvider),
         Provider<SessionExitNotifier>.value(value: _sessionExitNotifier),
       ],
       child: Consumer<AppSettingsProvider>(
