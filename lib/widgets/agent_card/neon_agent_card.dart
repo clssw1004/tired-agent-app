@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/agent_card/agent_status_badge.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
@@ -29,22 +30,11 @@ class NeonAgentCard extends AgentCardContract {
             padding: const EdgeInsets.all(AppSpacing.three),
             child: Row(
               children: [
-                // Status dot
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: _agentColor(agent.state, c),
-                    shape: BoxShape.circle,
-                    boxShadow: agent.state == AgentState.online
-                        ? [
-                            BoxShadow(
-                              color: c.success.withAlpha(80),
-                              blurRadius: 4,
-                            ),
-                          ]
-                        : null,
-                  ),
+                // Status badge (dot + label)
+                AgentStatusBadge(
+                  color: _agentColor(agent.state, c),
+                  label: agentStateLabel(agent.state),
+                  glow: agent.state == AgentState.online,
                 ),
                 const SizedBox(width: AppSpacing.three),
                 // Name + URL

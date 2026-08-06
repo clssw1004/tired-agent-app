@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/widgets/agent_card/agent_status_badge.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
 
 /// Material Design 3 风格 Agent 卡片 — 原生 M3 ListTile，编辑/删除用 IconButton。
@@ -39,10 +40,9 @@ class MD3AgentCard extends AgentCardContract {
         dense: true,
         visualDensity: VisualDensity.compact,
         minTileHeight: 44,
-        leading: Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+        leading: AgentStatusBadge(
+          color: statusColor,
+          label: agentStateLabel(agent.state),
         ),
         title: Text(
           agent.name,

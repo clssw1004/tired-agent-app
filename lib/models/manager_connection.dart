@@ -200,6 +200,22 @@ class ManagerConnection extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fetch the latest agent list without touching connection state.
+  ///
+  /// Used for periodic status polling — unlike [connect], this never flips
+  /// [status], so a screen can poll silently without flickering the
+  /// connected chrome (add button, status banners). The session token is
+  /// silently refreshed first if close to expiry.
+  Future<void> refreshAgents() async {
+    if (profile.sessionToken == null) return;
+    if (!isSessionFresh && profile.refreshToken != null) {
+      await ensureFreshSession();
+    }
+    final mgrRef = _managerRefWith(profile.sessionToken!);
+    agents = await transport.listAgents(mgrRef);
+    notifyListeners();
+  }
+
   /// Ensure the session token is fresh; refresh if needed.
   Future<void> ensureFreshSession() async {
     if (isSessionFresh) return;
