@@ -277,7 +277,7 @@
   "labelAgentUrl": "Agent URL",
   "labelAgentToken": "Agent 令牌",
   "labelManagerUrl": "Manager URL",
-  "managerUrlHint": "http://192.168.1.10:3099",
+  "managerUrlHint": "192.168.1.10:3099",
   "managerAgentCounts": "{total} 个 Agent · {online} 在线 · {offline} 离线",
   "@managerAgentCounts": {
     "placeholders": {
@@ -321,7 +321,7 @@
   "agentStateOffline": "离线",
   "agentStatePending": "待定",
   "agentNameHint": "web-01",
-  "agentUrlHint": "http://192.168.1.10:3100",
+  "agentUrlHint": "192.168.1.10:3100",
   "send": "发送",
   "timeJustNow": "刚刚",
   "dirPickerTitle": "选择工作目录",

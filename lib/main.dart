@@ -8,6 +8,8 @@ import 'package:tired_agent_app/providers/pinned_session_provider.dart';
 import 'package:tired_agent_app/providers/pty_keyboard_scheme_provider.dart';
 import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/session/create_session_screen.dart';
+import 'package:tired_agent_app/screens/server/add_agent_screen.dart';
+import 'package:tired_agent_app/screens/server/add_manager_screen.dart';
 import 'package:tired_agent_app/screens/server/manager_detail_screen.dart';
 import 'package:tired_agent_app/screens/session/pinned_sessions_screen.dart';
 import 'package:tired_agent_app/screens/server/server_list_screen.dart';
@@ -62,11 +64,13 @@ class _TiredAgentAppState extends State<TiredAgentApp>
     _settingsProvider = AppSettingsProvider();
     _keyboardSchemeProvider = PtyKeyboardSchemeProvider();
     _sessionExitNotifier = SessionExitNotifier();
-    _sessionExitNotifier.init(
-      authService: _authService,
-      isEnabled: () => _settingsProvider.sessionExitNotifications,
-      onTap: _openSessionFromNotification,
-    ).then((_) => _handleNotificationLaunch());
+    _sessionExitNotifier
+        .init(
+          authService: _authService,
+          isEnabled: () => _settingsProvider.sessionExitNotifications,
+          onTap: _openSessionFromNotification,
+        )
+        .then((_) => _handleNotificationLaunch());
 
     _router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -109,6 +113,27 @@ class _TiredAgentAppState extends State<TiredAgentApp>
           path: '/profile/:profileId',
           builder: (_, state) => ManagerDetailScreen(
             profileId: state.pathParameters['profileId'] ?? '',
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+
+        // ── Add Manager (full-screen form) ────────────────────────
+        GoRoute(
+          path: '/add-manager',
+          builder: (_, state) => AddManagerScreen(
+            initialName: state.extra is String ? state.extra as String : '',
+          ),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+
+        // ── Add / Edit Agent (full-screen form) ───────────────────
+        GoRoute(
+          path: '/profile/:profileId/add-agent',
+          builder: (_, state) => AddAgentScreen(
+            profileId: state.pathParameters['profileId'] ?? '',
+            args: state.extra is AddAgentPageArgs
+                ? state.extra as AddAgentPageArgs
+                : const AddAgentPageArgs(),
           ),
           parentNavigatorKey: _rootNavigatorKey,
         ),

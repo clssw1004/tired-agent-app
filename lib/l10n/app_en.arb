@@ -277,7 +277,7 @@
   "labelAgentUrl": "Agent URL",
   "labelAgentToken": "Agent Token",
   "labelManagerUrl": "Manager URL",
-  "managerUrlHint": "http://192.168.1.10:3099",
+  "managerUrlHint": "192.168.1.10:3099",
   "managerAgentCounts": "{total} agents · {online} online · {offline} offline",
   "@managerAgentCounts": {
     "placeholders": {
@@ -321,7 +321,7 @@
   "agentStateOffline": "Offline",
   "agentStatePending": "Pending",
   "agentNameHint": "web-01",
-  "agentUrlHint": "http://192.168.1.10:3100",
+  "agentUrlHint": "192.168.1.10:3100",
   "statusRunning": "Running",
   "statusStarting": "Starting",
   "statusExited": "Exited",
