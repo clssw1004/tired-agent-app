@@ -376,6 +376,7 @@
   "kbdSchemeAuto": "Auto (by command)",
   "kbdSchemeAutoDesc": "Builtin preset matched to the session command",
   "kbdSchemeSwitch": "Switch keyboard scheme",
+  "kbdSchemeReorderHint": "Long-press to drag and reorder",
 
   "kbdPickerTitle": "Key Action",
   "kbdPickerClear": "Clear",

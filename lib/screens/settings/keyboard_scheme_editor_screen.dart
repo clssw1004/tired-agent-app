@@ -260,13 +260,29 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
               ),
             ],
           ),
-          Wrap(
-            spacing: AppSpacing.one,
-            runSpacing: AppSpacing.one,
-            children: [
-              for (var k = 0; k < row.length; k++)
-                _buildKeySlot(rowIdx, k),
-            ],
+          // 固定高度包裹 ReorderableListView；水平滚动禁用让外部 ListView 主导滚动
+          SizedBox(
+            height: 40,
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: row.length,
+              itemBuilder: (context, k) => _buildKeySlot(rowIdx, k),
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  final item = _rows[rowIdx].removeAt(oldIndex);
+                  _rows[rowIdx].insert(newIndex, item);
+                });
+              },
+              proxyDecorator: (child, index, animation) => Material(
+                elevation: 4,
+                color: c.surface,
+                child: child,
+              ),
+            ),
           ),
         ],
       ),
@@ -276,20 +292,24 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
   Widget _buildKeySlot(int rowIdx, int keyIdx) {
     final c = context.appColors;
     final def = _rows[rowIdx][keyIdx];
-    return GestureDetector(
-      onTap: () => _editKey(rowIdx, keyIdx),
-      child: Container(
-        width: 56,
-        height: 34,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: c.surfaceAlt,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: c.border.withAlpha(80), width: 0.5),
+    return ReorderableDragStartListener(
+      index: keyIdx,
+      child: GestureDetector(
+        onTap: () => _editKey(rowIdx, keyIdx),
+        child: Container(
+          key: ValueKey('${rowIdx}_${keyIdx}_${def.id}'),
+          width: 56,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: c.surfaceAlt,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: c.border.withAlpha(80), width: 0.5),
+          ),
+          child: def.icon != null
+              ? Icon(def.icon, size: 16, color: c.textCode)
+              : ThemedText.label(def.label, color: c.textCode),
         ),
-        child: def.icon != null
-            ? Icon(def.icon, size: 16, color: c.textCode)
-            : ThemedText.label(def.label, color: c.textCode),
       ),
     );
   }
