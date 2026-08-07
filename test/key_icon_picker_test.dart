@@ -168,9 +168,22 @@ void main() {
     await tester.tap(find.widgetWithText(PtyKeyCap, 'Tab'));
     await tester.pumpAndSettle();
 
-    // Icon + Action buttons both render without overflow exceptions.
+    // Icon + Action buttons both render without overflow exceptions. On narrow
+    // widths the picker labels collapse to icon-only, so the buttons are found
+    // by key rather than by their label text.
     expect(tester.takeException(), isNull);
     expect(find.byKey(const ValueKey('kbd_edit_icon')), findsOneWidget);
-    expect(find.text(AppStrings.of.kbdEditorAction), findsOneWidget);
+    expect(find.byKey(const ValueKey('kbd_edit_action')), findsOneWidget);
+  });
+
+  testWidgets('图标格子带无障碍语义标签', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpEditor(tester);
+    await selectTabAndOpenIconPicker(tester);
+
+    // Icon tiles expose their searchable name to screen readers.
+    expect(find.bySemanticsLabel('play'), findsOneWidget);
+
+    handle.dispose();
   });
 }
