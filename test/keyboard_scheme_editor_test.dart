@@ -115,7 +115,7 @@ void main() {
     await tester.tap(find.widgetWithText(PtyKeyCap, 'Tab'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.arrow_right));
+    await tester.tap(find.byIcon(Icons.arrow_forward));
     await tester.pumpAndSettle();
 
     // Tab moved right; selection followed it (label field still shows Tab).

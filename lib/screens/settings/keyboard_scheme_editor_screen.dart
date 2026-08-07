@@ -11,6 +11,7 @@ import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/shell/key_action_picker.dart';
+import 'package:tired_agent_app/widgets/shell/key_icon_picker.dart';
 import 'package:tired_agent_app/widgets/shell/pty_key_cap.dart';
 
 /// Editor for a single keyboard scheme: name + rows of keys.
@@ -177,6 +178,21 @@ class _KeyboardSchemeEditorScreenState
       } else {
         _rows[r][c] = result.def!;
         _labelController.text = _rows[r][c].label;
+      }
+    });
+  }
+
+  Future<void> _pickIcon() async {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return;
+    final result = await KeyIconPicker.show(context, current: _rows[r][c].icon);
+    if (result == null || !mounted) return;
+    setState(() {
+      if (result.cleared) {
+        _rows[r][c] = _rows[r][c].copyWith(clearIcon: true);
+      } else {
+        _rows[r][c] = _rows[r][c].copyWith(icon: result.icon);
       }
     });
   }
@@ -471,6 +487,28 @@ class _KeyboardSchemeEditorScreenState
                 ),
                 const SizedBox(width: AppSpacing.two),
                 OutlinedButton.icon(
+                  key: const ValueKey('kbd_edit_icon'),
+                  onPressed: _pickIcon,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.two,
+                      vertical: 8,
+                    ),
+                    minimumSize: const Size(0, 36),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  icon: Icon(
+                    row[k].icon ?? Icons.image_outlined,
+                    size: 14,
+                    color: c.primary,
+                  ),
+                  label: ThemedText.label(
+                    AppStrings.of.kbdEditorIcon,
+                    color: c.primary,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.one),
+                OutlinedButton.icon(
                   onPressed: _pickAction,
                   icon: Icon(Icons.tune, size: 14, color: c.primary),
                   label: ThemedText.label(
@@ -485,7 +523,7 @@ class _KeyboardSchemeEditorScreenState
               children: [
                 _arrowBtn(
                   KeyMoveDir.left,
-                  icon: Icons.arrow_left,
+                  icon: Icons.arrow_back,
                   disabled: k == 0,
                 ),
                 _arrowBtn(
@@ -500,7 +538,7 @@ class _KeyboardSchemeEditorScreenState
                 ),
                 _arrowBtn(
                   KeyMoveDir.right,
-                  icon: Icons.arrow_right,
+                  icon: Icons.arrow_forward,
                   disabled: k >= row.length - 1,
                 ),
                 const Spacer(),

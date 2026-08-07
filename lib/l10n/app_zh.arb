@@ -384,6 +384,14 @@
   "kbdEditorMoveRight": "右移",
   "kbdEditorMoveUp": "上移",
   "kbdEditorMoveDown": "下移",
+  "kbdEditorIcon": "图标",
+
+  "kbdIconPickerTitle": "选择图标",
+  "kbdIconPickerClear": "无图标",
+  "kbdIconPickerSearch": "搜索图标",
+  "kbdIconPickerMaterial": "Material",
+  "kbdIconPickerFontAwesome": "FontAwesome",
+  "kbdIconPickerEmpty": "无匹配图标",
 
   "kbdPickerTitle": "按键动作",
   "kbdPickerClear": "清除按键",
