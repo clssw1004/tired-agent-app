@@ -38,19 +38,31 @@ void main() {
     group('$name 对比度', () {
       // 文字/交互前景 ≥ 4.5:1
       test('onPrimary 对 primary', () {
-        expect(contrast(scheme.onPrimary, scheme.primary), greaterThanOrEqualTo(4.5));
+        expect(
+          contrast(scheme.onPrimary, scheme.primary),
+          greaterThanOrEqualTo(4.5),
+        );
       });
       test('onSecondary 对 secondary', () {
-        expect(contrast(scheme.onSecondary, scheme.secondary), greaterThanOrEqualTo(4.5));
+        expect(
+          contrast(scheme.onSecondary, scheme.secondary),
+          greaterThanOrEqualTo(4.5),
+        );
       });
       test('onError 对 error', () {
-        expect(contrast(scheme.onError, scheme.error), greaterThanOrEqualTo(4.5));
+        expect(
+          contrast(scheme.onError, scheme.error),
+          greaterThanOrEqualTo(4.5),
+        );
       });
       test('text 对 background', () {
         expect(contrast(c.text, c.background), greaterThanOrEqualTo(4.5));
       });
       test('textSecondary 对 background', () {
-        expect(contrast(c.textSecondary, c.background), greaterThanOrEqualTo(4.5));
+        expect(
+          contrast(c.textSecondary, c.background),
+          greaterThanOrEqualTo(4.5),
+        );
       });
       test('textSecondary 对 surface', () {
         expect(contrast(c.textSecondary, c.surface), greaterThanOrEqualTo(4.5));

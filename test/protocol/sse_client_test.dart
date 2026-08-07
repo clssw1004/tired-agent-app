@@ -159,34 +159,40 @@ void main() {
     expect(client.status, SseConnectionStatus.disconnected);
   });
 
-  test('onConnected → status connected; onReconnecting → reconnecting', () async {
-    final fake = FakeTransport();
-    final client = SseClient(transport: fake, ref: _ref, sessionId: 's1');
-    final connected = <int>[];
-    final reconnecting = <int>[];
-    client.onConnected = () => connected.add(1);
-    client.onReconnecting = () => reconnecting.add(1);
-    await client.start();
+  test(
+    'onConnected → status connected; onReconnecting → reconnecting',
+    () async {
+      final fake = FakeTransport();
+      final client = SseClient(transport: fake, ref: _ref, sessionId: 's1');
+      final connected = <int>[];
+      final reconnecting = <int>[];
+      client.onConnected = () => connected.add(1);
+      client.onReconnecting = () => reconnecting.add(1);
+      await client.start();
 
-    fake.lastHandlers!.onConnected?.call();
-    expect(client.status, SseConnectionStatus.connected);
-    expect(connected, hasLength(1));
+      fake.lastHandlers!.onConnected?.call();
+      expect(client.status, SseConnectionStatus.connected);
+      expect(connected, hasLength(1));
 
-    fake.lastHandlers!.onReconnecting?.call();
-    expect(client.status, SseConnectionStatus.reconnecting);
-    expect(reconnecting, hasLength(1));
-  });
+      fake.lastHandlers!.onReconnecting?.call();
+      expect(client.status, SseConnectionStatus.reconnecting);
+      expect(reconnecting, hasLength(1));
+    },
+  );
 
-  test('stream SessionNotFoundException → exited, no reconnect attempt', () async {
-    final fake = FakeTransport();
-    final client = SseClient(transport: fake, ref: _ref, sessionId: 's1');
-    await client.start();
+  test(
+    'stream SessionNotFoundException → exited, no reconnect attempt',
+    () async {
+      final fake = FakeTransport();
+      final client = SseClient(transport: fake, ref: _ref, sessionId: 's1');
+      await client.start();
 
-    fake.lastHandlers!.onError(SessionNotFoundException('gone'));
+      fake.lastHandlers!.onError(SessionNotFoundException('gone'));
 
-    expect(client.sessionExited, isTrue);
-    expect(client.status, SseConnectionStatus.disconnected);
-  });
+      expect(client.sessionExited, isTrue);
+      expect(client.status, SseConnectionStatus.disconnected);
+    },
+  );
 
   test('close() tears down and stops reconnects', () async {
     final fake = FakeTransport();

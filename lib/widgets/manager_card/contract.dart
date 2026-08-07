@@ -4,11 +4,7 @@ import 'package:tired_agent_app/models/manager_connection.dart';
 
 /// Manager 卡片的功能插槽：业务数据 + 业务回调（副作用由页面注入）。
 class ManagerCardData {
-  const ManagerCardData({
-    required this.connection,
-    this.onTap,
-    this.onDelete,
-  });
+  const ManagerCardData({required this.connection, this.onTap, this.onDelete});
 
   final ManagerConnection connection;
 

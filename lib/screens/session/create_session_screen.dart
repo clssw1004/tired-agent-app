@@ -193,9 +193,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       // opens with it.
       final schemeId = _keyboardSchemeId;
       if (schemeId != null && mounted) {
-        await context
-            .read<PtyKeyboardSchemeProvider>()
-            .assignSchemeToSession(session.id, schemeId);
+        await context.read<PtyKeyboardSchemeProvider>().assignSchemeToSession(
+          session.id,
+          schemeId,
+        );
       }
 
       if (mounted) {
@@ -316,8 +317,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   sectionHeader(context, AppStrings.of.kbdSchemeSelect),
                   _KeyboardSchemePicker(
                     selectedId: _keyboardSchemeId,
-                    onChanged: (id) =>
-                        setState(() => _keyboardSchemeId = id),
+                    onChanged: (id) => setState(() => _keyboardSchemeId = id),
                   ),
                   const SizedBox(height: AppSpacing.four),
 
@@ -496,7 +496,11 @@ class _KeyboardSchemePicker extends StatelessWidget {
                   if (i == 0) {
                     return ListTile(
                       dense: true,
-                      leading: Icon(Icons.auto_fix_high, color: c.textSecondary, size: 18),
+                      leading: Icon(
+                        Icons.auto_fix_high,
+                        color: c.textSecondary,
+                        size: 18,
+                      ),
                       title: ThemedText.body(
                         AppStrings.of.kbdSchemeDefault,
                         color: c.text,

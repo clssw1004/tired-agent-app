@@ -44,15 +44,16 @@ class PtyKeyboardPrefs {
     'sessionAssignments': sessionAssignments,
   };
 
-  factory PtyKeyboardPrefs.fromJson(Map<String, dynamic> json) => PtyKeyboardPrefs(
-    schemes: (json['schemes'] as List<dynamic>? ?? const [])
-        .map((e) => PtyKeyboardScheme.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    defaultSchemeId: json['defaultSchemeId'] as String?,
-    sessionAssignments: ((json['sessionAssignments'] as Map<String, dynamic>?) ??
-            const {})
-        .map((k, v) => MapEntry(k, v as String)),
-  );
+  factory PtyKeyboardPrefs.fromJson(Map<String, dynamic> json) =>
+      PtyKeyboardPrefs(
+        schemes: (json['schemes'] as List<dynamic>? ?? const [])
+            .map((e) => PtyKeyboardScheme.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        defaultSchemeId: json['defaultSchemeId'] as String?,
+        sessionAssignments:
+            ((json['sessionAssignments'] as Map<String, dynamic>?) ?? const {})
+                .map((k, v) => MapEntry(k, v as String)),
+      );
 }
 
 /// A user-editable extended keyboard scheme.
@@ -81,11 +82,8 @@ class PtyKeyboardScheme {
   });
 
   /// Build a [PtyKeyboardConfig] for the keyboard panel from this scheme.
-  PtyKeyboardConfig toConfig() => PtyKeyboardConfig(
-    id: id,
-    name: name,
-    rows: rows,
-  );
+  PtyKeyboardConfig toConfig() =>
+      PtyKeyboardConfig(id: id, name: name, rows: rows);
 
   /// Rebuild a scheme from a config, preserving the given id.
   factory PtyKeyboardScheme.fromConfig({
@@ -104,11 +102,7 @@ class PtyKeyboardScheme {
     'id': id,
     'name': name,
     'basePresetId': basePresetId,
-    'rows': rows
-        .map(
-          (row) => row.map((k) => k.toJson()).toList(),
-        )
-        .toList(),
+    'rows': rows.map((row) => row.map((k) => k.toJson()).toList()).toList(),
   };
 
   factory PtyKeyboardScheme.fromJson(Map<String, dynamic> json) =>

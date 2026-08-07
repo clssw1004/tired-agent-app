@@ -20,8 +20,7 @@ class PtyKeyboardSchemeService {
   final Future<File> Function() _fileProvider;
 
   PtyKeyboardSchemeService({Future<File> Function()? fileProvider})
-    : _fileProvider =
-          fileProvider ?? _defaultFileProvider(defaultFileName);
+    : _fileProvider = fileProvider ?? _defaultFileProvider(defaultFileName);
 
   /// Build a file provider that resolves `getApplicationSupportDirectory()`
   /// on every call (so the path is fresh after tests reset `PathProviderPlatform`).

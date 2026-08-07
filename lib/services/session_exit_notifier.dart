@@ -28,11 +28,8 @@ class SessionRef {
   });
 
   /// 通知 payload 编码。
-  String toPayload() => jsonEncode({
-    'p': profileId,
-    'a': agentId,
-    's': sessionId,
-  });
+  String toPayload() =>
+      jsonEncode({'p': profileId, 'a': agentId, 's': sessionId});
 
   /// 从通知 payload 解码，非法输入返回 null。
   static SessionRef? fromPayload(String payload) {

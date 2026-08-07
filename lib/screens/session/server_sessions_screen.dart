@@ -195,9 +195,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
     final pruneTargets = _pruneTargets;
     if (pruneTargets.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: ThemedText.small(AppStrings.of.sessionsNoneToPrune),
-        ),
+        SnackBar(content: ThemedText.small(AppStrings.of.sessionsNoneToPrune)),
       );
       return;
     }
@@ -279,9 +277,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: ThemedText.small(AppStrings.of.sessionsUnpinned),
-          ),
+          SnackBar(content: ThemedText.small(AppStrings.of.sessionsUnpinned)),
         );
       }
     } else {
@@ -324,9 +320,7 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: ThemedText.small(AppStrings.of.sessionsPinned),
-          ),
+          SnackBar(content: ThemedText.small(AppStrings.of.sessionsPinned)),
         );
       }
     }
@@ -540,8 +534,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                                 (session.extra?['claudeSessionId'] != null ||
                                     session.extra?['claudeName'] != null ||
                                     session.label != null))
-                                ? () => _requestResume(session)
-                                : null,
+                            ? () => _requestResume(session)
+                            : null,
                         onTap: () => context.push(
                           '/session/${widget.profileId}/${widget.agentId}/${session.id}',
                         ),

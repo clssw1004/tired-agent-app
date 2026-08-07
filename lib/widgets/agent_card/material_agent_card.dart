@@ -24,7 +24,9 @@ class MD3AgentCard extends AgentCardContract {
     };
 
     // ── 拆分信息行：baseUrl 主行 + platform 次行 ─────────────
-    final platform = agent.platform != null ? '${agent.platform!.os} · ${agent.platform!.arch}' : '';
+    final platform = agent.platform != null
+        ? '${agent.platform!.os} · ${agent.platform!.arch}'
+        : '';
 
     return Card(
       elevation: 0,
@@ -65,7 +67,9 @@ class MD3AgentCard extends AgentCardContract {
                 padding: const EdgeInsets.only(top: 1),
                 child: Text(
                   platform,
-                  style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -79,7 +83,11 @@ class MD3AgentCard extends AgentCardContract {
               IconButton(
                 onPressed: data.onEdit,
                 tooltip: AppStrings.of.agentEditTooltip,
-                icon: Icon(Icons.edit_outlined, size: 18, color: scheme.onSurfaceVariant),
+                icon: Icon(
+                  Icons.edit_outlined,
+                  size: 18,
+                  color: scheme.onSurfaceVariant,
+                ),
                 visualDensity: VisualDensity.compact,
               ),
             if (data.onDelete != null)

@@ -128,11 +128,13 @@ void main() {
         ],
       );
       final service = newService();
-      await service.save(const PtyKeyboardPrefs(
-        schemes: [scheme],
-        defaultSchemeId: null,
-        sessionAssignments: {},
-      ));
+      await service.save(
+        const PtyKeyboardPrefs(
+          schemes: [scheme],
+          defaultSchemeId: null,
+          sessionAssignments: {},
+        ),
+      );
 
       final loaded = await newService().load();
       expect(loaded.schemes, hasLength(1));
@@ -143,11 +145,13 @@ void main() {
 
     test('session 方案映射 + 默认方案持久化', () async {
       final service = newService();
-      await service.save(const PtyKeyboardPrefs(
-        schemes: [],
-        defaultSchemeId: 'shell',
-        sessionAssignments: {'sess-1': 'custom'},
-      ));
+      await service.save(
+        const PtyKeyboardPrefs(
+          schemes: [],
+          defaultSchemeId: 'shell',
+          sessionAssignments: {'sess-1': 'custom'},
+        ),
+      );
 
       final loaded = await newService().load();
       expect(loaded.defaultSchemeId, 'shell');
@@ -158,7 +162,9 @@ void main() {
       // tearDown 清理后目录为空：直接 reload 应返回空。
       await tempDir.delete(recursive: true);
       tempDir = await Directory.systemTemp.createTemp('kbd_prefs_test_');
-      final loaded = await PtyKeyboardSchemeService.withDirectory(tempDir).load();
+      final loaded = await PtyKeyboardSchemeService.withDirectory(
+        tempDir,
+      ).load();
       expect(loaded.schemes, isEmpty);
       expect(loaded.defaultSchemeId, isNull);
       expect(loaded.sessionAssignments, isEmpty);
@@ -174,17 +180,21 @@ void main() {
     });
 
     test('原子写 — 临时文件被清理', () async {
-      await newService().save(PtyKeyboardPrefs(
-        schemes: [
-          PtyKeyboardScheme(
-            id: 'a',
-            name: 'A',
-            rows: const [[TerminalKeys.up]],
-          ),
-        ],
-        defaultSchemeId: null,
-        sessionAssignments: const {},
-      ));
+      await newService().save(
+        PtyKeyboardPrefs(
+          schemes: [
+            PtyKeyboardScheme(
+              id: 'a',
+              name: 'A',
+              rows: const [
+                [TerminalKeys.up],
+              ],
+            ),
+          ],
+          defaultSchemeId: null,
+          sessionAssignments: const {},
+        ),
+      );
       final dir = Directory(tempDir.path);
       final tmpFiles = await dir
           .list()
@@ -233,9 +243,7 @@ void main() {
     });
 
     test('defaultSchemeId → 命中预设', () async {
-      await service.save(
-        initialPrefs.copyWith(defaultSchemeId: 'minimal'),
-      );
+      await service.save(initialPrefs.copyWith(defaultSchemeId: 'minimal'));
       final provider = PtyKeyboardSchemeProvider(service: service);
       await provider.load();
       final config = provider.configForSession('bash');
@@ -251,10 +259,7 @@ void main() {
       );
       final provider = PtyKeyboardSchemeProvider(service: service);
       await provider.load();
-      final config = provider.configForSession(
-        'python3',
-        sessionId: 's1',
-      );
+      final config = provider.configForSession('python3', sessionId: 's1');
       expect(config.id, 'shell');
     });
 
@@ -267,10 +272,7 @@ void main() {
       );
       final provider = PtyKeyboardSchemeProvider(service: service);
       await provider.load();
-      final config = provider.configForSession(
-        'python3',
-        sessionId: 's1',
-      );
+      final config = provider.configForSession('python3', sessionId: 's1');
       expect(config.id, 'minimal');
     });
 
@@ -288,10 +290,7 @@ void main() {
         'minimal',
       );
       expect(provider.configForSession('bash').id, 'shell');
-      expect(
-        provider.configForSession('powershell.exe').id,
-        'windows',
-      );
+      expect(provider.configForSession('powershell.exe').id, 'windows');
     });
   });
 }

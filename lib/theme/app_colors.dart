@@ -154,7 +154,8 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   @override
-  AppColors copyWith({    Color? background,
+  AppColors copyWith({
+    Color? background,
     Color? surface,
     Color? surfaceAlt,
     Color? border,

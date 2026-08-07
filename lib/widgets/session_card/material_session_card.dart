@@ -25,7 +25,8 @@ class MD3SessionCard extends SessionCardContract {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    final canResume = session.status == SessionStatus.exited &&
+    final canResume =
+        session.status == SessionStatus.exited &&
         data.onResume != null &&
         session.cmd == 'claude' &&
         (session.extra?['claudeSessionId'] != null ||
@@ -38,10 +39,14 @@ class MD3SessionCard extends SessionCardContract {
         ? 'exit ${session.exitCode ?? '?'}'
         : 'pid ${session.pid ?? '?'}';
     final up = session.status == SessionStatus.exited
-        ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
+        ? (session.exitedAt != null
+              ? 'ago ${_timeSince(session.exitedAt!)}'
+              : '')
         : 'up ${_timeSince(session.createdAt)}';
     // 三行独立：cmd / pid/exit · up / /cwd
-    final cwd = session.cwd != null && session.cwd!.isNotEmpty ? session.cwd! : '';
+    final cwd = session.cwd != null && session.cwd!.isNotEmpty
+        ? session.cwd!
+        : '';
     final metaLine = session.status == SessionStatus.exited
         ? (up.isEmpty ? meta : '$meta · $up')
         : '$meta · $up';
@@ -77,12 +82,19 @@ class MD3SessionCard extends SessionCardContract {
                     IconButton(
                       onPressed: data.onPin,
                       icon: Icon(
-                        data.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                        data.isPinned
+                            ? Icons.push_pin
+                            : Icons.push_pin_outlined,
                         size: 18,
-                        color: data.isPinned ? scheme.primary : scheme.onSurfaceVariant,
+                        color: data.isPinned
+                            ? scheme.primary
+                            : scheme.onSurfaceVariant,
                       ),
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
                     ),
                   const SizedBox(width: 8),
                   _StatusChip(status: session.status, scheme: scheme),
@@ -93,7 +105,9 @@ class MD3SessionCard extends SessionCardContract {
               if (cwd.isNotEmpty)
                 Text(
                   cwd,
-                  style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -110,18 +124,23 @@ class MD3SessionCard extends SessionCardContract {
               // pid/exit · up（次行）
               Text(
                 metaLine,
-                style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               // Actions: kill / resume（compact 按钮）
-              if ((data.onKill != null && session.status != SessionStatus.exited) || canResume)
+              if ((data.onKill != null &&
+                      session.status != SessionStatus.exited) ||
+                  canResume)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      if (data.onKill != null && session.status != SessionStatus.exited)
+                      if (data.onKill != null &&
+                          session.status != SessionStatus.exited)
                         TextButton.icon(
                           onPressed: data.onKill,
                           icon: const Icon(Icons.stop, size: 16),
@@ -197,7 +216,11 @@ class _StatusChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

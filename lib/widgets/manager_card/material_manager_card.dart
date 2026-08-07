@@ -30,17 +30,32 @@ class MD3ManagerCard extends ManagerCardContract {
 
     final agents = connection.agents;
     final totalAgents = agents.length;
-    final onlineAgents = agents.where((a) => a.state == AgentState.online).length;
-    final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
-    final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
+    final onlineAgents = agents
+        .where((a) => a.state == AgentState.online)
+        .length;
+    final offlineAgents = agents
+        .where((a) => a.state == AgentState.offline)
+        .length;
+    final pendingAgents = agents
+        .where((a) => a.state == AgentState.pending)
+        .length;
 
     // ── 拆分信息行：url 主行 + agent 统计 · last used 次行 ──
     final url = profile.baseUrl;
     final statsParts = <String>[
       if (totalAgents > 0)
         pendingAgents > 0
-            ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
-            : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents),
+            ? AppStrings.of.managerAgentCountsWithPending(
+                totalAgents,
+                onlineAgents,
+                offlineAgents,
+                pendingAgents,
+              )
+            : AppStrings.of.managerAgentCounts(
+                totalAgents,
+                onlineAgents,
+                offlineAgents,
+              ),
       if (profile.lastUsedMs > 0) _timeSince(profile.lastUsedMs),
     ];
     final statsLine = statsParts.join(' · ');
@@ -78,9 +93,16 @@ class MD3ManagerCard extends ManagerCardContract {
                   if (connection.error != null)
                     IconButton(
                       onPressed: () => _showError(context, connection),
-                      icon: Icon(Icons.error_outline, size: 18, color: scheme.error),
+                      icon: Icon(
+                        Icons.error_outline,
+                        size: 18,
+                        color: scheme.error,
+                      ),
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
+                      ),
                     ),
                 ],
               ),
@@ -100,7 +122,9 @@ class MD3ManagerCard extends ManagerCardContract {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     statsLine,
-                    style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -133,9 +157,9 @@ class MD3ManagerCard extends ManagerCardContract {
   }
 
   void _showError(BuildContext context, ManagerConnection connection) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(connection.error!)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(connection.error!)));
   }
 }
 
@@ -170,10 +194,19 @@ class _StatusLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      ConnectionStatus.connected => (AppStrings.of.statusConnected, scheme.primary),
-      ConnectionStatus.connecting => (AppStrings.of.statusConnecting, scheme.tertiary),
+      ConnectionStatus.connected => (
+        AppStrings.of.statusConnected,
+        scheme.primary,
+      ),
+      ConnectionStatus.connecting => (
+        AppStrings.of.statusConnecting,
+        scheme.tertiary,
+      ),
       ConnectionStatus.error => (AppStrings.of.statusError, scheme.error),
-      ConnectionStatus.idle => (AppStrings.of.statusDisconnected, scheme.onSurfaceVariant),
+      ConnectionStatus.idle => (
+        AppStrings.of.statusDisconnected,
+        scheme.onSurfaceVariant,
+      ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -183,7 +216,11 @@ class _StatusLabel extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

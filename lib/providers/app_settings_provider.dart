@@ -5,21 +5,10 @@ import 'package:xterm2/xterm.dart' show TerminalTheme;
 import 'package:tired_agent_app/utils/terminal_themes.dart';
 
 /// 主题风格枚举
-enum ThemeFlavor {
-  neon,
-  geek,
-  material,
-}
+enum ThemeFlavor { neon, geek, material }
 
 /// 终端缓冲区大小预设选项（行数）
-const List<int> kTerminalBufferPresets = [
-  1000,
-  2000,
-  3000,
-  5000,
-  8000,
-  10000,
-];
+const List<int> kTerminalBufferPresets = [1000, 2000, 3000, 5000, 8000, 10000];
 
 /// 应用设置 Provider — 管理主题模式 + 语言偏好 + 终端配置
 ///

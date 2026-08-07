@@ -29,7 +29,10 @@ class TerminalSettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── Buffer size ──────────────────────────────────────────
-          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsBufferSize),
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.settingsBufferSize,
+          ),
           const SizedBox(height: AppSpacing.two),
           BufferSizeTile(
             currentSize: settings.terminalBufferSize,
@@ -38,7 +41,10 @@ class TerminalSettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── Terminal Theme ────────────────────────────────────────
-          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsTerminalTheme),
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.settingsTerminalTheme,
+          ),
           const SizedBox(height: AppSpacing.two),
           ...List.generate(TerminalThemePreset.values.length, (i) {
             final preset = TerminalThemePreset.values[i];

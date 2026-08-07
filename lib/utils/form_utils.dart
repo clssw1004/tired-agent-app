@@ -12,10 +12,9 @@ InputDecoration neonInputDecoration(
   String? label,
   String? hint,
   String? prefixText,
-}) =>
-    context.appComponents.buildInputDecoration(
-      context,
-      label: label,
-      hint: hint,
-      prefixText: prefixText,
-    );
+}) => context.appComponents.buildInputDecoration(
+  context,
+  label: label,
+  hint: hint,
+  prefixText: prefixText,
+);

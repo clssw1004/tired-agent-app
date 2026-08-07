@@ -112,22 +112,22 @@ class PtySessionViewState extends State<PtySessionView>
     WidgetsBinding.instance.addPostFrameCallback((_) => _sendInitialResize());
   }
 
-/// Load the session's keyboard layout using the full resolution chain
-/// (session assignment → client default → builtin preset by command name).
-/// Missing/stale ids fall through automatically.
-Future<void> _loadKeyboardScheme() async {
-  final provider = context.read<PtyKeyboardSchemeProvider>();
-  // Ensure the on-disk prefs (default scheme id, session assignments) are
-  // loaded before we resolve.
-  await provider.load();
-  if (!mounted) return;
-  setState(() {
-    _keyboardConfig = provider.configForSession(
-      widget.session.cmd,
-      sessionId: widget.session.id,
-    );
-  });
-}
+  /// Load the session's keyboard layout using the full resolution chain
+  /// (session assignment → client default → builtin preset by command name).
+  /// Missing/stale ids fall through automatically.
+  Future<void> _loadKeyboardScheme() async {
+    final provider = context.read<PtyKeyboardSchemeProvider>();
+    // Ensure the on-disk prefs (default scheme id, session assignments) are
+    // loaded before we resolve.
+    await provider.load();
+    if (!mounted) return;
+    setState(() {
+      _keyboardConfig = provider.configForSession(
+        widget.session.cmd,
+        sessionId: widget.session.id,
+      );
+    });
+  }
 
   /// Open the scheme switcher sheet and apply the chosen scheme.
   Future<void> _switchKeyboardScheme() async {
@@ -257,7 +257,9 @@ Future<void> _loadKeyboardScheme() async {
           _pulseController.stop();
           if (mounted) setState(() {});
           // 快路径：SSE 实时退出 → 立即通知。
-          context.read<SessionExitNotifier>().handleExited(_sessionRef(session: session));
+          context.read<SessionExitNotifier>().handleExited(
+            _sessionRef(session: session),
+          );
         }
       }
       ..onError = (error) {
@@ -755,8 +757,8 @@ class _PasteDialogState extends State<_PasteDialog> {
                       backgroundColor: c.primary,
                       foregroundColor: Colors.black,
                     ),
-                    onPressed: () => Navigator.of(context)
-                        .pop(widget.controller.text),
+                    onPressed: () =>
+                        Navigator.of(context).pop(widget.controller.text),
                     icon: const Icon(Icons.send, size: 16),
                     label: ThemedText.label(AppStrings.of.send),
                   ),

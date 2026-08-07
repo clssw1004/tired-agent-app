@@ -64,10 +64,7 @@ void main() {
     final customTile = find.widgetWithText(ListTile, 'My Custom');
     expect(customTile, findsOneWidget);
     expect(
-      find.descendant(
-        of: customTile,
-        matching: find.byIcon(Icons.check),
-      ),
+      find.descendant(of: customTile, matching: find.byIcon(Icons.check)),
       findsOneWidget,
       reason: '选中的自定义预设应在 picker 中高亮',
     );
@@ -111,6 +108,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(restartKey.currentState!.customPresets.length, 1);
-    expect(restartKey.currentState!.customPresets.first.label, 'Persisted Preset');
+    expect(
+      restartKey.currentState!.customPresets.first.label,
+      'Persisted Preset',
+    );
   });
 }

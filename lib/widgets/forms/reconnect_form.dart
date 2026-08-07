@@ -51,7 +51,9 @@ class ReconnectFormState extends State<ReconnectForm> {
           decoration: InputDecoration(
             labelText: AppStrings.of.managersAccessToken,
             suffixIcon: IconButton(
-              icon: Icon(_obscureToken ? Icons.visibility_off : Icons.visibility),
+              icon: Icon(
+                _obscureToken ? Icons.visibility_off : Icons.visibility,
+              ),
               onPressed: () => setState(() => _obscureToken = !_obscureToken),
             ),
           ),

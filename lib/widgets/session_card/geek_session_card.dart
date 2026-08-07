@@ -31,12 +31,13 @@ class GeekSessionCard extends SessionCardContract {
   Widget build(BuildContext context, SessionCardData data) {
     final session = data.session;
     final c = context.appColors;
-    final canResume = session.status == SessionStatus.exited &&
+    final canResume =
+        session.status == SessionStatus.exited &&
         data.onResume != null &&
         session.cmd == 'claude' &&
         (session.extra?['claudeSessionId'] != null ||
-         session.extra?['claudeName'] != null ||
-         session.label != null);
+            session.extra?['claudeName'] != null ||
+            session.label != null);
     final statusColor = switch (session.status) {
       SessionStatus.running => c.success,
       SessionStatus.starting => c.warning,
@@ -49,7 +50,9 @@ class GeekSessionCard extends SessionCardContract {
         ? 'exit ${session.exitCode ?? '?'}'
         : 'pid ${session.pid ?? '?'}';
     final up = session.status == SessionStatus.exited
-        ? (session.exitedAt != null ? 'ago ${_timeSince(session.exitedAt!)}' : '')
+        ? (session.exitedAt != null
+              ? 'ago ${_timeSince(session.exitedAt!)}'
+              : '')
         : 'up ${_timeSince(session.createdAt)}';
     // 仅命令；pid/exit/up 全部交给左下角 Row3 状态行（避免 pid 重复）
     final cmdLine = cmd;
@@ -58,7 +61,10 @@ class GeekSessionCard extends SessionCardContract {
       onTap: data.onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.four,
+          vertical: AppSpacing.two,
+        ),
         decoration: BoxDecoration(
           // 卡片底部分割线 + label 浮在分割线上方（终端 tab 标题感）
           border: Border(bottom: BorderSide(color: c.border, width: 1)),
@@ -79,9 +85,14 @@ class GeekSessionCard extends SessionCardContract {
                 ),
                 const SizedBox(width: 6),
                 if (session.mode != null)
-                  ThemedText.mono('[${session.mode!.name}]', fontSize: 11, color: c.textSecondary),
+                  ThemedText.mono(
+                    '[${session.mode!.name}]',
+                    fontSize: 11,
+                    color: c.textSecondary,
+                  ),
                 const SizedBox(width: 6),
-                if (data.isPinned) ThemedText.mono('*pin', fontSize: 11, color: c.primary),
+                if (data.isPinned)
+                  ThemedText.mono('*pin', fontSize: 11, color: c.primary),
               ],
             ),
             // ── Row1: /cwd（终端顶部 cwd，路径感）──────────────
@@ -122,20 +133,39 @@ class GeekSessionCard extends SessionCardContract {
                     ),
                   ),
                 ),
-                if (data.onPin != null || data.onKill != null || data.onDelete != null || canResume)
+                if (data.onPin != null ||
+                    data.onKill != null ||
+                    data.onDelete != null ||
+                    canResume)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (data.onPin != null)
-                          GeekActionButton(label: data.isPinned ? '*unpin' : '*pin', onTap: data.onPin!, color: c.primary),
-                        if (data.onPin != null && (data.onKill != null || data.onDelete != null || canResume))
+                          GeekActionButton(
+                            label: data.isPinned ? '*unpin' : '*pin',
+                            onTap: data.onPin!,
+                            color: c.primary,
+                          ),
+                        if (data.onPin != null &&
+                            (data.onKill != null ||
+                                data.onDelete != null ||
+                                canResume))
                           const SizedBox(width: AppSpacing.two),
-                        if (data.onKill != null && session.status != SessionStatus.exited)
-                          GeekActionButton(label: 'kill', onTap: data.onKill!, color: c.danger),
+                        if (data.onKill != null &&
+                            session.status != SessionStatus.exited)
+                          GeekActionButton(
+                            label: 'kill',
+                            onTap: data.onKill!,
+                            color: c.danger,
+                          ),
                         if (canResume)
-                          GeekActionButton(label: 'resume', onTap: data.onResume!, color: c.success),
+                          GeekActionButton(
+                            label: 'resume',
+                            onTap: data.onResume!,
+                            color: c.success,
+                          ),
                       ],
                     ),
                   ),
@@ -147,4 +177,3 @@ class GeekSessionCard extends SessionCardContract {
     );
   }
 }
-

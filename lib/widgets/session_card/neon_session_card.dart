@@ -95,8 +95,8 @@ class NeonSessionCard extends SessionCardContract {
               final cmd = [session.cmd, ...session.args].join(' ');
               final uptime = session.status == SessionStatus.exited
                   ? session.exitedAt != null
-                      ? _timeSince(session.exitedAt!)
-                      : ''
+                        ? _timeSince(session.exitedAt!)
+                        : ''
                   : 'up ${_timeSince(session.createdAt)}';
               if (session.status == SessionStatus.exited) {
                 final exitInfo = 'exit ${session.exitCode ?? '?'}';
@@ -124,7 +124,8 @@ class NeonSessionCard extends SessionCardContract {
                   ),
                 if (data.onKill != null && (data.onDelete != null || canResume))
                   const SizedBox(width: 6),
-                if (session.status == SessionStatus.exited && data.onDelete != null)
+                if (session.status == SessionStatus.exited &&
+                    data.onDelete != null)
                   _ActionButton(
                     icon: '🗑',
                     label: AppStrings.of.sessionsDeleteBtn,
@@ -154,7 +155,8 @@ class NeonSessionCard extends SessionCardContract {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (session.status != SessionStatus.exited && data.onKill != null)
+                  if (session.status != SessionStatus.exited &&
+                      data.onKill != null)
                     _ActionButton(
                       icon: '⏹',
                       label: AppStrings.of.sessionsKillBtn,

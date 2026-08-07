@@ -34,9 +34,11 @@ void main() {
             matching: find.byType(Container),
           ),
         )
-        .where((w) =>
-            w.decoration is BoxDecoration &&
-            (w.decoration! as BoxDecoration).shape == BoxShape.circle);
+        .where(
+          (w) =>
+              w.decoration is BoxDecoration &&
+              (w.decoration! as BoxDecoration).shape == BoxShape.circle,
+        );
     expect(dots, isNotEmpty);
   });
 }

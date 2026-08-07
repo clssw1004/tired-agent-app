@@ -7,7 +7,12 @@ class NeonInputDecorationImpl extends InputDecorationContract {
   const NeonInputDecorationImpl();
 
   @override
-  InputDecoration build(BuildContext context, {String? label, String? hint, String? prefixText}) {
+  InputDecoration build(
+    BuildContext context, {
+    String? label,
+    String? hint,
+    String? prefixText,
+  }) {
     final c = context.appColors;
     return InputDecoration(
       isDense: true,

@@ -36,9 +36,15 @@ class GeekManagerCard extends ManagerCardContract {
     final connStatus = connection.status;
     final agents = connection.agents;
     final totalAgents = agents.length;
-    final onlineAgents = agents.where((a) => a.state == AgentState.online).length;
-    final offlineAgents = agents.where((a) => a.state == AgentState.offline).length;
-    final pendingAgents = agents.where((a) => a.state == AgentState.pending).length;
+    final onlineAgents = agents
+        .where((a) => a.state == AgentState.online)
+        .length;
+    final offlineAgents = agents
+        .where((a) => a.state == AgentState.offline)
+        .length;
+    final pendingAgents = agents
+        .where((a) => a.state == AgentState.pending)
+        .length;
     final hasAgentInfo = totalAgents > 0;
     final c = context.appColors;
     final statusColor = switch (connStatus) {
@@ -49,12 +55,14 @@ class GeekManagerCard extends ManagerCardContract {
     };
 
     // ── 合并信息行（url · last used）───────────────────────────
-    final lastUsed = profile.lastUsedMs > 0 ? _timeSince(profile.lastUsedMs) : '';
-    final urlLine = lastUsed.isEmpty ? '│ ${profile.baseUrl}' : '│ ${profile.baseUrl} · $lastUsed';
+    final lastUsed = profile.lastUsedMs > 0
+        ? _timeSince(profile.lastUsedMs)
+        : '';
+    final urlLine = lastUsed.isEmpty
+        ? '│ ${profile.baseUrl}'
+        : '│ ${profile.baseUrl} · $lastUsed';
     final agentsLine = hasAgentInfo
-        ? '│ ${pendingAgents > 0
-            ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents)
-            : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents)}'
+        ? '│ ${pendingAgents > 0 ? AppStrings.of.managerAgentCountsWithPending(totalAgents, onlineAgents, offlineAgents, pendingAgents) : AppStrings.of.managerAgentCounts(totalAgents, onlineAgents, offlineAgents)}'
         : '';
 
     return GestureDetector(
@@ -100,16 +108,30 @@ class GeekManagerCard extends ManagerCardContract {
               ),
             // ── Row2: url · last used ───────────────────────────
             if (urlLine.isNotEmpty)
-              ThemedText.mono(urlLine, color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ThemedText.mono(
+                urlLine,
+                color: c.textSecondary,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             // ── Row3: agent counts ──────────────────────────────
             if (agentsLine.isNotEmpty)
-              ThemedText.mono(agentsLine, color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ThemedText.mono(
+                agentsLine,
+                color: c.textSecondary,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             // ── Row4: [delete]（可点击文字按钮，免长按）────────
             if (data.onDelete != null)
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
+                  GeekActionButton(
+                    label: 'delete',
+                    onTap: data.onDelete!,
+                    color: c.danger,
+                  ),
                 ],
               ),
           ],

@@ -43,8 +43,14 @@ void main() {
     });
 
     test('material 全实现，命中自身', () {
-      expect(AppComponents.material.sessionCardOrFallback, isA<MD3SessionCard>());
-      expect(AppComponents.material.managerCardOrFallback, isA<MD3ManagerCard>());
+      expect(
+        AppComponents.material.sessionCardOrFallback,
+        isA<MD3SessionCard>(),
+      );
+      expect(
+        AppComponents.material.managerCardOrFallback,
+        isA<MD3ManagerCard>(),
+      );
       expect(AppComponents.material.agentCardOrFallback, isA<MD3AgentCard>());
     });
 
@@ -76,28 +82,64 @@ void main() {
       expect(AppComponents.systemFallback, same(AppComponents.neon));
     });
 
-    test('neon 5 槽（dialog/sectionHeader/loading/commandPreview/inputDecoration）命中自身', () {
-      expect(AppComponents.neon.dialogOrFallback, isA<NeonDialogImpl>());
-      expect(AppComponents.neon.sectionHeaderOrFallback, isA<NeonSectionHeader>());
-      expect(AppComponents.neon.loadingOrFallback, isA<NeonLoadingImpl>());
-      expect(AppComponents.neon.commandPreviewOrFallback, isA<NeonCommandPreview>());
-      expect(AppComponents.neon.inputDecorationOrFallback, isA<NeonInputDecorationImpl>());
-    });
+    test(
+      'neon 5 槽（dialog/sectionHeader/loading/commandPreview/inputDecoration）命中自身',
+      () {
+        expect(AppComponents.neon.dialogOrFallback, isA<NeonDialogImpl>());
+        expect(
+          AppComponents.neon.sectionHeaderOrFallback,
+          isA<NeonSectionHeader>(),
+        );
+        expect(AppComponents.neon.loadingOrFallback, isA<NeonLoadingImpl>());
+        expect(
+          AppComponents.neon.commandPreviewOrFallback,
+          isA<NeonCommandPreview>(),
+        );
+        expect(
+          AppComponents.neon.inputDecorationOrFallback,
+          isA<NeonInputDecorationImpl>(),
+        );
+      },
+    );
 
     test('geek 5 槽命中自身', () {
       expect(AppComponents.geek.dialogOrFallback, isA<GeekDialogImpl>());
-      expect(AppComponents.geek.sectionHeaderOrFallback, isA<GeekSectionHeader>());
+      expect(
+        AppComponents.geek.sectionHeaderOrFallback,
+        isA<GeekSectionHeader>(),
+      );
       expect(AppComponents.geek.loadingOrFallback, isA<GeekLoadingImpl>());
-      expect(AppComponents.geek.commandPreviewOrFallback, isA<GeekCommandPreview>());
-      expect(AppComponents.geek.inputDecorationOrFallback, isA<GeekInputDecorationImpl>());
+      expect(
+        AppComponents.geek.commandPreviewOrFallback,
+        isA<GeekCommandPreview>(),
+      );
+      expect(
+        AppComponents.geek.inputDecorationOrFallback,
+        isA<GeekInputDecorationImpl>(),
+      );
     });
 
     test('material 5 槽命中自身', () {
-      expect(AppComponents.material.dialogOrFallback, isA<MaterialDialogImpl>());
-      expect(AppComponents.material.sectionHeaderOrFallback, isA<MaterialSectionHeader>());
-      expect(AppComponents.material.loadingOrFallback, isA<MaterialLoadingImpl>());
-      expect(AppComponents.material.commandPreviewOrFallback, isA<MaterialCommandPreview>());
-      expect(AppComponents.material.inputDecorationOrFallback, isA<MaterialInputDecorationImpl>());
+      expect(
+        AppComponents.material.dialogOrFallback,
+        isA<MaterialDialogImpl>(),
+      );
+      expect(
+        AppComponents.material.sectionHeaderOrFallback,
+        isA<MaterialSectionHeader>(),
+      );
+      expect(
+        AppComponents.material.loadingOrFallback,
+        isA<MaterialLoadingImpl>(),
+      );
+      expect(
+        AppComponents.material.commandPreviewOrFallback,
+        isA<MaterialCommandPreview>(),
+      );
+      expect(
+        AppComponents.material.inputDecorationOrFallback,
+        isA<MaterialInputDecorationImpl>(),
+      );
     });
 
     test('空实例 5 槽回落系统默认 neon', () {

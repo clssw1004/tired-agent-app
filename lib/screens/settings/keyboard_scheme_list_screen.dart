@@ -114,7 +114,11 @@ class KeyboardSchemeListScreen extends StatelessWidget {
               Divider(height: 1, color: c.border),
               ListTile(
                 dense: true,
-                leading: Icon(Icons.add_box_outlined, color: c.textSecondary, size: 18),
+                leading: Icon(
+                  Icons.add_box_outlined,
+                  color: c.textSecondary,
+                  size: 18,
+                ),
                 title: ThemedText.body(
                   AppStrings.of.kbdSchemeBlank,
                   color: c.text,
@@ -161,7 +165,11 @@ class _BuiltinTile extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.two),
           IconButton(
-            icon: Icon(Icons.create_new_folder_outlined, size: 18, color: c.primary),
+            icon: Icon(
+              Icons.create_new_folder_outlined,
+              size: 18,
+              color: c.primary,
+            ),
             tooltip: AppStrings.of.kbdSchemeDuplicate,
             onPressed: () => _duplicate(context),
           ),
@@ -175,9 +183,7 @@ class _BuiltinTile extends StatelessWidget {
     if (name == null || !context.mounted) return;
     await provider.create(
       name: name,
-      rows: scheme.rows
-          .map((row) => List<TerminalKeyDef>.of(row))
-          .toList(),
+      rows: scheme.rows.map((row) => List<TerminalKeyDef>.of(row)).toList(),
       basePresetId: scheme.id,
     );
     if (context.mounted) {
@@ -229,8 +235,7 @@ class _UserSchemeTile extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.edit_outlined, size: 18, color: c.primary),
             tooltip: AppStrings.of.kbdSchemeEdit,
-            onPressed: () =>
-                context.push('/settings/keyboard/${scheme.id}'),
+            onPressed: () => context.push('/settings/keyboard/${scheme.id}'),
           ),
           IconButton(
             icon: Icon(Icons.restart_alt, size: 18, color: c.warning),
@@ -338,10 +343,7 @@ class _NamePromptDialogState extends State<_NamePromptDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(AppStrings.of.cancel),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(AppStrings.of.confirm),
-        ),
+        FilledButton(onPressed: _submit, child: Text(AppStrings.of.confirm)),
       ],
     );
   }

@@ -16,7 +16,9 @@ class MaterialSettingsTile extends SettingsTileContract {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       minTileHeight: 44,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      tileColor: data.selected ? scheme.primaryContainer : scheme.surfaceContainerLow,
+      tileColor: data.selected
+          ? scheme.primaryContainer
+          : scheme.surfaceContainerLow,
       leading: data.selected
           ? Icon(Icons.check, size: 20, color: scheme.onPrimaryContainer)
           : null,

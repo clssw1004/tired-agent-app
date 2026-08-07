@@ -24,17 +24,16 @@ class PtyKeyboardSchemeProvider extends ChangeNotifier {
   // ── Scheme accessors ──────────────────────────────────────────────
 
   /// Builtin presets surfaced as schemes so pickers can offer them uniformly.
-  List<PtyKeyboardScheme> get builtinSchemes =>
-      PtyKeyboardConfig.presets
-          .map(
-            (c) => PtyKeyboardScheme(
-              id: c.id,
-              name: c.name,
-              basePresetId: c.id,
-              rows: c.rows,
-            ),
-          )
-          .toList();
+  List<PtyKeyboardScheme> get builtinSchemes => PtyKeyboardConfig.presets
+      .map(
+        (c) => PtyKeyboardScheme(
+          id: c.id,
+          name: c.name,
+          basePresetId: c.id,
+          rows: c.rows,
+        ),
+      )
+      .toList();
 
   List<PtyKeyboardScheme> get userSchemes =>
       List.unmodifiable(_prefs.schemes.reversed);
@@ -86,9 +85,7 @@ class PtyKeyboardSchemeProvider extends ChangeNotifier {
   /// an existing scheme (e.g. user deleted it on the server / file), so
   /// stale ids never strand the user on a blank layout.
   PtyKeyboardConfig configForSession(String cmd, {String? sessionId}) {
-    final id = sessionId != null
-        ? _prefs.sessionAssignments[sessionId]
-        : null;
+    final id = sessionId != null ? _prefs.sessionAssignments[sessionId] : null;
     final sessionScheme = byId(id);
     if (sessionScheme != null) return sessionScheme.toConfig();
     final defaultScheme = byId(_prefs.defaultSchemeId);

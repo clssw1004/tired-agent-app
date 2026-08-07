@@ -13,10 +13,7 @@ import 'package:tired_agent_app/widgets/dialog/material_dialog.dart';
 /// 默认把对话框压到 root Navigator。若按钮用页面 context 弹栈，会 pop 掉嵌套
 /// Navigator 里的页面路由（甚至最后一个页面）而不是关闭对话框。
 void main() {
-  for (final impl in [
-    const MaterialDialogImpl(),
-    const GeekDialogImpl(),
-  ]) {
+  for (final impl in [const MaterialDialogImpl(), const GeekDialogImpl()]) {
     testWidgets('${impl.runtimeType} 按钮 pop 对话框而非宿主页面', (tester) async {
       var poppedValue = -1;
 

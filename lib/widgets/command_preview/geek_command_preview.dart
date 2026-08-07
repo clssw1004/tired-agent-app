@@ -43,7 +43,11 @@ class GeekCommandPreview extends CommandPreviewContract {
               children: [
                 ThemedText.mono('\$ $cmd', color: c.primary.withAlpha(140)),
                 const Spacer(),
-                actions ?? ThemedText.mono('---', color: c.textSecondary.withAlpha(60)),
+                actions ??
+                    ThemedText.mono(
+                      '---',
+                      color: c.textSecondary.withAlpha(60),
+                    ),
               ],
             ),
           ),

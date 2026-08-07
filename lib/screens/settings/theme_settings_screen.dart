@@ -28,7 +28,10 @@ class ThemeSettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.four),
         children: [
           // ── 风格 ─────────────────────────────────────────────
-          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsStyle),
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.settingsStyle,
+          ),
           const SizedBox(height: AppSpacing.two),
           context.appComponents.buildSettingsTile(
             context,
@@ -59,7 +62,10 @@ class ThemeSettingsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.four),
 
           // ── 模式 ─────────────────────────────────────────────
-          context.appComponents.buildSectionHeader(context, AppStrings.of.settingsMode),
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.settingsMode,
+          ),
           const SizedBox(height: AppSpacing.two),
           context.appComponents.buildSettingsTile(
             context,

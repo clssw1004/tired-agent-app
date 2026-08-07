@@ -52,7 +52,11 @@ class _KeyActionSheetState extends State<_KeyActionSheet> {
   bool _withEnter = false;
   bool _confirm = false;
 
-  static const _modifiers = [TerminalKeys.ctrl, TerminalKeys.alt, TerminalKeys.shift];
+  static const _modifiers = [
+    TerminalKeys.ctrl,
+    TerminalKeys.alt,
+    TerminalKeys.shift,
+  ];
   static const _nav = [
     TerminalKeys.up,
     TerminalKeys.down,
@@ -155,9 +159,7 @@ class _KeyActionSheetState extends State<_KeyActionSheet> {
         command: command,
         withEnter: _withEnter,
         confirm: _confirm,
-        confirmMessage: _confirm
-            ? 'Execute [$command]?'
-            : null,
+        confirmMessage: _confirm ? 'Execute [$command]?' : null,
       ),
     );
   }
@@ -202,10 +204,7 @@ class _KeyActionSheetState extends State<_KeyActionSheet> {
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.three),
               children: [
-                _catalogSection(
-                  AppStrings.of.kbdPickerModifiers,
-                  _modifiers,
-                ),
+                _catalogSection(AppStrings.of.kbdPickerModifiers, _modifiers),
                 _catalogSection(AppStrings.of.kbdPickerNav, _nav),
                 _catalogSection(AppStrings.of.kbdPickerSpecial, _special),
                 _catalogSection(AppStrings.of.kbdPickerFunction, _function),
@@ -266,10 +265,7 @@ class _KeyActionSheetState extends State<_KeyActionSheet> {
               Icon(def.icon, size: 14, color: c.textCode),
               const SizedBox(width: 4),
             ],
-            ThemedText.label(
-              def.label,
-              color: active ? c.primary : c.textCode,
-            ),
+            ThemedText.label(def.label, color: active ? c.primary : c.textCode),
           ],
         ),
       ),
@@ -291,10 +287,17 @@ class _KeyActionSheetState extends State<_KeyActionSheet> {
           const SizedBox(height: AppSpacing.two),
           TextField(
             controller: _commandController,
-            style: TextStyle(fontFamily: 'monospace', color: c.textCode, fontSize: 13),
+            style: TextStyle(
+              fontFamily: 'monospace',
+              color: c.textCode,
+              fontSize: 13,
+            ),
             decoration: InputDecoration(
               hintText: AppStrings.of.kbdPickerCommandHint,
-              hintStyle: TextStyle(color: c.textSecondary.withAlpha(140), fontSize: 13),
+              hintStyle: TextStyle(
+                color: c.textSecondary.withAlpha(140),
+                fontSize: 13,
+              ),
               isDense: true,
               filled: true,
               fillColor: c.surface,
@@ -310,7 +313,10 @@ class _KeyActionSheetState extends State<_KeyActionSheet> {
             style: TextStyle(color: c.text, fontSize: 13),
             decoration: InputDecoration(
               hintText: AppStrings.of.kbdPickerLabelHint,
-              hintStyle: TextStyle(color: c.textSecondary.withAlpha(140), fontSize: 13),
+              hintStyle: TextStyle(
+                color: c.textSecondary.withAlpha(140),
+                fontSize: 13,
+              ),
               isDense: true,
               filled: true,
               fillColor: c.surface,

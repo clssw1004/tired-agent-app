@@ -42,11 +42,17 @@ ThemeData _buildMd3(Brightness b) {
       elevation: 0,
       centerTitle: true,
       toolbarHeight: 48,
-      titleTextStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      titleTextStyle: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     dialogTheme: DialogThemeData(
       contentTextStyle: const TextStyle(fontSize: 14),
-      titleTextStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      titleTextStyle: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
     ),
     extensions: [c, AppComponents.material],
   );

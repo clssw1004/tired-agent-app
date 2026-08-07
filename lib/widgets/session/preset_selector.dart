@@ -79,9 +79,10 @@ class PresetSelectorState extends State<PresetSelector> {
 
   UserPreset? get selectedUserPreset => _selectedUserId == null
       ? null
-      : [..._customPresets, ..._recentPresets]
-            .where((p) => p.id == _selectedUserId)
-            .firstOrNull;
+      : [
+          ..._customPresets,
+          ..._recentPresets,
+        ].where((p) => p.id == _selectedUserId).firstOrNull;
 
   List<BuiltinPreset> get visibleBuiltinPresets {
     if (widget.platform == null) return builtinPresets;
@@ -205,10 +206,8 @@ class PresetSelectorState extends State<PresetSelector> {
         Expanded(
           child: SessionPresetDropdown(
             currentLabel: _currentLabel,
-            hasSelection:
-                _selectedBuiltinId != null || _selectedUserId != null,
-            emoji:
-                selectedPreset?.emoji ?? selectedUserPreset?.emoji ?? '⚡',
+            hasSelection: _selectedBuiltinId != null || _selectedUserId != null,
+            emoji: selectedPreset?.emoji ?? selectedUserPreset?.emoji ?? '⚡',
             builtinPresets: visibleBuiltinPresets,
             recentPresets: _recentPresets,
             customPresets: _customPresets,

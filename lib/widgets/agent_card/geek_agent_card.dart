@@ -29,14 +29,21 @@ class GeekAgentCard extends AgentCardContract {
     };
 
     // ── 合并信息行（url · platform）────────────────────────────
-    final platform = agent.platform != null ? '${agent.platform!.os} · ${agent.platform!.arch}' : '';
-    final urlLine = platform.isEmpty ? '│ ${agent.baseUrl}' : '│ ${agent.baseUrl} · $platform';
+    final platform = agent.platform != null
+        ? '${agent.platform!.os} · ${agent.platform!.arch}'
+        : '';
+    final urlLine = platform.isEmpty
+        ? '│ ${agent.baseUrl}'
+        : '│ ${agent.baseUrl} · $platform';
 
     return GestureDetector(
       onTap: data.onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.four, vertical: AppSpacing.two),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.four,
+          vertical: AppSpacing.two,
+        ),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
@@ -61,16 +68,29 @@ class GeekAgentCard extends AgentCardContract {
                 ThemedText.mono(_statusLabel(agent.state), color: statusColor),
                 if (data.onEdit != null) ...[
                   const SizedBox(width: 8),
-                  GeekActionButton(label: 'edit', onTap: data.onEdit!, color: c.textSecondary),
+                  GeekActionButton(
+                    label: 'edit',
+                    onTap: data.onEdit!,
+                    color: c.textSecondary,
+                  ),
                 ],
                 if (data.onDelete != null) ...[
                   const SizedBox(width: 8),
-                  GeekActionButton(label: 'delete', onTap: data.onDelete!, color: c.danger),
+                  GeekActionButton(
+                    label: 'delete',
+                    onTap: data.onDelete!,
+                    color: c.danger,
+                  ),
                 ],
               ],
             ),
             // ── Row2: url · platform ────────────────────────────
-            ThemedText.mono(urlLine, color: c.textSecondary, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ThemedText.mono(
+              urlLine,
+              color: c.textSecondary,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),

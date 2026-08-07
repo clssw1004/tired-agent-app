@@ -211,42 +211,42 @@ class AppComponents extends ThemeExtension<AppComponents> {
   Widget buildAgentCard(BuildContext context, AgentCardData data) =>
       agentCardOrFallback.build(context, data);
 
-  Widget buildSectionHeader(BuildContext context, String label, {Color? color}) =>
-      sectionHeaderOrFallback.build(context, label, color: color);
+  Widget buildSectionHeader(
+    BuildContext context,
+    String label, {
+    Color? color,
+  }) => sectionHeaderOrFallback.build(context, label, color: color);
 
   Widget buildLoading(
     BuildContext context, {
     double size = 24,
     Color? color,
     LoadingMode mode = LoadingMode.spinner,
-  }) =>
-      loadingOrFallback.build(context, size: size, color: color, mode: mode);
+  }) => loadingOrFallback.build(context, size: size, color: color, mode: mode);
 
   Widget buildCommandPreview(
     BuildContext context, {
     required String cmd,
     required String commandLine,
     Widget? actions,
-  }) =>
-      commandPreviewOrFallback.build(
-        context,
-        cmd: cmd,
-        commandLine: commandLine,
-        actions: actions,
-      );
+  }) => commandPreviewOrFallback.build(
+    context,
+    cmd: cmd,
+    commandLine: commandLine,
+    actions: actions,
+  );
 
   InputDecoration buildInputDecoration(
     BuildContext context, {
     String? label,
     String? hint,
     String? prefixText,
-  }) =>
-      inputDecorationOrFallback.build(
-        context,
-        label: label,
-        hint: hint,
-        prefixText: prefixText,
-      );
+  }) => inputDecorationOrFallback.build(
+    context,
+    label: label,
+    hint: hint,
+    prefixText: prefixText,
+  );
 
   Widget buildSettingsTile(BuildContext context, SettingsTileData data) =>
       settingsTileOrFallback.build(context, data);
@@ -263,36 +263,35 @@ class AppComponents extends ThemeExtension<AppComponents> {
     InputDecorationContract? inputDecoration,
     SettingsTileContract? settingsTile,
     AppComponents? base,
-  }) =>
-      AppComponents(
-        sessionCard: sessionCard ?? this.sessionCard,
-        managerCard: managerCard ?? this.managerCard,
-        agentCard: agentCard ?? this.agentCard,
-        dialog: dialog ?? this.dialog,
-        sectionHeader: sectionHeader ?? this.sectionHeader,
-        loading: loading ?? this.loading,
-        commandPreview: commandPreview ?? this.commandPreview,
-        inputDecoration: inputDecoration ?? this.inputDecoration,
-        settingsTile: settingsTile ?? this.settingsTile,
-        base: base ?? this.base,
-      );
+  }) => AppComponents(
+    sessionCard: sessionCard ?? this.sessionCard,
+    managerCard: managerCard ?? this.managerCard,
+    agentCard: agentCard ?? this.agentCard,
+    dialog: dialog ?? this.dialog,
+    sectionHeader: sectionHeader ?? this.sectionHeader,
+    loading: loading ?? this.loading,
+    commandPreview: commandPreview ?? this.commandPreview,
+    inputDecoration: inputDecoration ?? this.inputDecoration,
+    settingsTile: settingsTile ?? this.settingsTile,
+    base: base ?? this.base,
+  );
 
   @override
   AppComponents lerp(ThemeExtension<AppComponents>? other, double t) =>
       other is! AppComponents
-          ? this
-          : AppComponents(
-              sessionCard: t < 0.5 ? sessionCard : other.sessionCard,
-              managerCard: t < 0.5 ? managerCard : other.managerCard,
-              agentCard: t < 0.5 ? agentCard : other.agentCard,
-              dialog: t < 0.5 ? dialog : other.dialog,
-              sectionHeader: t < 0.5 ? sectionHeader : other.sectionHeader,
-              loading: t < 0.5 ? loading : other.loading,
-              commandPreview: t < 0.5 ? commandPreview : other.commandPreview,
-              inputDecoration: t < 0.5 ? inputDecoration : other.inputDecoration,
-              settingsTile: t < 0.5 ? settingsTile : other.settingsTile,
-              base: t < 0.5 ? base : other.base,
-            );
+      ? this
+      : AppComponents(
+          sessionCard: t < 0.5 ? sessionCard : other.sessionCard,
+          managerCard: t < 0.5 ? managerCard : other.managerCard,
+          agentCard: t < 0.5 ? agentCard : other.agentCard,
+          dialog: t < 0.5 ? dialog : other.dialog,
+          sectionHeader: t < 0.5 ? sectionHeader : other.sectionHeader,
+          loading: t < 0.5 ? loading : other.loading,
+          commandPreview: t < 0.5 ? commandPreview : other.commandPreview,
+          inputDecoration: t < 0.5 ? inputDecoration : other.inputDecoration,
+          settingsTile: t < 0.5 ? settingsTile : other.settingsTile,
+          base: t < 0.5 ? base : other.base,
+        );
 }
 
 extension BuildContextAppComponents on BuildContext {
