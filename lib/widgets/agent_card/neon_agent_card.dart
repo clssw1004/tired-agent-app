@@ -1,3 +1,4 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/protocol/types.dart';
@@ -5,6 +6,7 @@ import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/agent_card/agent_status_badge.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
+import 'package:tired_agent_app/widgets/agent_card/os_brand_icon.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
 /// 赛博朋克风格 Agent 卡片：状态点 + 图标按钮 + 长按删除。
@@ -100,22 +102,10 @@ class NeonAgentCard extends AgentCardContract {
   }
 
   static Widget _platformIcon(String os, AppColors c) {
-    IconData icon;
-    Color color;
-    switch (os) {
-      case 'win32':
-        icon = Icons.window;
-        color = c.primary;
-      case 'darwin':
-        icon = Icons.laptop_mac;
-        color = c.text;
-      case 'linux':
-        icon = Icons.terminal;
-        color = c.warning;
-      default:
-        icon = Icons.devices;
-        color = c.textSecondary;
+    final brand = osBrandIcon(os);
+    if (brand != null) {
+      return FaIcon(brand, size: 14, color: c.primary.withAlpha(160));
     }
-    return Icon(icon, size: 14, color: color.withAlpha(160));
+    return Icon(Icons.devices, size: 14, color: c.textSecondary.withAlpha(160));
   }
 }

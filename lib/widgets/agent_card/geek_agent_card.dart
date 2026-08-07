@@ -1,7 +1,9 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
+import 'package:tired_agent_app/widgets/agent_card/os_brand_icon.dart';
 import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 
@@ -27,6 +29,7 @@ class GeekAgentCard extends AgentCardContract {
       AgentState.offline => c.danger,
       AgentState.pending => c.textSecondary,
     };
+    final os = agent.platform?.os;
 
     // ── 合并信息行（url · platform）────────────────────────────
     final platform = agent.platform != null
@@ -83,12 +86,22 @@ class GeekAgentCard extends AgentCardContract {
                 ],
               ],
             ),
-            // ── Row2: url · platform ────────────────────────────
-            ThemedText.mono(
-              urlLine,
-              color: c.textSecondary,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            // ── Row2: [OS] url · platform ───────────────────────
+            Row(
+              children: [
+                if (os != null && osBrandIcon(os) != null) ...[
+                  FaIcon(osBrandIcon(os)!, size: 12, color: c.textSecondary),
+                  const SizedBox(width: AppSpacing.one),
+                ],
+                Expanded(
+                  child: ThemedText.mono(
+                    urlLine,
+                    color: c.textSecondary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
