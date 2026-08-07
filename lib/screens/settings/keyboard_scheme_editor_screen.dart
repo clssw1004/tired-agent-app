@@ -486,35 +486,18 @@ class _KeyboardSchemeEditorScreenState
                   ),
                 ),
                 const SizedBox(width: AppSpacing.two),
-                OutlinedButton.icon(
+                _editBtn(
                   key: const ValueKey('kbd_edit_icon'),
                   onPressed: _pickIcon,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.two,
-                      vertical: 8,
-                    ),
-                    minimumSize: const Size(0, 36),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  icon: Icon(
-                    row[k].icon ?? Icons.image_outlined,
-                    size: 14,
-                    color: c.primary,
-                  ),
-                  label: ThemedText.label(
-                    AppStrings.of.kbdEditorIcon,
-                    color: c.primary,
-                  ),
+                  leading: row[k].icon ?? Icons.image_outlined,
+                  label: AppStrings.of.kbdEditorIcon,
+                  active: row[k].icon != null,
                 ),
-                const SizedBox(width: AppSpacing.one),
-                OutlinedButton.icon(
+                const SizedBox(width: AppSpacing.two),
+                _editBtn(
                   onPressed: _pickAction,
-                  icon: Icon(Icons.tune, size: 14, color: c.primary),
-                  label: ThemedText.label(
-                    AppStrings.of.kbdEditorAction,
-                    color: c.primary,
-                  ),
+                  leading: Icons.tune,
+                  label: AppStrings.of.kbdEditorAction,
                 ),
               ],
             ),
@@ -579,6 +562,37 @@ class _KeyboardSchemeEditorScreenState
         KeyMoveDir.down => AppStrings.of.kbdEditorMoveDown,
       },
       onPressed: disabled ? null : () => _moveSelected(dir),
+    );
+  }
+
+  /// A compact outlined action button for the edit bar.
+  ///
+  /// Both the icon and action pickers share this so they render at the same
+  /// height / density and read as one control group. When [active] the button
+  /// gets a primary tint to signal an option (e.g. an icon) is currently set.
+  Widget _editBtn({
+    Key? key,
+    required VoidCallback onPressed,
+    required IconData leading,
+    required String label,
+    bool active = false,
+  }) {
+    final c = context.appColors;
+    return OutlinedButton.icon(
+      key: key,
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 40),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two),
+        visualDensity: VisualDensity.compact,
+        side: BorderSide(
+          color: active ? c.primary : c.border.withAlpha(80),
+          width: active ? 1 : 0.5,
+        ),
+        backgroundColor: active ? c.primary.withAlpha(18) : null,
+      ),
+      icon: Icon(leading, size: 16, color: c.primary),
+      label: ThemedText.label(label, color: c.primary),
     );
   }
 }
