@@ -19,7 +19,7 @@ class GeekCommandPreview extends CommandPreviewContract {
       width: double.infinity,
       decoration: BoxDecoration(
         color: c.background,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppSpacing.two),
         border: Border.all(color: c.border.withAlpha(80)),
       ),
       child: Column(
@@ -35,7 +35,7 @@ class GeekCommandPreview extends CommandPreviewContract {
             decoration: BoxDecoration(
               color: c.surfaceAlt.withAlpha(120),
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(7),
+                top: Radius.circular(AppSpacing.two - 1),
               ),
               border: Border(bottom: BorderSide(color: c.border.withAlpha(60))),
             ),

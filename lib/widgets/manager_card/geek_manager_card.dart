@@ -3,6 +3,7 @@ import 'package:tired_agent_app/models/manager_connection.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
+import 'package:tired_agent_app/utils/time_ago.dart';
 import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/manager_card/contract.dart';
@@ -13,14 +14,6 @@ import 'package:tired_agent_app/widgets/manager_card/contract.dart';
 /// url/lastUsed、agent 统计合并单行，减少右对齐点。
 class GeekManagerCard extends ManagerCardContract {
   const GeekManagerCard();
-
-  String _timeSince(int ts) {
-    final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s < 60000) return '${s ~/ 1000}s';
-    if (s < 3600000) return '${s ~/ 60000}m';
-    if (s < 86400000) return '${s ~/ 3600000}h';
-    return '${s ~/ 86400000}d';
-  }
 
   String _statusLabel(ConnectionStatus s) => switch (s) {
     ConnectionStatus.connected => '+online',
@@ -55,9 +48,7 @@ class GeekManagerCard extends ManagerCardContract {
     };
 
     // ── 合并信息行（url · last used）───────────────────────────
-    final lastUsed = profile.lastUsedMs > 0
-        ? _timeSince(profile.lastUsedMs)
-        : '';
+    final lastUsed = profile.lastUsedMs > 0 ? timeAgo(profile.lastUsedMs) : '';
     final urlLine = lastUsed.isEmpty
         ? '│ ${profile.baseUrl}'
         : '│ ${profile.baseUrl} · $lastUsed';
@@ -69,7 +60,10 @@ class GeekManagerCard extends ManagerCardContract {
       onTap: data.onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.two),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.four,
+          vertical: AppSpacing.two,
+        ),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: c.border, width: 1)),
         ),
@@ -83,7 +77,6 @@ class GeekManagerCard extends ManagerCardContract {
                 Flexible(
                   child: ThemedText.mono(
                     profile.name,
-                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: c.text,
                     maxLines: 1,

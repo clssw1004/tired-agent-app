@@ -13,12 +13,7 @@ class GeekSectionHeader extends SectionHeaderContract {
     final barColor = color ?? c.primary;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.two),
-      child: ThemedText(
-        '>> ${label.toUpperCase()}',
-        fontSize: 12,
-        fontFamily: 'monospace',
-        color: barColor,
-      ),
+      child: ThemedText.mono('>> ${label.toUpperCase()}', color: barColor),
     );
   }
 }

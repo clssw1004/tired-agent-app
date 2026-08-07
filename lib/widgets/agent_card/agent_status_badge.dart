@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/protocol/types.dart';
+import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 
 /// Agent 状态文字标签（i18n）。
@@ -32,7 +33,10 @@ class AgentStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.two,
+        vertical: AppSpacing.one / 2,
+      ),
       decoration: BoxDecoration(
         color: color.withAlpha(18),
         borderRadius: BorderRadius.circular(999),
@@ -52,7 +56,7 @@ class AgentStatusBadge extends StatelessWidget {
                   : null,
             ),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: AppSpacing.one),
           Text(
             label,
             style: TextStyle(

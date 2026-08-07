@@ -27,7 +27,7 @@ class GeekInputDecorationImpl extends InputDecorationContract {
       prefixStyle: TextStyle(
         fontFamily: 'monospace',
         color: c.primary.withAlpha(140),
-        fontSize: 13,
+        fontSize: 12,
       ),
       filled: true,
       fillColor: c.surface,
@@ -36,15 +36,15 @@ class GeekInputDecorationImpl extends InputDecorationContract {
         vertical: AppSpacing.two,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppSpacing.one),
         borderSide: BorderSide(color: c.border.withAlpha(80)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppSpacing.one),
         borderSide: BorderSide(color: c.border.withAlpha(80)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppSpacing.one),
         borderSide: BorderSide(color: c.primary, width: 1),
       ),
     );

@@ -21,7 +21,7 @@ class GeekSettingsTile extends SettingsTileContract {
         ),
         decoration: BoxDecoration(
           color: c.surface,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(AppSpacing.one),
           border: Border.all(
             color: data.selected ? c.primary.withAlpha(90) : c.border,
             width: 1,
@@ -32,12 +32,12 @@ class GeekSettingsTile extends SettingsTileContract {
             Expanded(
               child: ThemedText.mono(
                 label,
-                fontSize: 13,
+                fontWeight: FontWeight.w600,
                 color: data.selected ? c.primary : c.text,
               ),
             ),
             if (data.value != null)
-              ThemedText.mono(data.value!, fontSize: 12, color: c.textSecondary)
+              ThemedText.mono(data.value!, color: c.textSecondary)
             else if (data.navigation)
               ThemedText.mono('>', color: c.textSecondary)
             else if (data.onSwitchChanged != null)

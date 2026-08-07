@@ -57,17 +57,16 @@ class GeekAgentCard extends AgentCardContract {
                 Expanded(
                   child: ThemedText.mono(
                     agent.name,
-                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: c.text,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.two),
                 ThemedText.mono(_statusLabel(agent.state), color: statusColor),
                 if (data.onEdit != null) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.two),
                   GeekActionButton(
                     label: 'edit',
                     onTap: data.onEdit!,
@@ -75,7 +74,7 @@ class GeekAgentCard extends AgentCardContract {
                   ),
                 ],
                 if (data.onDelete != null) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.two),
                   GeekActionButton(
                     label: 'delete',
                     onTap: data.onDelete!,

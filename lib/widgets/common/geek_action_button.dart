@@ -21,10 +21,10 @@ class GeekActionButton extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
+        // 紧凑文字按钮：水平 6 是有意的细间距，保持方块括号贴文本。
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: ThemedText.mono(
           '[$label]',
-          fontSize: 12,
           fontWeight: FontWeight.w600,
           color: color,
         ),

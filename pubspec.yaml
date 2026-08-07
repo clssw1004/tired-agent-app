@@ -35,6 +35,18 @@ flutter:
   generate: true
   uses-material-design: true
 
+  # JetBrains Mono（OFL 许可）注册为 family 'monospace'，让全部
+  # `fontFamily: 'monospace'` 引用（ThemedText.mono/label/code、PTY 面板等）
+  # 在 iOS/Android 上一致命中真正的等宽字体，无需改任何代码。
+  fonts:
+    - family: monospace
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Regular.ttf
+        - asset: assets/fonts/JetBrainsMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/JetBrainsMono-Bold.ttf
+          weight: 700
+
 flutter_launcher_icons:
   android: true
   ios: true
