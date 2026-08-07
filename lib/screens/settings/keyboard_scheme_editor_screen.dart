@@ -437,8 +437,25 @@ class _KeyboardSchemeEditorScreenState
     );
   }
 
+  /// Gap between the left edit-control column and the right D-pad, and between
+  /// the two rows inside each column. Shared so both columns keep the same
+  /// horizontal / vertical rhythm.
+  static const double _cellGap = AppSpacing.two;
+
   /// Bottom inline edit bar — shown while a key is selected, does not cover
   /// the keyboard preview above it.
+  ///
+  /// Two-zone layout (D-pad on the right so the right hand moves the selection
+  /// while the left hand tweaks the label / icon / action):
+  ///
+  ///   left column            right D-pad block
+  ///   [ label ] [icon] [action]   [ ][↑][ ]
+  ///   [delete] [close]            [←][↓][→]
+  ///
+  /// The D-pad is a fixed-width block on the right: ↑ sits directly above ↓
+  /// with ← and → flanking it, so the two rows form a physical cross. On very
+  /// narrow widths (< 360) the picker buttons collapse to icon-only and the
+  /// D-pad cells shrink to 40dp so nothing overflows.
   Widget _buildEditBar() {
     final c = context.appColors;
     final r = _selRow!;
@@ -467,90 +484,141 @@ class _KeyboardSchemeEditorScreenState
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final tight = constraints.maxWidth < 360;
+            return Row(
               children: [
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: ConstrainedBox(
-                    // A key cap is only ~1-3 chars wide — keep the label field
-                    // compact instead of letting it stretch across the bar.
-                    constraints: const BoxConstraints(maxWidth: 140),
-                    child: TextField(
-                      controller: _labelController,
-                      style: TextStyle(color: c.text, fontSize: 13),
-                      decoration: neonInputDecoration(
-                        context,
-                        label: AppStrings.of.kbdEditorKeyLabel,
-                        hint: AppStrings.of.kbdEditorKeyLabelHint,
+                // Left column — everything but the D-pad.
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _labelField(c, tight: tight),
+                          ),
+                          SizedBox(width: _cellGap),
+                          _editBtn(
+                            key: const ValueKey('kbd_edit_icon'),
+                            onPressed: _pickIcon,
+                            leading: row[k].icon ?? Icons.image_outlined,
+                            label: AppStrings.of.kbdEditorIcon,
+                            active: row[k].icon != null,
+                            tight: tight,
+                          ),
+                          SizedBox(width: _cellGap),
+                          _editBtn(
+                            key: const ValueKey('kbd_edit_action'),
+                            onPressed: _pickAction,
+                            leading: Icons.tune,
+                            label: AppStrings.of.kbdEditorAction,
+                            tight: tight,
+                          ),
+                        ],
                       ),
-                      onChanged: _updateLabel,
-                    ),
+                      SizedBox(height: _cellGap),
+                      // Destructive / dismiss actions kept away from the
+                      // D-pad so a stray tap while moving a key can't remove
+                      // or close it.
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.delete_outline,
+                                size: 20, color: c.danger),
+                            tooltip: AppStrings.of.kbdEditorDeleteKey,
+                            onPressed: _deleteSelected,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                size: 20, color: c.textSecondary),
+                            tooltip: AppStrings.of.kbdEditorDone,
+                            onPressed: () => _selectKey(r, k),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                // ↑ sits in row 1 directly above ↓ in row 2, completing the
-                // physical cross / D-pad layout.
-                const SizedBox(width: AppSpacing.two),
-                _arrowBtn(
-                  KeyMoveDir.up,
-                  icon: Icons.arrow_upward,
-                  disabled: r == 0 || _rows[r - 1].isEmpty,
-                ),
-                const Spacer(),
-                _editBtn(
-                  key: const ValueKey('kbd_edit_icon'),
-                  onPressed: _pickIcon,
-                  leading: row[k].icon ?? Icons.image_outlined,
-                  label: AppStrings.of.kbdEditorIcon,
-                  active: row[k].icon != null,
-                ),
-                const SizedBox(width: AppSpacing.two),
-                _editBtn(
-                  onPressed: _pickAction,
-                  leading: Icons.tune,
-                  label: AppStrings.of.kbdEditorAction,
-                ),
+                SizedBox(width: _cellGap),
+                _buildDpad(r: r, k: k, colCount: row.length, tight: tight),
               ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Right-hand D-pad block — a fixed-width physical cross. The top row is
+  /// [blank][↑][blank] so ↑ lands exactly above ↓, the middle of the bottom
+  /// row [←][↓][→].
+  Widget _buildDpad({
+    required int r,
+    required int k,
+    required int colCount,
+    required bool tight,
+  }) {
+    final cell = tight ? 40.0 : 44.0;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(width: cell, height: cell),
+            _arrowBtn(
+              KeyMoveDir.up,
+              icon: Icons.arrow_upward,
+              disabled: r == 0 || _rows[r - 1].isEmpty,
+              cell: cell,
             ),
-            const SizedBox(height: AppSpacing.two),
-            Row(
-              children: [
-                // Placeholder to keep [←][↓][→] visually aligned with row 1's
-                // ↑ — ↓ sits directly under ↑, ←/→ frame the cross.
-                const SizedBox(width: AppSpacing.two),
-                _arrowBtn(
-                  KeyMoveDir.left,
-                  icon: Icons.arrow_back,
-                  disabled: k == 0,
-                ),
-                _arrowBtn(
-                  KeyMoveDir.down,
-                  icon: Icons.arrow_downward,
-                  disabled: r >= _rows.length - 1 || _rows[r + 1].isEmpty,
-                ),
-                _arrowBtn(
-                  KeyMoveDir.right,
-                  icon: Icons.arrow_forward,
-                  disabled: k >= row.length - 1,
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(Icons.delete_outline, size: 20, color: c.danger),
-                  tooltip: AppStrings.of.kbdEditorDeleteKey,
-                  onPressed: _deleteSelected,
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, size: 20, color: c.textSecondary),
-                  tooltip: AppStrings.of.kbdEditorDone,
-                  onPressed: () => _selectKey(r, k),
-                ),
-              ],
+            SizedBox(width: cell, height: cell),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _arrowBtn(
+              KeyMoveDir.left,
+              icon: Icons.arrow_back,
+              disabled: k == 0,
+              cell: cell,
+            ),
+            _arrowBtn(
+              KeyMoveDir.down,
+              icon: Icons.arrow_downward,
+              disabled: r >= _rows.length - 1 || _rows[r + 1].isEmpty,
+              cell: cell,
+            ),
+            _arrowBtn(
+              KeyMoveDir.right,
+              icon: Icons.arrow_forward,
+              disabled: k >= colCount - 1,
+              cell: cell,
             ),
           ],
         ),
+      ],
+    );
+  }
+
+  Widget _labelField(AppColors c, {required bool tight}) {
+    return ConstrainedBox(
+      // A key cap is only ~1–3 chars wide — keep the field compact. It still
+      // expands to fill leftover space via the parent Expanded.
+      constraints: BoxConstraints(maxWidth: tight ? 80 : 140),
+      child: TextField(
+        controller: _labelController,
+        style: TextStyle(color: c.text, fontSize: 13),
+        decoration: neonInputDecoration(
+          context,
+          label: AppStrings.of.kbdEditorKeyLabel,
+          hint: AppStrings.of.kbdEditorKeyLabelHint,
+        ),
+        onChanged: _updateLabel,
       ),
     );
   }
@@ -559,6 +627,7 @@ class _KeyboardSchemeEditorScreenState
     KeyMoveDir dir, {
     required IconData icon,
     required bool disabled,
+    required double cell,
   }) {
     final c = context.appColors;
     return IconButton(
@@ -567,6 +636,9 @@ class _KeyboardSchemeEditorScreenState
         size: 20,
         color: disabled ? c.textSecondary.withAlpha(80) : c.primary,
       ),
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints.tightFor(width: cell, height: cell),
+      visualDensity: VisualDensity.compact,
       tooltip: switch (dir) {
         KeyMoveDir.left => AppStrings.of.kbdEditorMoveLeft,
         KeyMoveDir.right => AppStrings.of.kbdEditorMoveRight,
@@ -588,23 +660,40 @@ class _KeyboardSchemeEditorScreenState
     required IconData leading,
     required String label,
     bool active = false,
+    bool tight = false,
   }) {
     final c = context.appColors;
-    return OutlinedButton.icon(
-      key: key,
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(0, 40),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.two),
-        visualDensity: VisualDensity.compact,
-        side: BorderSide(
-          color: active ? c.primary : c.border.withAlpha(80),
-          width: active ? 1 : 0.5,
+    final icon = Icon(leading, size: 16, color: c.primary);
+    return Tooltip(
+      message: label,
+      child: OutlinedButton(
+        key: key,
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 40),
+          padding: EdgeInsets.symmetric(
+            horizontal: tight ? AppSpacing.one : AppSpacing.two,
+          ),
+          visualDensity: VisualDensity.compact,
+          side: BorderSide(
+            color: active ? c.primary : c.border.withAlpha(80),
+            width: active ? 1 : 0.5,
+          ),
+          backgroundColor: active ? c.primary.withAlpha(18) : null,
         ),
-        backgroundColor: active ? c.primary.withAlpha(18) : null,
+        // On narrow widths show only the glyph — the label is dropped and the
+        // semantic meaning carried by the tooltip.
+        child: tight
+            ? icon
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  icon,
+                  const SizedBox(width: AppSpacing.one),
+                  ThemedText.label(label, color: c.primary),
+                ],
+              ),
       ),
-      icon: Icon(leading, size: 16, color: c.primary),
-      label: ThemedText.label(label, color: c.primary),
     );
   }
 }
