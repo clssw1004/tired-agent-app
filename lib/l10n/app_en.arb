@@ -387,6 +387,14 @@
   "kbdEditorMoveRight": "Move right",
   "kbdEditorMoveUp": "Move up",
   "kbdEditorMoveDown": "Move down",
+  "kbdEditorIcon": "Icon",
+
+  "kbdIconPickerTitle": "Choose icon",
+  "kbdIconPickerClear": "No icon",
+  "kbdIconPickerSearch": "Search icons",
+  "kbdIconPickerMaterial": "Material",
+  "kbdIconPickerFontAwesome": "FontAwesome",
+  "kbdIconPickerEmpty": "No matching icons",
 
   "kbdPickerTitle": "Key Action",
   "kbdPickerClear": "Clear",

@@ -167,12 +167,14 @@ class TerminalKeyDef {
   /// Copy with any subset of fields overridden.
   ///
   /// Used by the scheme editor to relabel a key in place without touching its
-  /// byte sequence or composition info.
+  /// byte sequence or composition info. Pass [clearIcon] to drop an existing
+  /// icon (needed because [icon] being nullable can't express "remove it").
   TerminalKeyDef copyWith({
     String? id,
     String? label,
     List<int>? bytes,
     IconData? icon,
+    bool clearIcon = false,
     bool? isMod,
     List<TerminalKeyCode>? composedOf,
     bool? confirm,
@@ -182,7 +184,7 @@ class TerminalKeyDef {
       id: id ?? this.id,
       label: label ?? this.label,
       bytes: bytes ?? this.bytes,
-      icon: icon ?? this.icon,
+      icon: clearIcon ? null : (icon ?? this.icon),
       isMod: isMod ?? this.isMod,
       composedOf: composedOf ?? this.composedOf,
       confirm: confirm ?? this.confirm,
