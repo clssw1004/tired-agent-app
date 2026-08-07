@@ -473,19 +473,25 @@ class _KeyboardSchemeEditorScreenState
           children: [
             Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _labelController,
-                    style: TextStyle(color: c.text, fontSize: 13),
-                    decoration: neonInputDecoration(
-                      context,
-                      label: AppStrings.of.kbdEditorKeyLabel,
-                      hint: AppStrings.of.kbdEditorKeyLabelHint,
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: ConstrainedBox(
+                    // A key cap is only ~1-3 chars wide — keep the label field
+                    // compact instead of letting it stretch across the bar.
+                    constraints: const BoxConstraints(maxWidth: 140),
+                    child: TextField(
+                      controller: _labelController,
+                      style: TextStyle(color: c.text, fontSize: 13),
+                      decoration: neonInputDecoration(
+                        context,
+                        label: AppStrings.of.kbdEditorKeyLabel,
+                        hint: AppStrings.of.kbdEditorKeyLabelHint,
+                      ),
+                      onChanged: _updateLabel,
                     ),
-                    onChanged: _updateLabel,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.two),
+                const Spacer(),
                 _editBtn(
                   key: const ValueKey('kbd_edit_icon'),
                   onPressed: _pickIcon,
