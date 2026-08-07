@@ -523,7 +523,7 @@ class _KeyboardSchemeEditorScreenState
               children: [
                 _arrowBtn(
                   KeyMoveDir.left,
-                  icon: Icons.arrow_left,
+                  icon: Icons.arrow_back,
                   disabled: k == 0,
                 ),
                 _arrowBtn(
@@ -538,7 +538,7 @@ class _KeyboardSchemeEditorScreenState
                 ),
                 _arrowBtn(
                   KeyMoveDir.right,
-                  icon: Icons.arrow_right,
+                  icon: Icons.arrow_forward,
                   disabled: k >= row.length - 1,
                 ),
                 const Spacer(),
