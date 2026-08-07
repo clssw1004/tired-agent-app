@@ -194,21 +194,26 @@ class _KeyIconSheetState extends State<_KeyIconSheet> {
   Widget _iconTile(KeyIconEntry entry) {
     final c = context.appColors;
     final selected = entry.icon == widget.current;
-    return GestureDetector(
-      onTap: () => _pick(entry),
-      child: Container(
-        decoration: BoxDecoration(
-          color: selected ? c.primary.withAlpha(25) : c.surfaceAlt,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: selected ? c.primary : c.border.withAlpha(60),
-            width: selected ? 1.2 : 0.5,
+    return Semantics(
+      label: entry.name,
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: () => _pick(entry),
+        child: Container(
+          decoration: BoxDecoration(
+            color: selected ? c.primary.withAlpha(25) : c.surfaceAlt,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: selected ? c.primary : c.border.withAlpha(60),
+              width: selected ? 1.2 : 0.5,
+            ),
           ),
-        ),
-        child: Icon(
-          entry.icon,
-          size: 20,
-          color: selected ? c.primary : c.textCode,
+          child: Icon(
+            entry.icon,
+            size: 20,
+            color: selected ? c.primary : c.textCode,
+          ),
         ),
       ),
     );

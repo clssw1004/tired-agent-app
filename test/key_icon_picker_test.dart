@@ -173,4 +173,15 @@ void main() {
     expect(find.byKey(const ValueKey('kbd_edit_icon')), findsOneWidget);
     expect(find.text(AppStrings.of.kbdEditorAction), findsOneWidget);
   });
+
+  testWidgets('图标格子带无障碍语义标签', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpEditor(tester);
+    await selectTabAndOpenIconPicker(tester);
+
+    // Icon tiles expose their searchable name to screen readers.
+    expect(find.bySemanticsLabel('play'), findsOneWidget);
+
+    handle.dispose();
+  });
 }
