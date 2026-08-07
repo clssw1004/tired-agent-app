@@ -509,26 +509,41 @@ class _KeyboardSchemeEditorScreenState
             ),
             const SizedBox(height: AppSpacing.two),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _arrowBtn(
-                  KeyMoveDir.left,
-                  icon: Icons.arrow_back,
-                  disabled: k == 0,
-                ),
-                _arrowBtn(
-                  KeyMoveDir.up,
-                  icon: Icons.arrow_upward,
-                  disabled: r == 0 || _rows[r - 1].isEmpty,
-                ),
-                _arrowBtn(
-                  KeyMoveDir.down,
-                  icon: Icons.arrow_downward,
-                  disabled: r >= _rows.length - 1 || _rows[r + 1].isEmpty,
-                ),
-                _arrowBtn(
-                  KeyMoveDir.right,
-                  icon: Icons.arrow_forward,
-                  disabled: k >= row.length - 1,
+                // D-pad: ↑ on top, [←][↓][→] in a row below — ↓ lines up
+                // under ↑ to form a physical cross / arrow-key cluster.
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _arrowBtn(
+                      KeyMoveDir.up,
+                      icon: Icons.arrow_upward,
+                      disabled: r == 0 || _rows[r - 1].isEmpty,
+                    ),
+                    const SizedBox(height: AppSpacing.one),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _arrowBtn(
+                          KeyMoveDir.left,
+                          icon: Icons.arrow_back,
+                          disabled: k == 0,
+                        ),
+                        _arrowBtn(
+                          KeyMoveDir.down,
+                          icon: Icons.arrow_downward,
+                          disabled:
+                              r >= _rows.length - 1 || _rows[r + 1].isEmpty,
+                        ),
+                        _arrowBtn(
+                          KeyMoveDir.right,
+                          icon: Icons.arrow_forward,
+                          disabled: k >= row.length - 1,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 const Spacer(),
                 IconButton(
