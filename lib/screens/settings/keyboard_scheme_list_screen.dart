@@ -41,7 +41,12 @@ class KeyboardSchemeListScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.three),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.two,
+          AppSpacing.two,
+          AppSpacing.two,
+          AppSpacing.four,
+        ),
         children: [
           context.appComponents.buildSectionHeader(
             context,

@@ -508,6 +508,12 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                   ),
                 )
               : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.two,
+                    AppSpacing.two,
+                    AppSpacing.two,
+                    AppSpacing.four,
+                  ),
                   itemCount: _visible.length,
                   itemBuilder: (context, index) {
                     final session = _visible[index];

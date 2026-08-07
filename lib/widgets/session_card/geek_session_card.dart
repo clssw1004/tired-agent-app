@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/theme.dart';
+import 'package:tired_agent_app/utils/time_ago.dart';
 import 'package:tired_agent_app/widgets/common/geek_action_button.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/session_card/contract.dart';
@@ -11,15 +12,6 @@ import 'package:tired_agent_app/widgets/session_card/contract.dart';
 /// cmd/pid/uptime 合并单行，减少右对齐点，排版更整洁。
 class GeekSessionCard extends SessionCardContract {
   const GeekSessionCard();
-
-  String _timeSince(int ts) {
-    final s = DateTime.now().millisecondsSinceEpoch - ts;
-    if (s <= 0) return '0s';
-    if (s < 60000) return '${s ~/ 1000}s';
-    if (s < 3600000) return '${s ~/ 60000}m';
-    if (s < 86400000) return '${s ~/ 3600000}h';
-    return '${s ~/ 86400000}d';
-  }
 
   String _statusLabel(SessionStatus s) => switch (s) {
     SessionStatus.running => '+running',
@@ -50,10 +42,8 @@ class GeekSessionCard extends SessionCardContract {
         ? 'exit ${session.exitCode ?? '?'}'
         : 'pid ${session.pid ?? '?'}';
     final up = session.status == SessionStatus.exited
-        ? (session.exitedAt != null
-              ? 'ago ${_timeSince(session.exitedAt!)}'
-              : '')
-        : 'up ${_timeSince(session.createdAt)}';
+        ? (session.exitedAt != null ? 'ago ${timeAgo(session.exitedAt!)}' : '')
+        : 'up ${timeAgo(session.createdAt)}';
     // 仅命令；pid/exit/up 全部交给左下角 Row3 状态行（避免 pid 重复）
     final cmdLine = cmd;
 
@@ -77,29 +67,25 @@ class GeekSessionCard extends SessionCardContract {
               children: [
                 ThemedText.mono(
                   '[ ${session.label ?? session.cmd} ]',
-                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: c.primary,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppSpacing.one),
                 if (session.mode != null)
                   ThemedText.mono(
                     '[${session.mode!.name}]',
-                    fontSize: 11,
                     color: c.textSecondary,
                   ),
-                const SizedBox(width: 6),
-                if (data.isPinned)
-                  ThemedText.mono('*pin', fontSize: 11, color: c.primary),
+                const SizedBox(width: AppSpacing.one),
+                if (data.isPinned) ThemedText.mono('*pin', color: c.primary),
               ],
             ),
             // ── Row1: /cwd（终端顶部 cwd，路径感）──────────────
             if (session.cwd != null && session.cwd!.isNotEmpty)
               ThemedText.mono(
                 '─ ${session.cwd!}',
-                fontSize: 11,
                 color: c.primary.withAlpha(140),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -123,10 +109,9 @@ class GeekSessionCard extends SessionCardContract {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: ThemedText.mono(
-                      _statusLabel(session.status) == 'exited'
+                      session.status == SessionStatus.exited
                           ? '${_statusLabel(session.status)} · $meta${up.isEmpty ? '' : ' · $up'}'
                           : '${_statusLabel(session.status)} · pid ${session.pid ?? '?'} · $up',
-                      fontSize: 11,
                       color: statusColor,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

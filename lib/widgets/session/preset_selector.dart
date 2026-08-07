@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/session_presets.dart';
+import 'package:tired_agent_app/widgets/session/preset_brand_icon.dart';
 import 'package:tired_agent_app/widgets/session/save_preset_button.dart';
 import 'package:tired_agent_app/widgets/session/session_preset_dropdown.dart';
 
@@ -201,13 +202,15 @@ class PresetSelectorState extends State<PresetSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final selected = selectedPreset;
     return Row(
       children: [
         Expanded(
           child: SessionPresetDropdown(
             currentLabel: _currentLabel,
             hasSelection: _selectedBuiltinId != null || _selectedUserId != null,
-            emoji: selectedPreset?.emoji ?? selectedUserPreset?.emoji ?? '⚡',
+            emoji: selected?.emoji ?? selectedUserPreset?.emoji ?? '⚡',
+            brandIcon: selected == null ? null : presetBrandIcon(selected.id),
             builtinPresets: visibleBuiltinPresets,
             recentPresets: _recentPresets,
             customPresets: _customPresets,

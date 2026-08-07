@@ -95,7 +95,8 @@ class GeekDialogImpl extends DialogContract {
       insetPadding: insetPadding,
       backgroundColor: c.surface,
       borderColor: c.border,
-      borderRadius: 4,
+      borderRadius: AppSpacing.one,
+      // padding 值非 AppSpacing 刻度（16/14/10），保留紧凑终端节奏。
       titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

@@ -1,9 +1,11 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/protocol/types.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/agent_card/agent_status_badge.dart';
 import 'package:tired_agent_app/widgets/agent_card/contract.dart';
+import 'package:tired_agent_app/widgets/agent_card/os_brand_icon.dart';
 
 /// Material Design 3 风格 Agent 卡片 — 原生 M3 ListTile，编辑/删除用 IconButton。
 ///
@@ -65,13 +67,28 @@ class MD3AgentCard extends AgentCardContract {
             if (platform.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 1),
-                child: Text(
-                  platform,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  children: [
+                    if (agent.platform != null &&
+                        osBrandIcon(agent.platform!.os) != null) ...[
+                      FaIcon(
+                        osBrandIcon(agent.platform!.os)!,
+                        size: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                    Expanded(
+                      child: Text(
+                        platform,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
           ],

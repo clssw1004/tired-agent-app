@@ -1,3 +1,4 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme.dart';
@@ -5,6 +6,7 @@ import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/session_presets.dart';
 import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/session/preset_brand_icon.dart';
 
 const inlineOptionLimit = 3;
 
@@ -132,6 +134,7 @@ class PresetOptionChips extends StatelessWidget {
   void _showAll(BuildContext context) {
     final c = context.appColors;
     final temp = Map<String, String?>.from(selections);
+    final brand = presetBrandIcon(preset.id);
 
     showModalBottomSheet(
       context: context,
@@ -147,9 +150,18 @@ class PresetOptionChips extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: ThemedText.body(
-                    '${preset.emoji} ${preset.label} options',
-                    color: c.textSecondary,
+                  child: Row(
+                    children: [
+                      if (brand != null)
+                        FaIcon(brand, size: 16, color: c.textSecondary)
+                      else
+                        ThemedText.body(preset.emoji, color: c.textSecondary),
+                      const SizedBox(width: AppSpacing.one),
+                      ThemedText.body(
+                        '${preset.label} options',
+                        color: c.textSecondary,
+                      ),
+                    ],
                   ),
                 ),
                 Divider(height: 1, color: c.border),

@@ -1,9 +1,11 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/session_presets.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/session/preset_brand_icon.dart';
 
 class _DropdownItem {
   final BuiltinPreset? builtin;
@@ -18,6 +20,10 @@ class _DropdownItem {
   bool get isSeparator => separatorLabel != null;
   String get label => builtin?.label ?? user?.label ?? separatorLabel ?? '';
   String get emoji => builtin?.emoji ?? user?.emoji ?? '';
+
+  /// 内置预设的品牌图标（自定义/最近无品牌 → null，回退 emoji）。
+  FaIconData? get brandIcon =>
+      builtin == null ? null : presetBrandIcon(builtin!.id);
 }
 
 /// Callback when a builtin or custom preset is selected.
@@ -31,6 +37,9 @@ class SessionPresetDropdown extends StatelessWidget {
   final String currentLabel;
   final bool hasSelection;
   final String emoji;
+
+  /// 当前选中项的品牌图标（内置预设）→ 优先渲染；自定义/最近回退 [emoji]。
+  final FaIconData? brandIcon;
   final List<BuiltinPreset> builtinPresets;
   final List<UserPreset> recentPresets;
   final List<UserPreset> customPresets;
@@ -44,6 +53,7 @@ class SessionPresetDropdown extends StatelessWidget {
     required this.currentLabel,
     required this.hasSelection,
     required this.emoji,
+    this.brandIcon,
     required this.builtinPresets,
     required this.recentPresets,
     required this.customPresets,
@@ -78,7 +88,10 @@ class SessionPresetDropdown extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
+            if (brandIcon != null)
+              FaIcon(brandIcon, size: 16, color: c.text)
+            else
+              Text(emoji, style: const TextStyle(fontSize: 16)),
             const SizedBox(width: AppSpacing.one),
             Expanded(
               child: ThemedText.mono(
@@ -162,10 +175,12 @@ class SessionPresetDropdown extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppSpacing.two),
                     child: ListTile(
                       dense: true,
-                      leading: Text(
-                        item.emoji,
-                        style: const TextStyle(fontSize: 18),
-                      ),
+                      leading: item.brandIcon != null
+                          ? FaIcon(item.brandIcon, size: 18)
+                          : Text(
+                              item.emoji,
+                              style: const TextStyle(fontSize: 18),
+                            ),
                       title: ThemedText.mono(
                         item.label,
                         color: isActive ? c.primary : c.text,
