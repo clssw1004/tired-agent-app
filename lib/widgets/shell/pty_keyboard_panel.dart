@@ -8,6 +8,7 @@ import 'package:tired_agent_app/utils/pty_modifier.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/shell/pty_key_cap.dart';
 
 /// Collapsible virtual keyboard panel providing modifier keys (Shift/Ctrl/Alt),
 /// arrow keys, and other special keys (Esc/Tab/Enter/Backspace/Home/End) that
@@ -341,12 +342,6 @@ class _ExpandHandle extends StatelessWidget {
 // Internal button widgets
 // ═══════════════════════════════════════════════════════════════════════════
 
-const _animDuration = Duration(milliseconds: 200);
-
-/// Check whether a key is an arrow key — those get a larger label.
-bool _isArrow(TerminalKeyDef k) =>
-    k.id == 'up' || k.id == 'down' || k.id == 'left' || k.id == 'right';
-
 /// A toggle button for Ctrl / Alt / Shift.
 class _ModifierButton extends StatelessWidget {
   const _ModifierButton({
@@ -361,7 +356,6 @@ class _ModifierButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.appColors;
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) {
@@ -371,17 +365,9 @@ class _ModifierButton extends StatelessWidget {
           'shift' => state.shift,
           _ => false,
         };
-        final accent = switch (keyDef.id) {
-          'ctrl' => c.primary,
-          'alt' => c.secondary,
-          'shift' => c.warning,
-          _ => c.primary,
-        };
-        return _build(
-          active: active,
-          accent: accent,
-          colors: c,
-          label: keyDef.label,
+        return PtyKeyCap(
+          keyDef: keyDef,
+          lit: active,
           onTap: () {
             HapticFeedback.selectionClick();
             if (keyDef.id == 'ctrl') {
@@ -394,53 +380,6 @@ class _ModifierButton extends StatelessWidget {
           },
         );
       },
-    );
-  }
-
-  Widget _build({
-    required bool active,
-    required Color accent,
-    required AppColors colors,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 1.5),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: _animDuration,
-          height: 30,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: active ? accent.withAlpha(25) : colors.surfaceAlt,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: active ? accent : colors.border.withAlpha(100),
-              width: active ? 1.0 : 0.5,
-            ),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                      color: accent.withAlpha(50),
-                      blurRadius: 4,
-                      spreadRadius: 0.5,
-                    ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: active ? FontWeight.bold : FontWeight.w500,
-              color: active ? accent : colors.textCode,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -504,37 +443,11 @@ class _KeyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.appColors;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 1.5),
-      child: GestureDetector(
-        onTap: keyDef.bytes.isNotEmpty || keyDef.id == 'tab'
-            ? () => _onTap(context)
-            : null,
-        child: Container(
-          height: 30,
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: c.surfaceAlt,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: c.border.withAlpha(100), width: 0.5),
-          ),
-          child: keyDef.icon != null
-              ? Icon(keyDef.icon, size: 16, color: c.textCode)
-              : Text(
-                  keyDef.label,
-                  style: TextStyle(
-                    fontSize: _isArrow(keyDef) ? 14 : 10,
-                    fontWeight: _isArrow(keyDef)
-                        ? FontWeight.w300
-                        : FontWeight.w500,
-                    color: c.textCode,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-        ),
-      ),
+    return PtyKeyCap(
+      keyDef: keyDef,
+      onTap: keyDef.bytes.isNotEmpty || keyDef.id == 'tab'
+          ? () => _onTap(context)
+          : null,
     );
   }
 }

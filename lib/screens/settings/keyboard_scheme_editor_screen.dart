@@ -6,17 +6,21 @@ import 'package:tired_agent_app/providers/pty_keyboard_scheme_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/form_utils.dart';
+import 'package:tired_agent_app/utils/keyboard_row_ops.dart';
 import 'package:tired_agent_app/utils/pty_keyboard_config.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
 import 'package:tired_agent_app/widgets/shell/key_action_picker.dart';
+import 'package:tired_agent_app/widgets/shell/pty_key_cap.dart';
 
 /// Editor for a single keyboard scheme: name + rows of keys.
 ///
-/// Rows are laid out in a single-column list; each row shows its keys as a
-/// horizontal strip with controls to add/remove keys in that row, delete the
-/// row, and open the key action picker on tap. A reset action restores the
-/// rows from the scheme's base preset.
+/// Rows are rendered as a **live preview** using the same [PtyKeyCap] widget
+/// as the PTY keyboard panel, so the editor is WYSIWYG with the real panel.
+/// Tapping a key selects it and reveals the inline edit bar, where you can
+/// relabel the key, pick its action (via [KeyActionPicker]), move it with the
+/// arrow buttons, or delete it. A reset action restores the rows from the
+/// scheme's base preset.
 class KeyboardSchemeEditorScreen extends StatefulWidget {
   final String? schemeId;
 
@@ -31,23 +35,28 @@ class KeyboardSchemeEditorScreen extends StatefulWidget {
       _KeyboardSchemeEditorScreenState();
 }
 
-class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen> {
+class _KeyboardSchemeEditorScreenState
+    extends State<KeyboardSchemeEditorScreen> {
   late final TextEditingController _nameController;
+  late final TextEditingController _labelController;
   late List<List<TerminalKeyDef>> _rows;
   String? _basePresetId;
   bool _isNew = false;
 
+  /// Selected key position — `(row, col)`, both `null` when nothing selected.
+  int? _selRow;
+  int? _selKey;
+
   @override
   void initState() {
     super.initState();
+    _labelController = TextEditingController();
     final provider = context.read<PtyKeyboardSchemeProvider>();
     final scheme = provider.byId(widget.schemeId);
     if (scheme != null) {
       _nameController = TextEditingController(text: scheme.name);
       _basePresetId = scheme.basePresetId;
-      _rows = scheme.rows
-          .map((row) => List<TerminalKeyDef>.of(row))
-          .toList();
+      _rows = scheme.rows.map((row) => List<TerminalKeyDef>.of(row)).toList();
       _isNew = false;
     } else {
       // New scheme: start from a base preset (or blank when `base=none`).
@@ -68,8 +77,141 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
   @override
   void dispose() {
     _nameController.dispose();
+    _labelController.dispose();
     super.dispose();
   }
+
+  // ── Selection ──────────────────────────────────────────────────────────
+
+  /// The currently selected key def, or `null` when nothing is selected or the
+  /// selection points at a position that no longer exists.
+  TerminalKeyDef? get _selectedDef {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return null;
+    if (r < 0 || r >= _rows.length || c < 0 || c >= _rows[r].length) {
+      return null;
+    }
+    return _rows[r][c];
+  }
+
+  void _selectKey(int rowIdx, int keyIdx) {
+    setState(() {
+      if (_selRow == rowIdx && _selKey == keyIdx) {
+        _selRow = null;
+        _selKey = null;
+      } else {
+        _selRow = rowIdx;
+        _selKey = keyIdx;
+        _labelController.text = _rows[rowIdx][keyIdx].label;
+      }
+    });
+  }
+
+  /// Drop the selection when the row it points at has been removed or shrank.
+  void _clearSelectionIfStale() {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return;
+    if (r < 0 || r >= _rows.length || c < 0 || c >= _rows[r].length) {
+      _selRow = null;
+      _selKey = null;
+      _labelController.text = '';
+    }
+  }
+
+  // ── Edit-bar actions ───────────────────────────────────────────────────
+
+  void _updateLabel(String text) {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return;
+    setState(() {
+      _rows[r][c] = _rows[r][c].copyWith(label: text);
+    });
+  }
+
+  void _moveSelected(KeyMoveDir dir) {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return;
+    setState(() {
+      if (!moveKey(_rows, r, c, dir)) return;
+      // Selection follows the moved key to its new position.
+      final (nr, nc) = switch (dir) {
+        KeyMoveDir.left => (r, c - 1),
+        KeyMoveDir.right => (r, c + 1),
+        KeyMoveDir.up => (r - 1, c.clamp(0, _rows[r - 1].length - 1)),
+        KeyMoveDir.down => (r + 1, c.clamp(0, _rows[r + 1].length - 1)),
+      };
+      _selRow = nr;
+      _selKey = nc;
+      _labelController.text = _rows[nr][nc].label;
+    });
+  }
+
+  void _deleteSelected() {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return;
+    setState(() {
+      _rows[r].removeAt(c);
+      _selRow = null;
+      _selKey = null;
+      _labelController.text = '';
+    });
+  }
+
+  Future<void> _pickAction() async {
+    final r = _selRow;
+    final c = _selKey;
+    if (r == null || c == null) return;
+    final result = await KeyActionPicker.show(context, current: _rows[r][c]);
+    if (result == null || !mounted) return;
+    setState(() {
+      if (result.cleared) {
+        _rows[r].removeAt(c);
+        _selRow = null;
+        _selKey = null;
+        _labelController.text = '';
+      } else {
+        _rows[r][c] = result.def!;
+        _labelController.text = _rows[r][c].label;
+      }
+    });
+  }
+
+  // ── Row mutations ──────────────────────────────────────────────────────
+
+  void _addKey(int rowIdx) {
+    setState(() {
+      _rows[rowIdx].add(TerminalKeys.backspace);
+    });
+  }
+
+  void _removeKey(int rowIdx) {
+    if (_rows[rowIdx].isEmpty) return;
+    setState(() {
+      _rows[rowIdx].removeLast();
+      _clearSelectionIfStale();
+    });
+  }
+
+  void _addRow() {
+    setState(() {
+      _rows.add([TerminalKeys.backspace]);
+    });
+  }
+
+  void _removeRow(int rowIdx) {
+    if (_rows.length <= 1) return;
+    setState(() {
+      _rows.removeAt(rowIdx);
+      _clearSelectionIfStale();
+    });
+  }
+
+  // ── Persistence ────────────────────────────────────────────────────────
 
   Future<void> _save() async {
     final name = _nameController.text.trim();
@@ -99,52 +241,14 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
     final preset = presetId == null ? null : PtyKeyboardConfig.byId(presetId);
     if (preset == null) return;
     setState(() {
-      _rows = preset.rows
-          .map((row) => List<TerminalKeyDef>.of(row))
-          .toList();
+      _rows = preset.rows.map((row) => List<TerminalKeyDef>.of(row)).toList();
+      _selRow = null;
+      _selKey = null;
+      _labelController.text = '';
     });
   }
 
-  Future<void> _editKey(int rowIdx, int keyIdx) async {
-    final result = await KeyActionPicker.show(
-      context,
-      current: _rows[rowIdx][keyIdx],
-    );
-    if (result == null || !mounted) return;
-    setState(() {
-      if (result.cleared) {
-        _rows[rowIdx].removeAt(keyIdx);
-      } else {
-        _rows[rowIdx][keyIdx] = result.def!;
-      }
-    });
-  }
-
-  void _addKey(int rowIdx) {
-    setState(() {
-      _rows[rowIdx].add(TerminalKeys.backspace);
-    });
-  }
-
-  void _removeKey(int rowIdx) {
-    if (_rows[rowIdx].isEmpty) return;
-    setState(() {
-      _rows[rowIdx].removeLast();
-    });
-  }
-
-  void _addRow() {
-    setState(() {
-      _rows.add([TerminalKeys.backspace]);
-    });
-  }
-
-  void _removeRow(int rowIdx) {
-    if (_rows.length <= 1) return;
-    setState(() {
-      _rows.removeAt(rowIdx);
-    });
-  }
+  // ── Build ─────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -153,9 +257,7 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
       backgroundColor: c.background,
       appBar: AppBar(
         title: ThemedText.title(
-          _isNew
-              ? AppStrings.of.kbdSchemeNew
-              : AppStrings.of.kbdSchemeEdit,
+          _isNew ? AppStrings.of.kbdSchemeNew : AppStrings.of.kbdSchemeEdit,
         ),
         actions: [
           if (!_isNew && _basePresetId != null)
@@ -166,7 +268,10 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
             ),
           TextButton(
             onPressed: _save,
-            child: ThemedText.label(AppStrings.of.kbdSchemeSave, color: c.primary),
+            child: ThemedText.label(
+              AppStrings.of.kbdSchemeSave,
+              color: c.primary,
+            ),
           ),
         ],
         bottom: PreferredSize(
@@ -188,6 +293,22 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
               ),
             ),
           ),
+          if (_selectedDef == null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.three,
+                0,
+                AppSpacing.three,
+                AppSpacing.two,
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ThemedText.small(
+                  AppStrings.of.kbdEditorSelectHint,
+                  color: c.textSecondary,
+                ),
+              ),
+            ),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(
@@ -215,6 +336,7 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
               },
             ),
           ),
+          if (_selectedDef != null) _buildEditBar(),
         ],
       ),
     );
@@ -242,13 +364,21 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
               ),
               const Spacer(),
               IconButton(
-                icon: Icon(Icons.remove_circle_outline, size: 16, color: c.textSecondary),
+                icon: Icon(
+                  Icons.remove_circle_outline,
+                  size: 16,
+                  color: c.textSecondary,
+                ),
                 tooltip: AppStrings.of.kbdSchemeRemoveKey,
                 onPressed: () => _removeKey(rowIdx),
               ),
               ThemedText.label('${row.length}', color: c.textSecondary),
               IconButton(
-                icon: Icon(Icons.add_circle_outline, size: 16, color: c.primary),
+                icon: Icon(
+                  Icons.add_circle_outline,
+                  size: 16,
+                  color: c.primary,
+                ),
                 tooltip: AppStrings.of.kbdSchemeAddKey,
                 onPressed: () => _addKey(rowIdx),
               ),
@@ -260,57 +390,157 @@ class _KeyboardSchemeEditorScreenState extends State<KeyboardSchemeEditorScreen>
               ),
             ],
           ),
-          // 固定高度包裹 ReorderableListView；水平滚动禁用让外部 ListView 主导滚动
-          SizedBox(
-            height: 40,
-            child: ReorderableListView.builder(
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: false,
-              itemCount: row.length,
-              itemBuilder: (context, k) => _buildKeySlot(rowIdx, k),
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (newIndex > oldIndex) newIndex -= 1;
-                  final item = _rows[rowIdx].removeAt(oldIndex);
-                  _rows[rowIdx].insert(newIndex, item);
-                });
-              },
-              proxyDecorator: (child, index, animation) => Material(
-                elevation: 4,
-                color: c.surface,
-                child: child,
+          if (row.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.one),
+              child: ThemedText.small(
+                AppStrings.of.kbdEditorEmptyRow,
+                color: c.textSecondary,
+              ),
+            )
+          else
+            // PTY 面板同款渲染：Row + Expanded 均分，按键即真实预览
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  for (var k = 0; k < row.length; k++)
+                    Expanded(
+                      child: PtyKeyCap(
+                        keyDef: row[k],
+                        lit: _selRow == rowIdx && _selKey == k,
+                        litColor: c.primary,
+                        onTap: () => _selectKey(rowIdx, k),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildKeySlot(int rowIdx, int keyIdx) {
+  /// Bottom inline edit bar — shown while a key is selected, does not cover
+  /// the keyboard preview above it.
+  Widget _buildEditBar() {
     final c = context.appColors;
-    final def = _rows[rowIdx][keyIdx];
-    return ReorderableDragStartListener(
-      index: keyIdx,
-      child: GestureDetector(
-        onTap: () => _editKey(rowIdx, keyIdx),
-        child: Container(
-          key: ValueKey('${rowIdx}_${keyIdx}_${def.id}'),
-          width: 56,
-          height: 34,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: c.surfaceAlt,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: c.border.withAlpha(80), width: 0.5),
+    final r = _selRow!;
+    final k = _selKey!;
+    final row = _rows[r];
+    return Container(
+      key: const ValueKey('kbd_edit_bar'),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.three,
+        AppSpacing.two,
+        AppSpacing.three,
+        AppSpacing.three,
+      ),
+      decoration: BoxDecoration(
+        color: c.surface,
+        border: Border(
+          top: BorderSide(color: c.primary.withAlpha(60), width: 0.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(30),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
-          child: def.icon != null
-              ? Icon(def.icon, size: 16, color: c.textCode)
-              : ThemedText.label(def.label, color: c.textCode),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _labelController,
+                    style: TextStyle(color: c.text, fontSize: 13),
+                    decoration: neonInputDecoration(
+                      context,
+                      label: AppStrings.of.kbdEditorKeyLabel,
+                      hint: AppStrings.of.kbdEditorKeyLabelHint,
+                    ),
+                    onChanged: _updateLabel,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.two),
+                OutlinedButton.icon(
+                  onPressed: _pickAction,
+                  icon: Icon(Icons.tune, size: 14, color: c.primary),
+                  label: ThemedText.label(
+                    AppStrings.of.kbdEditorAction,
+                    color: c.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.two),
+            Row(
+              children: [
+                _arrowBtn(
+                  KeyMoveDir.left,
+                  icon: Icons.arrow_left,
+                  disabled: k == 0,
+                ),
+                _arrowBtn(
+                  KeyMoveDir.up,
+                  icon: Icons.arrow_upward,
+                  disabled: r == 0 || _rows[r - 1].isEmpty,
+                ),
+                _arrowBtn(
+                  KeyMoveDir.down,
+                  icon: Icons.arrow_downward,
+                  disabled: r >= _rows.length - 1 || _rows[r + 1].isEmpty,
+                ),
+                _arrowBtn(
+                  KeyMoveDir.right,
+                  icon: Icons.arrow_right,
+                  disabled: k >= row.length - 1,
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.delete_outline, size: 20, color: c.danger),
+                  tooltip: AppStrings.of.kbdEditorDeleteKey,
+                  onPressed: _deleteSelected,
+                ),
+                IconButton(
+                  icon: Icon(Icons.close, size: 20, color: c.textSecondary),
+                  tooltip: AppStrings.of.kbdEditorDone,
+                  onPressed: () => _selectKey(r, k),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _arrowBtn(
+    KeyMoveDir dir, {
+    required IconData icon,
+    required bool disabled,
+  }) {
+    final c = context.appColors;
+    return IconButton(
+      icon: Icon(
+        icon,
+        size: 20,
+        color: disabled ? c.textSecondary.withAlpha(80) : c.primary,
+      ),
+      tooltip: switch (dir) {
+        KeyMoveDir.left => AppStrings.of.kbdEditorMoveLeft,
+        KeyMoveDir.right => AppStrings.of.kbdEditorMoveRight,
+        KeyMoveDir.up => AppStrings.of.kbdEditorMoveUp,
+        KeyMoveDir.down => AppStrings.of.kbdEditorMoveDown,
+      },
+      onPressed: disabled ? null : () => _moveSelected(dir),
     );
   }
 }

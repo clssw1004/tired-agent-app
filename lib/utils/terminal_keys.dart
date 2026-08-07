@@ -164,6 +164,32 @@ class TerminalKeyDef {
     this.confirmMessage,
   });
 
+  /// Copy with any subset of fields overridden.
+  ///
+  /// Used by the scheme editor to relabel a key in place without touching its
+  /// byte sequence or composition info.
+  TerminalKeyDef copyWith({
+    String? id,
+    String? label,
+    List<int>? bytes,
+    IconData? icon,
+    bool? isMod,
+    List<TerminalKeyCode>? composedOf,
+    bool? confirm,
+    String? confirmMessage,
+  }) {
+    return TerminalKeyDef(
+      id: id ?? this.id,
+      label: label ?? this.label,
+      bytes: bytes ?? this.bytes,
+      icon: icon ?? this.icon,
+      isMod: isMod ?? this.isMod,
+      composedOf: composedOf ?? this.composedOf,
+      confirm: confirm ?? this.confirm,
+      confirmMessage: confirmMessage ?? this.confirmMessage,
+    );
+  }
+
   // ── Serialization ────────────────────────────────────────────────
 
   Map<String, dynamic> toJson() => {
