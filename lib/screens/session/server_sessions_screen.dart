@@ -116,8 +116,11 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
         ? session.label!
         : 'resume-${session.id.substring(0, 8)}';
 
-    // Resume value priority: extra.claudeSessionId > extra.claudeName > label
+    // Resume value priority: claudeSessionId (top-level) > extra.claudeSessionId
+    // > extra.claudeName > label. 服务端把 claudeSessionId 存顶层字段，旧数据
+    // 无 extra.claudeSessionId；新数据两端都写，兼容历史会话。
     final resumeValue =
+        session.claudeSessionId ??
         (session.extra?['claudeSessionId'] as String?) ??
         (session.extra?['claudeName'] as String?) ??
         session.label;
@@ -187,7 +190,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
   /// A session is resumable when it's a claude session with resume metadata.
   static bool _isResumable(Session s) =>
       s.cmd == 'claude' &&
-      (s.extra?['claudeSessionId'] != null ||
+      (s.claudeSessionId != null ||
+          s.extra?['claudeSessionId'] != null ||
           s.extra?['claudeName'] != null ||
           s.label != null);
 
@@ -537,7 +541,8 @@ class _ServerSessionsScreenState extends State<ServerSessionsScreen> {
                         onResume:
                             (session.status == SessionStatus.exited &&
                                 session.cmd == 'claude' &&
-                                (session.extra?['claudeSessionId'] != null ||
+                                (session.claudeSessionId != null ||
+                                    session.extra?['claudeSessionId'] != null ||
                                     session.extra?['claudeName'] != null ||
                                     session.label != null))
                             ? () => _requestResume(session)
