@@ -449,16 +449,6 @@
     }
   },
 
-  "settingsHomeDisplayMode": "首页展示模式",
-  "homeModeManagerList": "管理器列表",
-  "homeModeManagerAgent": "分组视图（管理器 → Agent）",
-  "homeDetail": "详情",
-  "homeAgentCount": "{count} 个 Agent",
-  "@homeAgentCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "settingsDefaultManager": "默认管理器",
+  "defaultManagerAuto": "自动（跟随第一个）"
 }

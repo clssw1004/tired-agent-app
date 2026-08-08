@@ -60,12 +60,20 @@ class ThemedText extends StatelessWidget {
     overflow: overflow,
   );
 
-  factory ThemedText.title(String data, {Key? key, Color? color}) => ThemedText(
+  factory ThemedText.title(
+    String data, {
+    Key? key,
+    Color? color,
+    int? maxLines,
+    TextOverflow? overflow,
+  }) => ThemedText(
     data,
     key: key,
     color: color,
     fontSize: 16,
     fontWeight: FontWeight.w600,
+    maxLines: maxLines,
+    overflow: overflow,
   );
 
   factory ThemedText.mono(
