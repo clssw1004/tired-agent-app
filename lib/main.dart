@@ -10,7 +10,6 @@ import 'package:tired_agent_app/providers/toast_provider.dart';
 import 'package:tired_agent_app/screens/session/create_session_screen.dart';
 import 'package:tired_agent_app/screens/server/add_agent_screen.dart';
 import 'package:tired_agent_app/screens/server/add_manager_screen.dart';
-import 'package:tired_agent_app/screens/server/manager_detail_screen.dart';
 import 'package:tired_agent_app/screens/session/pinned_sessions_screen.dart';
 import 'package:tired_agent_app/screens/server/server_list_screen.dart';
 import 'package:tired_agent_app/screens/session/server_sessions_screen.dart';
@@ -107,15 +106,6 @@ class _TiredAgentAppState extends State<TiredAgentApp>
               ],
             ),
           ],
-        ),
-
-        // ── Manager detail (full-screen) ─────────────────────────
-        GoRoute(
-          path: '/profile/:profileId',
-          builder: (_, state) => ManagerDetailScreen(
-            profileId: state.pathParameters['profileId'] ?? '',
-          ),
-          parentNavigatorKey: _rootNavigatorKey,
         ),
 
         // ── Add Manager (full-screen form) ────────────────────────

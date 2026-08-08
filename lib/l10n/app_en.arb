@@ -453,16 +453,6 @@
     }
   },
 
-  "settingsHomeDisplayMode": "Home Display Mode",
-  "homeModeManagerList": "Manager List",
-  "homeModeManagerAgent": "Grouped Agents (Manager → Agent)",
-  "homeDetail": "Details",
-  "homeAgentCount": "{count} agents",
-  "@homeAgentCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  }
+  "settingsDefaultManager": "Default Manager",
+  "defaultManagerAuto": "Auto (first)"
 }

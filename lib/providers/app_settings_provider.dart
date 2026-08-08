@@ -7,12 +7,6 @@ import 'package:tired_agent_app/utils/terminal_themes.dart';
 /// 主题风格枚举
 enum ThemeFlavor { neon, geek, material }
 
-/// 首页展示模式
-///
-/// - [managerList]：仅显示 manager 卡片列表（原有行为），点击进入 agent 列表
-/// - [managerAgent]：分组视图，manager 头 + 其下 agent 列表，进 App 直接看到 agent
-enum HomeDisplayMode { managerList, managerAgent }
-
 /// 终端缓冲区大小预设选项（行数）
 const List<int> kTerminalBufferPresets = [1000, 2000, 3000, 5000, 8000, 10000];
 
@@ -35,7 +29,7 @@ class AppSettingsProvider extends ChangeNotifier {
 
   static const _kTerminalTheme = 'terminal_theme';
   static const _kSessionExitNotifications = 'session_exit_notifications';
-  static const _kHomeDisplayMode = 'home_display_mode';
+  static const _kDefaultManagerId = 'default_manager_id';
 
   /// 默认终端缓冲区大小。
   static const int kDefaultBufferSize = 5000;
@@ -46,7 +40,7 @@ class AppSettingsProvider extends ChangeNotifier {
   int _terminalBufferSize;
   TerminalThemePreset _terminalThemePreset;
   bool _sessionExitNotifications = true;
-  HomeDisplayMode _homeDisplayMode = HomeDisplayMode.managerAgent;
+  String? _defaultManagerId; // null = 自动（跟随第一个 manager）
 
   ThemeFlavor get themeFlavor => _themeFlavor;
   ThemeMode get themeMode => _themeMode;
@@ -58,8 +52,8 @@ class AppSettingsProvider extends ChangeNotifier {
   /// 会话结束时是否发送本地通知。
   bool get sessionExitNotifications => _sessionExitNotifications;
 
-  /// 首页展示模式。
-  HomeDisplayMode get homeDisplayMode => _homeDisplayMode;
+  /// 默认管理器（首页进入时展示哪个 manager；null = 自动跟随第一个）。
+  String? get defaultManagerId => _defaultManagerId;
 
   // 是否为暗色（供 callers 便捷判断）
   bool get isDark => _themeMode == ThemeMode.dark;
@@ -116,15 +110,8 @@ class AppSettingsProvider extends ChangeNotifier {
     _sessionExitNotifications =
         prefs.getBool(_kSessionExitNotifications) ?? true;
 
-    // 首页展示模式（旧值/非法值回落 managerAgent）
-    final modeStr = prefs.getString(_kHomeDisplayMode);
-    if (modeStr != null) {
-      _homeDisplayMode = switch (modeStr) {
-        'managerList' => HomeDisplayMode.managerList,
-        'managerAgent' => HomeDisplayMode.managerAgent,
-        _ => HomeDisplayMode.managerAgent,
-      };
-    }
+    // 默认管理器
+    _defaultManagerId = prefs.getString(_kDefaultManagerId);
 
     notifyListeners();
   }
@@ -196,13 +183,17 @@ class AppSettingsProvider extends ChangeNotifier {
     await prefs.setBool(_kSessionExitNotifications, enabled);
   }
 
-  // ── 首页展示模式 ──────────────────────────────────────────────────
+  // ── 默认管理器 ──────────────────────────────────────────────────
 
-  Future<void> setHomeDisplayMode(HomeDisplayMode mode) async {
-    if (_homeDisplayMode == mode) return;
-    _homeDisplayMode = mode;
+  Future<void> setDefaultManagerId(String? id) async {
+    if (_defaultManagerId == id) return;
+    _defaultManagerId = id;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kHomeDisplayMode, mode.name);
+    if (id == null) {
+      await prefs.remove(_kDefaultManagerId);
+    } else {
+      await prefs.setString(_kDefaultManagerId, id);
+    }
   }
 }

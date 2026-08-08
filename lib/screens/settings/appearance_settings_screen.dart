@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/providers/app_settings_provider.dart';
+import 'package:tired_agent_app/providers/auth_provider.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
@@ -17,6 +18,7 @@ class AppearanceSettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.appColors;
     final settings = context.watch<AppSettingsProvider>();
+    final auth = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: c.background,
       appBar: AppBar(
@@ -122,30 +124,18 @@ class AppearanceSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.four),
 
-          // ── 首页展示模式 ─────────────────────────────────────
+          // ── 默认管理器 ───────────────────────────────────────
           context.appComponents.buildSectionHeader(
             context,
-            AppStrings.of.settingsHomeDisplayMode,
+            AppStrings.of.settingsDefaultManager,
           ),
           const SizedBox(height: AppSpacing.two),
           context.appComponents.buildSettingsTile(
             context,
             SettingsTileData(
-              label: AppStrings.of.homeModeManagerList,
-              selected: settings.homeDisplayMode == HomeDisplayMode.managerList,
-              onTap: () =>
-                  settings.setHomeDisplayMode(HomeDisplayMode.managerList),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.one),
-          context.appComponents.buildSettingsTile(
-            context,
-            SettingsTileData(
-              label: AppStrings.of.homeModeManagerAgent,
-              selected:
-                  settings.homeDisplayMode == HomeDisplayMode.managerAgent,
-              onTap: () =>
-                  settings.setHomeDisplayMode(HomeDisplayMode.managerAgent),
+              label: AppStrings.of.settingsDefaultManager,
+              value: _defaultManagerName(auth, settings.defaultManagerId),
+              onTap: () => _pickDefaultManager(context),
             ),
           ),
           const SizedBox(height: AppSpacing.four),
@@ -153,4 +143,89 @@ class AppearanceSettingsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 当前默认 manager 的展示名；未指定或已失效时显示「自动」。
+String _defaultManagerName(AuthProvider auth, String? id) {
+  if (id == null) return AppStrings.of.defaultManagerAuto;
+  return auth.connectionFor(id)?.profile.name ??
+      AppStrings.of.defaultManagerAuto;
+}
+
+/// 弹出「默认管理器」选择 bottom sheet：自动（跟随第一个）+ 全部 manager。
+void _pickDefaultManager(BuildContext context) {
+  final settings = context.read<AppSettingsProvider>();
+  final auth = context.read<AuthProvider>();
+  final c = context.appColors;
+  final currentId = settings.defaultManagerId;
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: c.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+    ),
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.four),
+            child: Row(
+              children: [
+                Icon(Icons.swap_horiz, color: c.primary, size: 20),
+                const SizedBox(width: AppSpacing.two),
+                ThemedText.title(
+                  AppStrings.of.settingsDefaultManager,
+                  color: c.primary,
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: c.border),
+          ListTile(
+            dense: true,
+            leading: Icon(
+              Icons.auto_fix_high,
+              color: currentId == null ? c.primary : c.textSecondary,
+              size: 18,
+            ),
+            title: ThemedText.body(
+              AppStrings.of.defaultManagerAuto,
+              color: currentId == null ? c.primary : c.text,
+            ),
+            trailing: currentId == null
+                ? Icon(Icons.check, color: c.primary, size: 18)
+                : null,
+            onTap: () async {
+              Navigator.of(ctx).pop();
+              await settings.setDefaultManagerId(null);
+            },
+          ),
+          for (final conn in auth.connections)
+            ListTile(
+              dense: true,
+              leading: Icon(
+                Icons.hub_outlined,
+                color: conn.profile.id == currentId
+                    ? c.primary
+                    : c.textSecondary,
+                size: 18,
+              ),
+              title: ThemedText.body(
+                conn.profile.name,
+                color: conn.profile.id == currentId ? c.primary : c.text,
+              ),
+              trailing: conn.profile.id == currentId
+                  ? Icon(Icons.check, color: c.primary, size: 18)
+                  : null,
+              onTap: () async {
+                Navigator.of(ctx).pop();
+                await settings.setDefaultManagerId(conn.profile.id);
+              },
+            ),
+        ],
+      ),
+    ),
+  );
 }
