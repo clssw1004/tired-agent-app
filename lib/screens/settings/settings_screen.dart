@@ -70,6 +70,34 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.four),
 
+          // ── Home display mode ────────────────────────────────
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.settingsHomeDisplayMode,
+          ),
+          const SizedBox(height: AppSpacing.two),
+          context.appComponents.buildSettingsTile(
+            context,
+            SettingsTileData(
+              label: AppStrings.of.homeModeManagerList,
+              selected: settings.homeDisplayMode == HomeDisplayMode.managerList,
+              onTap: () =>
+                  settings.setHomeDisplayMode(HomeDisplayMode.managerList),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.one),
+          context.appComponents.buildSettingsTile(
+            context,
+            SettingsTileData(
+              label: AppStrings.of.homeModeManagerAgent,
+              selected:
+                  settings.homeDisplayMode == HomeDisplayMode.managerAgent,
+              onTap: () =>
+                  settings.setHomeDisplayMode(HomeDisplayMode.managerAgent),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.four),
+
           // ── Terminal（独立设置页）────────────────────────────
           context.appComponents.buildSectionHeader(
             context,
