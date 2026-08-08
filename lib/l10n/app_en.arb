@@ -254,6 +254,7 @@
   "settingsVersion": "Version",
   "aboutBuildNumber": "Build",
   "settingsTheme": "Theme",
+  "settingsAppearance": "Appearance",
   "settingsThemeDark": "Dark",
   "settingsThemeLight": "Light",
   "settingsThemeSystem": "System",

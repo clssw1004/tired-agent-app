@@ -9,6 +9,7 @@ import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/utils/terminal_keys.dart';
 import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
 import 'package:tired_agent_app/widgets/common/themed_text.dart';
+import 'package:tired_agent_app/widgets/settings_tile/contract.dart';
 
 /// Manager for user-defined keyboard schemes.
 ///
@@ -48,6 +49,22 @@ class KeyboardSchemeListScreen extends StatelessWidget {
           AppSpacing.four,
         ),
         children: [
+          // ── Default scheme ───────────────────────────────────────
+          context.appComponents.buildSectionHeader(
+            context,
+            AppStrings.of.kbdSchemeDefault,
+          ),
+          const SizedBox(height: AppSpacing.one),
+          context.appComponents.buildSettingsTile(
+            context,
+            SettingsTileData(
+              label: AppStrings.of.kbdSchemeDefault,
+              value: provider.byId(provider.defaultSchemeId)?.name ??
+                  AppStrings.of.kbdSchemeAuto,
+              onTap: () => _pickDefaultKeyboardScheme(context),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.four),
           context.appComponents.buildSectionHeader(
             context,
             AppStrings.of.kbdSchemePresets,
@@ -291,6 +308,102 @@ class _UserSchemeTile extends StatelessWidget {
     if (confirmed != true) return;
     await provider.delete(scheme.id);
   }
+}
+
+/// 弹出「默认键盘方案」选择 bottom sheet。
+void _pickDefaultKeyboardScheme(BuildContext context) {
+  final provider = context.read<PtyKeyboardSchemeProvider>();
+  final c = context.appColors;
+  final schemes = provider.allSchemes;
+  final currentId = provider.defaultSchemeId;
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: c.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+    ),
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.four),
+            child: Row(
+              children: [
+                Icon(Icons.keyboard_alt_outlined, color: c.primary, size: 20),
+                const SizedBox(width: AppSpacing.two),
+                ThemedText.title(
+                  AppStrings.of.kbdSchemeDefault,
+                  color: c.primary,
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: c.border),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: schemes.length + 1,
+              itemBuilder: (_, i) {
+                if (i == 0) {
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.auto_fix_high,
+                      color: c.textSecondary,
+                      size: 18,
+                    ),
+                    title: ThemedText.body(
+                      AppStrings.of.kbdSchemeAuto,
+                      color: c.text,
+                    ),
+                    subtitle: ThemedText.small(
+                      AppStrings.of.kbdSchemeAutoDesc,
+                      color: c.textSecondary,
+                    ),
+                    trailing: currentId == null
+                        ? Icon(Icons.check, color: c.primary, size: 18)
+                        : null,
+                    onTap: () async {
+                      Navigator.of(ctx).pop();
+                      await provider.setDefaultSchemeId(null);
+                    },
+                  );
+                }
+                final s = schemes[i - 1];
+                final active = s.id == currentId;
+                return ListTile(
+                  dense: true,
+                  leading: Icon(
+                    provider.isBuiltin(s.id)
+                        ? Icons.bookmark_outline
+                        : Icons.keyboard,
+                    color: active ? c.primary : c.textSecondary,
+                    size: 18,
+                  ),
+                  title: ThemedText.body(
+                    s.name,
+                    color: active ? c.primary : c.text,
+                  ),
+                  subtitle: ThemedText.small(
+                    '${s.rows.length} ${AppStrings.of.kbdSchemeRows}',
+                    color: c.textSecondary,
+                  ),
+                  trailing: active
+                      ? Icon(Icons.check, color: c.primary, size: 18)
+                      : null,
+                  onTap: () async {
+                    Navigator.of(ctx).pop();
+                    await provider.setDefaultSchemeId(s.id);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 Future<String?> _promptName(BuildContext context, String initial) =>

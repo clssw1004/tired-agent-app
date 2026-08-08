@@ -254,6 +254,7 @@
   "settingsVersion": "版本",
   "aboutBuildNumber": "构建号",
   "settingsTheme": "主题",
+  "settingsAppearance": "外观",
   "settingsThemeDark": "深色",
   "settingsThemeLight": "浅色",
   "settingsThemeSystem": "跟随系统",
