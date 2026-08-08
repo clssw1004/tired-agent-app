@@ -15,9 +15,10 @@ import 'package:tired_agent_app/screens/session/pinned_sessions_screen.dart';
 import 'package:tired_agent_app/screens/server/server_list_screen.dart';
 import 'package:tired_agent_app/screens/session/server_sessions_screen.dart';
 import 'package:tired_agent_app/screens/session/session_detail_screen.dart';
+import 'package:tired_agent_app/screens/settings/about_settings_screen.dart';
+import 'package:tired_agent_app/screens/settings/appearance_settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/terminal_settings_screen.dart';
-import 'package:tired_agent_app/screens/settings/theme_settings_screen.dart';
 import 'package:tired_agent_app/screens/settings/keyboard_scheme_list_screen.dart';
 import 'package:tired_agent_app/screens/settings/keyboard_scheme_editor_screen.dart';
 import 'package:tired_agent_app/services/auth_service.dart';
@@ -173,10 +174,17 @@ class _TiredAgentAppState extends State<TiredAgentApp>
           parentNavigatorKey: _rootNavigatorKey,
         ),
 
-        // ── Theme settings (full-screen) ─────────────────────────
+        // ── Appearance settings (full-screen) ────────────────────
         GoRoute(
-          path: '/settings/theme',
-          builder: (_, _) => const ThemeSettingsScreen(),
+          path: '/settings/appearance',
+          builder: (_, _) => const AppearanceSettingsScreen(),
+          parentNavigatorKey: _rootNavigatorKey,
+        ),
+
+        // ── About (full-screen) ───────────────────────────────────
+        GoRoute(
+          path: '/settings/about',
+          builder: (_, _) => const AboutSettingsScreen(),
           parentNavigatorKey: _rootNavigatorKey,
         ),
 
