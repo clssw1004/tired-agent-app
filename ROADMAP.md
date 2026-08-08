@@ -93,6 +93,7 @@
 - **技术:** Android App Widget（原生）+ iOS Live Activity（灵动岛）；`flutter_apple_widget` / 原生 bridge 共享 `session status`
 - **涉及:** android/、ios/ 原生代码 + 数据同步（共享 prefs/通知）
 - **依赖:** 原生开发
+- **2026-08-07 评估：暂缓（价值不高）** — 灵动岛只能展示「状态 + 运行时长」，协议层无进度概念（`SessionStatus` 仅 starting/running/exited），信息增量有限；受众需 iPhone 14 Pro+ × iOS 16.1+；需 macOS 原生开发（Widget Extension + App Group），当前 Linux 环境无法编译验证。优先级低于 F2/F4/F5 等高频实用项。若未来做，最小版本 = 运行中状态显示（复用 F1 的双触发骨架：SSE `onState` 快路径 + 轮询慢路径）。
 
 ### F13. 深链 + 分享 (S)
 - **价值:** `tiredagent://session/{id}` 直达页面；分享/导入 manager 配置

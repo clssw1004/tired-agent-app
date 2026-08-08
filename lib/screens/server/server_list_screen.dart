@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:tired_agent_app/models/manager_connection.dart';
+import 'package:tired_agent_app/providers/app_settings_provider.dart';
 import 'package:tired_agent_app/providers/auth_provider.dart';
+import 'package:tired_agent_app/screens/server/manager_agent_view.dart';
 import 'package:tired_agent_app/theme.dart';
 import 'package:tired_agent_app/utils/app_strings.dart';
 import 'package:tired_agent_app/widgets/common/neon_dialog.dart';
@@ -18,6 +20,7 @@ class ServerListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final settings = context.watch<AppSettingsProvider>();
     final c = context.appColors;
     return Scaffold(
       backgroundColor: c.background,
@@ -40,6 +43,8 @@ class ServerListScreen extends StatelessWidget {
           Expanded(
             child: auth.connections.isEmpty
                 ? _buildWelcomeEmpty(context, auth)
+                : settings.homeDisplayMode == HomeDisplayMode.managerAgent
+                ? const ManagerAgentView()
                 : _buildManagerList(context, auth),
           ),
         ],
